@@ -2867,3 +2867,8 @@ function ImageNVCGUI_DeleteFcn(hObject, eventdata, handles)
 % gPiezo.Controller.Destroy;
 % clear gPiezo.Controller;
 % clear gPiezo.PIdevice;
+
+% release handle
+calllib('EO0x2DDrive', 'EO_ReleaseAllHandles')
+% unload library
+unloadlibrary('EO0x2DDrive');

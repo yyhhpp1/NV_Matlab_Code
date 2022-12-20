@@ -1897,17 +1897,16 @@ switch what
             Voltage = minimumPosition;
         end
 
+        errorval = calllib('EO0x2DDrive', 'EO_Move', handle, 0);
+        showErrorInfo(errorval);
+
         global eohandle;
 
-        errorval = calllib('EO0x2DDrive', 'EO_Move', eohandle, Voltage);
-%         EOShowErrorInfo(errorval);
-% 
-% 
-%         lastcommandpos = 0.0;
-%         [errorval, lastcommandpos] = calllib('EO0x2DDrive', 'EO_GetCommandPosition', eohandle, lastcommandpos);
-%         EOShowErrorInfo(errorval);
-%         disp('Last commanded position is ');
-%         disp(lastcommandpos);
+        lastcommandpos = 0.0;
+        [errorval, lastcommandpos] = calllib('EO0x2DDrive', 'EO_GetCommandPosition', eohandle, lastcommandpos);
+        EOShowErrorInfo(errorval);
+        disp('Last commanded position is ');
+        disp(lastcommandpos);
         
         return;
     otherwise
