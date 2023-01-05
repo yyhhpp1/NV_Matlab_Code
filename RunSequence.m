@@ -49,6 +49,9 @@ if gSG.bfixedPow && gSG.bfixedFreq
 
     try
         [~, hCounter] = SetNCounters(gmSEQ.ctrN*gmSEQ.Repeat,PortMap('Ctr Gate'),500000);
+        disp('CTRN and REPEAT')
+        disp(gmSEQ.ctrN)
+        disp(gmSEQ.Repeat)
         for i=1:gmSEQ.Average
             gmSEQ.iAverage=i;
             handles.biAverage.String=num2str(gmSEQ.iAverage);
@@ -85,6 +88,7 @@ if gSG.bfixedPow && gSG.bfixedFreq
                         StartCounters(hCounter);                    
                         Run_PB_Sequence();
                         [~, vec] = ReadCountersN(hCounter,(gmSEQ.ctrN*gmSEQ.Repeat),gmSEQ.Repeat*tmax/1e9*1.5);
+%                         disp(vec)
                         DAQmxStopTask(hCounter);
                         sigDatum = ProcessData(vec);           
                         for k = 1:gmSEQ.ctrN
@@ -108,14 +112,16 @@ if gSG.bfixedPow && gSG.bfixedFreq
                     StartCounters(hCounter);                    
                     Run_PB_Sequence();
                     [~, vec] = ReadCountersN(hCounter,(gmSEQ.ctrN*gmSEQ.Repeat),gmSEQ.Repeat*tmax/1e9*1.5);
+                    disp(vec)
                     DAQmxStopTask(hCounter);
                     sigDatum = ProcessData(vec);           
                     for k = 1:gmSEQ.ctrN
                         gmSEQ.signal_Ave(k, j) = sigDatum(k);
-                        if i == 1
+                        if i == 1 % ejd i is number of averages
                             gmSEQ.signal(k, j) = sigDatum(k);
                         else
-                            gmSEQ.signal(k, j) = (gmSEQ.signal(k, j)*(i-1)+sigDatum(k))/i;
+                            disp(['k, ', num2str(k), ' ', num2str(sigDatum(k))])
+                            gmSEQ.signal(k, j) = (gmSEQ.signal(k, j)*(i-1)+sigDatum(k))/i; %ejd j is sweep parameter gmSEQ.signal(k, j)+sigDatum(k);%
                         end
                     end
                 end
@@ -155,9 +161,10 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
     SequencePool(string(gmSEQ.name));
     gmSEQ.SweepParam=gmSEQ.SweepParam*1e9;
     gSG.sweepDev=(gmSEQ.SweepParam(gmSEQ.NSweepParam)-gmSEQ.SweepParam(1))/2;
-    gSG.Freq=(gmSEQ.SweepParam(gmSEQ.NSweepParam)+gmSEQ.SweepParam(1))/2;
+    gSG.Freq=(gmSEQ.SweepParam(gmSEQ.NSweepParam)+gmSEQ.SweepParam(1))/2; 
     SignalGeneratorFunctionPool('WriteFreq');
-    if gSG.Pow > -20
+    disp(gmSEQ.NSweepParam)
+    if gSG.Pow > -15
        error("Too large MW power. ") 
     end    
     SignalGeneratorFunctionPool('WritePow');
@@ -219,7 +226,7 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
     catch ME
         KillAllTasks;
         gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
-        gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff');
+%        gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff');
         rethrow(ME);
     end
     if ~gmSEQ.bTrack
@@ -338,13 +345,13 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
 end
 
 gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
-gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff');
-gSG3.bOn=0; SignalGeneratorFunctionPool3('RFOnOff');
+% gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff');
+% gSG3.bOn=0; SignalGeneratorFunctionPool3('RFOnOff');
 
 % The following stop is just for test, added by Weijie 07/30/2022
-chaseFunctionPool('stopChase', gmSEQ.MWAWG) 
-chaseFunctionPool('stopChase', gmSEQ.P1AWG)
-chaseFunctionPool('stopChase', gmSEQ.MWAWG2)
+%chaseFunctionPool('stopChase', gmSEQ.MWAWG) 
+%chaseFunctionPool('stopChase', gmSEQ.P1AWG)
+%chaseFunctionPool('stopChase', gmSEQ.MWAWG2)
 
 
 gmSEQ.bGo = 0;
@@ -465,6 +472,7 @@ if strcmp(gmSEQ.meas,'SPCM')
         [status, task ] = DAQmxFunctionPool('SetCounter',varargin{1});
     else
         [status, task ] = DAQmxFunctionPool('SetGatedNCounter',varargin{1});
+        disp(['N ', num2str(varargin{1})])
     end
     
 elseif strcmp(gmSEQ.meas,'APD')
@@ -764,6 +772,7 @@ function sigDatum = ProcessData(RawData)
 global gmSEQ gSG
 if strcmp(gmSEQ.meas,'SPCM')
     if isfield(gmSEQ,'bLiO')
+        disp('ProcessData bLiO')
         AA=diff(RawData);
         sigDatum=zeros(1,gmSEQ.NSweepParam);
         samps=gmSEQ.misc*gSG.sweepRate;
@@ -774,9 +783,14 @@ if strcmp(gmSEQ.meas,'SPCM')
         end
     else
         RawData1=diff(RawData);
+%         disp(RawData)
+%         disp(RawData1)
         sigDatum = NaN(1, gmSEQ.ctrN);
         for i = 1:gmSEQ.ctrN
             sigDatum(i)=sum(RawData1(i:gmSEQ.ctrN:end));
+%             disp(RawData1(i:gmSEQ.ctrN:end))
+%             disp('sigDatum')
+%             disp(sigDatum(i))
         end
     end
 elseif strcmp(gmSEQ.meas,'APD')

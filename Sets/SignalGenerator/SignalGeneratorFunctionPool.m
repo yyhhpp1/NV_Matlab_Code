@@ -129,6 +129,7 @@ fclose(gSG.serial);
 function WritePow()
 global gSG
 fopen(gSG.serial);
+
 if gSG.Pow>10
     fclose(gSG.serial);
     error('Microwave amplitude is probably too large')
@@ -213,13 +214,22 @@ function bValid = SweepCheck() % Check whether the sweeping range is legal
 global gSG
 from = gSG.Freq - gSG.sweepDev;
 to = gSG.Freq + gSG.sweepDev; 
+disp(from)
+disp(to)
 bValid = false;
-if from >= 1.425e9 && to <= 3.075e9
+%For SRS384
+if from >= 0.950e9 && to <= 2.050e9
     bValid = true;
-elseif from >= 2.85e9 && to <= 6.15e9
+elseif from >= 1.900e9 && to <= 4.100e9
     bValid = true;
 end
 
+% FOR SRS386
+% if from >= 1.425e9 && to <= 3.075e9
+%     bValid = true;
+% elseif from >= 2.85e9 && to <= 6.15e9
+%     bValid = true;
+% end
 
 
 function RFOnOff()

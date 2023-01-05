@@ -44,7 +44,7 @@ bytesPerSamp = 0;
 % DAQmx Configure Code
 [ status, ~, task ] = DAQmxCreateTask([]);
 DAQmxErr(status);
-DAQmxErr(DAQmxCreateDIChan(task,'Dev2/port0/line0:7','',DAQmx_Val_ChanForAllLines));
+DAQmxErr(DAQmxCreateDIChan(task,'Dev1/port0/line0:7','',DAQmx_Val_ChanForAllLines));
 % DAQmx Start Code
 DAQmxErr(DAQmxStartTask(task));
 % DAQmx Read Code
@@ -254,6 +254,7 @@ DAQmx_Val_Low=10214;
 DAQmxErr(status);
 status = DAQmxCreateCICountEdgesChan(task,PortMap('Ctr in'),'',...
     DAQmx_Val_Rising , 0, DAQmx_Val_CountUp);
+disp(PortMap('Ctr in'))
 DAQmxErr(status);
 status = calllib('mynidaqmx','DAQmxSetCICountEdgesTerm',...
     task, PortMap('Ctr in'), PortMap('Ctr src')); 
@@ -275,6 +276,7 @@ max_freq=1e7;
 
 status = DAQmxCfgSampClkTiming(task,PortMap('Ctr gate'),max_freq,...
     DAQmx_Val_Rising,DAQmx_Val_ContSamps ,N);
+disp(['N ', num2str(N)])
 DAQmxErr(status);
 
 

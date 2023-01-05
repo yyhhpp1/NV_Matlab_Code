@@ -657,10 +657,10 @@ gSG.Freq = Freq*1e9-str2double(get(handles.AWGFreq, 'String'))*1e9;
 %% Rabi Calibration
 gmSEQ.name= 'Rabi';
 
-% % For single cycle
-% gmSEQ.From= 0;
-% gmSEQ.To= 100;
-% gmSEQ.N= 21;
+% For single cycle
+gmSEQ.From= 0;
+gmSEQ.To= 100;
+gmSEQ.N= 21;
 
 % For multiple cycles
 % gmSEQ.From= 0;
@@ -670,7 +670,7 @@ gmSEQ.name= 'Rabi';
 gmSEQ.pi= str2double(get(handles.pi, 'String'));
 
 if bButton
-    gSG.Pow = -20; %6.3;  
+    gSG.Pow = 6.3;  
 else
     gSG.Pow = Pow;
 end
@@ -826,10 +826,10 @@ end
 %% Rabi
 gmSEQ.name= 'Rabi';
 
-%For single cycle
-%gmSEQ.From= 10;
-%gmSEQ.To= 40;
-%gmSEQ.N= 21;
+% For single cycle
+% gmSEQ.From= 10;
+% gmSEQ.To= 40;
+% gmSEQ.N= 21;
 
 % For multiple cycles
 % gmSEQ.From= 0;
@@ -839,7 +839,7 @@ gmSEQ.name= 'Rabi';
 gmSEQ.bSweep1log = 0;
 gmSEQ.bSweep2=0;
 gmSEQ.bSweep3=0;
-%gmSEQ.readout= 10000;
+gmSEQ.readout= 10000;
 gmSEQ.bTrack = 0;
 gmSEQ.bCali = 0;
 gmSEQ.Average = 1;

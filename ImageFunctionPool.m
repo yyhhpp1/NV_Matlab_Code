@@ -713,7 +713,7 @@ InitEODrive();
 % obtain handle
 global eohandle;
 eohandle = calllib('EO0x2DDrive', 'EO_InitHandle');
-if eohandle==1
+if eohandle==0
     disp('Failed To Get EO Drive Handle');
 end
 
@@ -1903,11 +1903,11 @@ switch what
 %         EOShowErrorInfo(errorval);
 % 
 % 
-%         lastcommandpos = 0.0;
-%         [errorval, lastcommandpos] = calllib('EO0x2DDrive', 'EO_GetCommandPosition', eohandle, lastcommandpos);
-%         EOShowErrorInfo(errorval);
-%         disp('Last commanded position is ');
-%         disp(lastcommandpos);
+        lastcommandpos = 0.0;
+        [errorval, lastcommandpos] = calllib('EO0x2DDrive', 'EO_GetCommandPosition', eohandle, lastcommandpos);
+        EOShowErrorInfo(errorval);
+        disp('Last commanded position is ');
+        disp(lastcommandpos);
         
         return;
     otherwise
@@ -2639,9 +2639,10 @@ hCPS.hCounter = hCounter;
 hCPS.hPulse = hPulse;
 
 while bGo
-
-    status = DAQmxStartTask(hCounter);  DAQmxErr(status);
-    status = DAQmxStartTask(hPulse);    DAQmxErr(status);
+    status = DAQmxStartTask(hCounter);  
+    DAQmxErr(status);
+    status = DAQmxStartTask(hPulse);    
+    DAQmxErr(status);
 
     DAQmxWaitUntilTaskDone(hCounter,TimeOut);
 

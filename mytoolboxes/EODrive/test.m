@@ -2,8 +2,8 @@ loadlibrary('EO-Drive');
 % libfunctionsview('EO0x2DDrive');
 
 % obtain handle
-handle = calllib('EO0x2DDrive', 'EO_GetHandleBySerial', 1103);
-if handle==1
+handle = calllib('EO0x2DDrive', 'EO_InitHandle');
+if handle==0
     disp('Failed To Get Handle')
 else
     disp('Obtained Handle')

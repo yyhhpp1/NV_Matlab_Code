@@ -288,12 +288,12 @@ function Rabi
 global gmSEQ gSG
 gSG.bfixedPow = 1;
 gSG.bfixedFreq = 1;
-gSG.bMod = 'IQ'; 
-gSG.bModSrc = 'External';
-T_AfterLaser = 2000;
+gSG.bMod = '';%'IQ'; 
+gSG.bModSrc = '';%'External';
+T_AfterLaser = 5000; %2000; %ejd
 % T_AfterLaser = 0.1e6; FUCK Yuanqi
-T_AfterPulse = 1000; % FUCK Yuanqi
-MWBuffer = 20; 
+T_AfterPulse = 500; %1000; % FUCK Yuanqi
+MWBuffer = 10; 
 
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
 
@@ -304,20 +304,19 @@ end
 % Pulse Blaster
 gmSEQ.CHN(1).PBN = PBDictionary('ctr0');
 gmSEQ.CHN(1).NRise = 2;
-gmSEQ.CHN(1).T = [gmSEQ.readout - gmSEQ.CtrGateDur - 1000, ...
-    gmSEQ.readout + T_AfterLaser + gmSEQ.To + T_AfterPulse];
+gmSEQ.CHN(1).T = [gmSEQ.readout - gmSEQ.CtrGateDur - 8000, gmSEQ.readout + T_AfterLaser + gmSEQ.To + T_AfterPulse]; %ejd
 gmSEQ.CHN(1).DT = [gmSEQ.CtrGateDur, gmSEQ.CtrGateDur];
 
 gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('MWSwitch');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
 gmSEQ.CHN(numel(gmSEQ.CHN)).T = gmSEQ.readout + T_AfterLaser - MWBuffer;
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = gmSEQ.m + 2*MWBuffer;
+disp(gmSEQ.m)
 
 gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('AOM');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T = [0, ...
-    gmSEQ.readout + T_AfterLaser + gmSEQ.To + T_AfterPulse];
-gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.readout, 5000];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [0, gmSEQ.readout + T_AfterLaser + gmSEQ.To + T_AfterPulse];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.readout, 3000]; 
 
 gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('dummy1');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
@@ -325,39 +324,39 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).T = [0, ...
     gmSEQ.readout + T_AfterLaser + gmSEQ.To + T_AfterPulse];
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [1000, 1000];
 
-gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('AWGTrig');
-gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T = gmSEQ.readout + T_AfterLaser;
-gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 1000;
+% gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('AWGTrig');
+% gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
+% gmSEQ.CHN(numel(gmSEQ.CHN)).T = gmSEQ.readout + T_AfterLaser;
+% gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 1000;
 
 % AWG.
-chaseFunctionPool('stopChase', gmSEQ.P1AWG)
-chaseFunctionPool('stopChase', gmSEQ.MWAWG)
-if gSG.ACmodAWG % if we use AWG in AC modulation mode.
-    WaveForm_1 = [0, gmSEQ.m, gSG.AWGFreq, 0*pi+0, gSG.AWGAmp];
-    WaveForm_2 = [0, gmSEQ.m, gSG.AWGFreq, 0*pi-pi/2, gSG.AWGAmp];
-else
-    WaveForm_1 = [0, gmSEQ.m, gSG.AWGAmp];
-    WaveForm_2 = [0, gmSEQ.m, 0];
-end
-WaveForm_Length = ceil((gmSEQ.m + 1000) / (16/gSG.AWGClockRate)) * (16/gSG.AWGClockRate);
-WaveForm_PointNum = WaveForm_Length*gSG.AWGClockRate;
+% chaseFunctionPool('stopChase', gmSEQ.P1AWG)
+% chaseFunctionPool('stopChase', gmSEQ.MWAWG)
+% if gSG.ACmodAWG % if we use AWG in AC modulation mode.
+%     WaveForm_1 = [0, gmSEQ.m, gSG.AWGFreq, 0*pi+0, gSG.AWGAmp];
+%     WaveForm_2 = [0, gmSEQ.m, gSG.AWGFreq, 0*pi-pi/2, gSG.AWGAmp];
+% else
+%     WaveForm_1 = [0, gmSEQ.m, gSG.AWGAmp];
+%     WaveForm_2 = [0, gmSEQ.m, 0];
+% end
+% WaveForm_Length = ceil((gmSEQ.m + 1000) / (16/gSG.AWGClockRate)) * (16/gSG.AWGClockRate);
+% WaveForm_PointNum = WaveForm_Length*gSG.AWGClockRate;
+% 
+% % gSG.AWGClockRate = 2; % in GHz. Yuanqi
+% % chaseFunctionPool('setClkRate', gmSEQ.MWAWG, gSG.AWGClockRate*1e9)
+% % pause(0.5)
 
-% gSG.AWGClockRate = 2; % in GHz. Yuanqi
-% chaseFunctionPool('setClkRate', gmSEQ.MWAWG, gSG.AWGClockRate*1e9)
-% pause(0.5)
-
-chaseFunctionPool('createWaveform', WaveForm_1, ...
-    gSG.AWGClockRate, WaveForm_Length, 'Rabi_Ch1.txt')
-chaseFunctionPool('createWaveform', ...
-    WaveForm_2, gSG.AWGClockRate, WaveForm_Length, 'Rabi_Ch2.txt')
-chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 1, ...
-    WaveForm_PointNum, 1, 2047, 2047, 'Rabi_Ch1.txt', 1); 
-pause(1.0);
-chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 2, ...
-    WaveForm_PointNum, 1, 2047, 2047, 'Rabi_Ch2.txt', 1);
-pause(1.0);
-chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+% chaseFunctionPool('createWaveform', WaveForm_1, ...
+%     gSG.AWGClockRate, WaveForm_Length, 'Rabi_Ch1.txt')
+% chaseFunctionPool('createWaveform', ...
+%     WaveForm_2, gSG.AWGClockRate, WaveForm_Length, 'Rabi_Ch2.txt')
+% chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 1, ...
+%     WaveForm_PointNum, 1, 2047, 2047, 'Rabi_Ch1.txt', 1); 
+% pause(1.0);
+% chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 2, ...
+%     WaveForm_PointNum, 1, 2047, 2047, 'Rabi_Ch2.txt', 1);
+% pause(1.0);
+% chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
 ApplyDelays();
 
 function Rabi_Raman
@@ -7926,69 +7925,69 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[50 50];
 
 %% AWG
 % Initialization
-chaseFunctionPool('stopChase',  gmSEQ.MWAWG)
+% chaseFunctionPool('stopChase',  gmSEQ.MWAWG)
+% 
+% if gSG.ACmodAWG % in AC modulation mode
+%     WaveForm_1I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;...
+%         gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+%     WaveForm_1Q = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp;...
+%         gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq pi-pi/2 gSG.AWGAmp];
+% 
+%     WaveForm_1Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
+%         *(16 / gSG.AWGClockRate);
+%     WaveForm_1PointNum = WaveForm_1Length * gSG.AWGClockRate;
+% 
+%     WaveForm_2I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;...
+%         gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+%     WaveForm_2Q = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp;...
+%         gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+% 
+%     WaveForm_2Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
+%         *(16 / gSG.AWGClockRate);
+%     WaveForm_2PointNum = WaveForm_2Length * gSG.AWGClockRate;
+%             
+% else
+% 
+%     WaveForm_1I = [0 gmSEQ.halfpi 0 pi/2 gSG.AWGAmp;...
+%            gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi 0 3*pi/2 gSG.AWGAmp];
+%     WaveForm_1Q = [0 gmSEQ.halfpi 0 0 0;];
+%     
+%     WaveForm_1Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
+%         *(16 / gSG.AWGClockRate);
+%     WaveForm_1PointNum = WaveForm_1Length * gSG.AWGClockRate;
+%     
+%     % dark sequence
+%     WaveForm_2I = [0 gmSEQ.halfpi 0 pi/2 gSG.AWGAmp;...
+%            gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi 0 pi/2 gSG.AWGAmp];
+%     WaveForm_2Q = [0 gmSEQ.halfpi 0 0 0;];
+%     
+%     WaveForm_2Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+PulseGap+gmSEQ.pi+1000) / (16 / gSG.AWGClockRate)) ...
+%         *(16 / gSG.AWGClockRate);
+%     WaveForm_2PointNum = WaveForm_2Length * gSG.AWGClockRate;
+% 
+% end
+%     chaseFunctionPool('createWaveform', WaveForm_1I, gSG.AWGClockRate, WaveForm_1Length, 'Ramsey_I_seg1.txt'); pause(0.5);
+%     chaseFunctionPool('createWaveform', WaveForm_1Q, gSG.AWGClockRate, WaveForm_1Length, 'Ramsey_Q_seg1.txt'); pause(0.5);
+%     chaseFunctionPool('createWaveform', WaveForm_2I, gSG.AWGClockRate, WaveForm_2Length, 'Ramsey_I_seg2.txt'); pause(0.5);
+%     chaseFunctionPool('createWaveform', WaveForm_2Q, gSG.AWGClockRate, WaveForm_2Length, 'Ramsey_Q_seg2.txt'); pause(0.5);
 
-if gSG.ACmodAWG % in AC modulation mode
-    WaveForm_1I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;...
-        gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
-    WaveForm_1Q = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp;...
-        gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq pi-pi/2 gSG.AWGAmp];
-
-    WaveForm_1Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
-        *(16 / gSG.AWGClockRate);
-    WaveForm_1PointNum = WaveForm_1Length * gSG.AWGClockRate;
-
-    WaveForm_2I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;...
-        gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
-    WaveForm_2Q = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp;...
-        gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
-
-    WaveForm_2Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
-        *(16 / gSG.AWGClockRate);
-    WaveForm_2PointNum = WaveForm_2Length * gSG.AWGClockRate;
-            
-else
-
-    WaveForm_1I = [0 gmSEQ.halfpi 0 pi/2 gSG.AWGAmp;...
-           gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi 0 3*pi/2 gSG.AWGAmp];
-    WaveForm_1Q = [0 gmSEQ.halfpi 0 0 0;];
-    
-    WaveForm_1Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
-        *(16 / gSG.AWGClockRate);
-    WaveForm_1PointNum = WaveForm_1Length * gSG.AWGClockRate;
-    
-    % dark sequence
-    WaveForm_2I = [0 gmSEQ.halfpi 0 pi/2 gSG.AWGAmp;...
-           gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi 0 pi/2 gSG.AWGAmp];
-    WaveForm_2Q = [0 gmSEQ.halfpi 0 0 0;];
-    
-    WaveForm_2Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+PulseGap+gmSEQ.pi+1000) / (16 / gSG.AWGClockRate)) ...
-        *(16 / gSG.AWGClockRate);
-    WaveForm_2PointNum = WaveForm_2Length * gSG.AWGClockRate;
-
-end
-    chaseFunctionPool('createWaveform', WaveForm_1I, gSG.AWGClockRate, WaveForm_1Length, 'Ramsey_I_seg1.txt'); pause(0.5);
-    chaseFunctionPool('createWaveform', WaveForm_1Q, gSG.AWGClockRate, WaveForm_1Length, 'Ramsey_Q_seg1.txt'); pause(0.5);
-    chaseFunctionPool('createWaveform', WaveForm_2I, gSG.AWGClockRate, WaveForm_2Length, 'Ramsey_I_seg2.txt'); pause(0.5);
-    chaseFunctionPool('createWaveform', WaveForm_2Q, gSG.AWGClockRate, WaveForm_2Length, 'Ramsey_Q_seg2.txt'); pause(0.5);
-
-    chaseFunctionPool('createSegStruct', 'Ramsey_SegStruct_I.txt', ...
-        'Ramsey_I_seg1.txt', WaveForm_1PointNum, 1, 1, ...
-        'Ramsey_I_seg2.txt', WaveForm_2PointNum, 1, 1);
-    pause(0.5);
-    chaseFunctionPool('createSegStruct', 'Ramsey_SegStruct_Q.txt', ...
-        'Ramsey_Q_seg1.txt', WaveForm_1PointNum, 1, 1, ...
-        'Ramsey_Q_seg2.txt', WaveForm_2PointNum, 1, 1);
-    pause(0.5);
-    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, ...
-        2, ...
-        2047, 2047, 'Ramsey_SegStruct_I.txt', 'false');
-    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
-    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, ...
-        2, ...
-        2047, 2047, 'Ramsey_SegStruct_Q.txt', 'false');
-    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
-    chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+%     chaseFunctionPool('createSegStruct', 'Ramsey_SegStruct_I.txt', ...
+%         'Ramsey_I_seg1.txt', WaveForm_1PointNum, 1, 1, ...
+%         'Ramsey_I_seg2.txt', WaveForm_2PointNum, 1, 1);
+%     pause(0.5);
+%     chaseFunctionPool('createSegStruct', 'Ramsey_SegStruct_Q.txt', ...
+%         'Ramsey_Q_seg1.txt', WaveForm_1PointNum, 1, 1, ...
+%         'Ramsey_Q_seg2.txt', WaveForm_2PointNum, 1, 1);
+%     pause(0.5);
+%     chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, ...
+%         2, ...
+%         2047, 2047, 'Ramsey_SegStruct_I.txt', 'false');
+%     pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+%     chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, ...
+%         2, ...
+%         2047, 2047, 'Ramsey_SegStruct_Q.txt', 'false');
+%     pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+%     chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
 
 ApplyDelays();
 
@@ -11876,6 +11875,8 @@ gSG.bModSrc='External';
 gSG.sweepRate=4;
 gmSEQ.bLiO=1;
 gmSEQ.ctrN=1;
+gmSEQ.ScaleT = 1;
+gmSEQ.ScaleStr = 'GHz';
 % dummy sequence for DrawSequence
 gmSEQ.CHN(1).PBN=PBDictionary('AOM');
 gmSEQ.CHN(1).NRise=1;
@@ -11890,15 +11891,15 @@ gmSEQ.CHN(2).DT=1;
 function pbn = PBDictionary(type)
 switch type
     case 'ctr0'
-        pbn=6;
-    case 'AWGTrig2'
-        pbn=1;
-    case 'AWGTrig' 
         pbn=0;
+    case 'AWGTrig2'
+        pbn=5;
+    case 'AWGTrig' 
+        pbn=6;
     case 'dummy1'
         pbn=8;
     case 'AOM'
-        pbn=5;
+        pbn=1;
     case 'AWGTrig3' 
         pbn=4;
     case 'MWSwitch'
@@ -11908,6 +11909,29 @@ switch type
     case 'MWSwitch3'
         pbn=7;
 end
+
+% Original config of PB channels 
+% function pbn = PBDictionary(type)
+% switch type
+%     case 'ctr0'
+%         pbn=6;
+%     case 'AWGTrig2'
+%         pbn=1;
+%     case 'AWGTrig' 
+%         pbn=0;
+%     case 'dummy1'
+%         pbn=8;
+%     case 'AOM'
+%         pbn=5;
+%     case 'AWGTrig3' 
+%         pbn=4;
+%     case 'MWSwitch'
+%         pbn=2;
+%     case 'MWSwitch2'
+%         pbn=3;
+%     case 'MWSwitch3'
+%         pbn=7;
+% end
 
 function T1
 global gmSEQ gSG
@@ -12019,30 +12043,30 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).T = gmSEQ.readout + delay;
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 200;
 
 % AWG.
-% WaveForm_Length = ceil((gmSEQ.m + 1000) * gSG.AWGClockRate / 16) * 16;
-WaveForm_Length = ceil((gmSEQ.pi + 1000) / (16/gSG.AWGClockRate)) * (16/gSG.AWGClockRate);
-WaveForm_PointNum = WaveForm_Length*gSG.AWGClockRate;
+% % WaveForm_Length = ceil((gmSEQ.m + 1000) * gSG.AWGClockRate / 16) * 16;
+% WaveForm_Length = ceil((gmSEQ.pi + 1000) / (16/gSG.AWGClockRate)) * (16/gSG.AWGClockRate);
+% WaveForm_PointNum = WaveForm_Length*gSG.AWGClockRate;
+% 
+% chaseFunctionPool('stopChase', gmSEQ.MWAWG)
+% if gSG.ACmodAWG % if we use AWG in AC modulation mode.
+%     WaveForm_1 = [0, gmSEQ.pi, gSG.AWGFreq, 0, gSG.AWGAmp];
+%     WaveForm_2 = [0, gmSEQ.pi, gSG.AWGFreq, -pi/2, gSG.AWGAmp];
+% else
+%     WaveForm_1 = [0, gmSEQ.pi, gSG.AWGAmp];
+%     WaveForm_2 = [0, gmSEQ.pi, 0];
+% end
 
-chaseFunctionPool('stopChase', gmSEQ.MWAWG)
-if gSG.ACmodAWG % if we use AWG in AC modulation mode.
-    WaveForm_1 = [0, gmSEQ.pi, gSG.AWGFreq, 0, gSG.AWGAmp];
-    WaveForm_2 = [0, gmSEQ.pi, gSG.AWGFreq, -pi/2, gSG.AWGAmp];
-else
-    WaveForm_1 = [0, gmSEQ.pi, gSG.AWGAmp];
-    WaveForm_2 = [0, gmSEQ.pi, 0];
-end
-
-chaseFunctionPool('createWaveform', WaveForm_1, ...
-    gSG.AWGClockRate, WaveForm_Length, 'ODMR_Ch1.txt')
-chaseFunctionPool('createWaveform', ...
-    WaveForm_2, gSG.AWGClockRate, WaveForm_Length, 'ODMR_Ch2.txt')
-chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 1, ...
-    WaveForm_PointNum, 1, 2047, 2047, 'ODMR_Ch1.txt', 1); 
-pause(1.0);
-chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 2, ...
-    WaveForm_PointNum, 1, 2047, 2047, 'ODMR_Ch2.txt', 1);
-pause(1.0);
-chaseFunctionPool('runChase',  gmSEQ.MWAWG, 'false');
+% chaseFunctionPool('createWaveform', WaveForm_1, ...
+%     gSG.AWGClockRate, WaveForm_Length, 'ODMR_Ch1.txt')
+% chaseFunctionPool('createWaveform', ...
+%     WaveForm_2, gSG.AWGClockRate, WaveForm_Length, 'ODMR_Ch2.txt')
+% chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 1, ...
+%     WaveForm_PointNum, 1, 2047, 2047, 'ODMR_Ch1.txt', 1); 
+% pause(1.0);
+% chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 2, ...
+%     WaveForm_PointNum, 1, 2047, 2047, 'ODMR_Ch2.txt', 1);
+% pause(1.0);
+% chaseFunctionPool('runChase',  gmSEQ.MWAWG, 'false');
 
 ApplyDelays();
 
@@ -14000,7 +14024,7 @@ ApplyDelays();
 function ApplyDelays
 global gmSEQ gSG gSG2
 % aom_delay = 610; % changed to 610 03/24/2022 RT4 Weijie.
-aom_delay = 900; % changed to 820 10/19/2022 RT4 Weijie.
+aom_delay = 500; %ejd 1/4/22 changed from 900 to 500 % changed to 820 10/19/2022 RT4 Weijie.
 
 if strcmp(gmSEQ.meas,'APD')
     detector_delay=-1100+610;

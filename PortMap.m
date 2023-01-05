@@ -12,7 +12,7 @@ switch what
     case 'Ctr Trig'
         path='/Dev1/PFI13';
     case 'SG com'
-        path='com5';
+        path='com3';
     case 'SG com 2'
         path='com8';
     case 'SG com 3'
@@ -26,9 +26,9 @@ switch what
     case 'APD in'
         path='Dev1/ai0';
     case 'Ctr in'
-        path='Dev1/ctr3';
+        path='Dev1/ctr3'; %ejd 1/4/2022 crt3 --> ctr2
     case 'Ctr out'
-        path='Dev1/ctr1';
+        path='Dev1/ctr1'; %ejd 1/4/2022 crt1 --> ctr2
     case 'Galvo x'
         path='Dev1/ao0';
     case 'Galvo y'
