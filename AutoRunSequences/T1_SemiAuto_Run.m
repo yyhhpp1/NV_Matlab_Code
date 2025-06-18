@@ -1,4 +1,4 @@
-function T1_SemiAuto_Run(hObject, eventdata, handles)
+function T1_SemiAuto_Run(hObject, eventdata, handles, handles2)
 [y,Fs] = audioread('ExptCompleted.mp3');
 BackupFile = 'C:\MATLAB_Code\Data\TempDataBackup\Temp.mat';
 global gmSEQ gSG tmax hCPS
@@ -131,7 +131,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                 
                     if strcmp(gmSEQ.name,'Rabi')
                         PlotRabiData(handles,raw_j);
-                        FitRabi(handles);
+                        FitRabi(handles, handles2);
                     elseif strcmp(gmSEQ.name,'T1_S00_S01_S10_S11_darkRef')
                         PlotT1Data(handles,raw_j)
                     end
@@ -228,7 +228,7 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
             
             TemporarySave(BackupFile);
             PlotESRData(handles);
-            FitESR(handles);
+            FitESR(handles, handles2);
             drawnow;
             DAQmxClearTask(hCounter);
             DAQmxClearTask(hPulse);
@@ -494,7 +494,7 @@ for i = 1:gmSEQ.dataN
         hold(handles.axes2, 'on')
     end
 end
-grid on;
+grid(handles.axes2, 'on');
 set(handles.axes2,'FontSize',8);
 ylabel(handles.axes2, 'Fluorescence counts');
 xlabel(handles.axes2, gmSEQ.ScaleStr);
@@ -547,7 +547,7 @@ if ~isfield(gmSEQ,'bLiO')&&gmSEQ.ctrN~=1 % Do not plot ESR
     
     errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT, data, data_err,'-g')
     
-    grid on;
+    grid(handles.axes3, 'on');
     set(handles.axes3,'FontSize',8);
     ylabel(handles.axes3, 'Fluorescence contrast');
     xlabel(handles.axes3, gmSEQ.ScaleStr);
@@ -584,7 +584,7 @@ if get(handles.bShowLegend,'Value')
 end
 hold(handles.axes2, 'off')
 
-function FitESR(handles)
+function FitESR(handles, handles2)
 global gmSEQ
 x = double(gmSEQ.SweepParam)*gmSEQ.ScaleT;
 y = double(gmSEQ.signal(1, :));
@@ -600,7 +600,8 @@ p0 = [amp0, width0, loc0, bg0];
 lb = [0, 0, min(x), min(y)];
 ub = [max(y), 1e-2, max(x), max(y)*2];
 
-[popt, ~, ~, ~, ~, ~, jacob] = lsqcurvefit(lorentz, p0, x, y, lb, ub);
+opts = optimoptions('lsqcurvefit', 'Display', 'off');
+[popt, ~, ~, ~, ~, ~, jacob] = lsqcurvefit(lorentz, p0, x, y, lb, ub, opts);
 res = y - lorentz(popt, x);
 dof = length(y) - length(popt);
 mse = sum(res.^2) / dof;
@@ -624,7 +625,14 @@ plot(handles.axes2, x_plot, y_plot, 'DisplayName', fit_text)
 if get(handles.bShowLegend,'Value')
     legend(handles.axes2, 'Location', 'best')
 end
-hold(handles.axes2, 'off');   
+
+hold(handles.axes2, 'off'); 
+
+if loc_err <= str2double(handles2.thrsESR.String)
+   gmSEQ.ESRFitFreq =  loc; %in MHz
+   gmSEQ.bGoAfterAvg = 0;
+end
+  
 
 function PlotRabiData(handles,raw_j)
 global gmSEQ
@@ -645,7 +653,7 @@ for i = 1:gmSEQ.ctrN
     end
 end
 
-grid on;
+grid(handles.axes2, 'on');
 set(handles.axes2,'FontSize',8);
 ylabel(handles.axes2, 'Fluorescence counts');
 xlabel(handles.axes2, gmSEQ.ScaleStr);
@@ -681,7 +689,8 @@ xlim(handles.axes3, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSw
 xline(handles.axes3, single(gmSEQ.SweepParam(raw_j))*gmSEQ.ScaleT,'--', 'color','r','HandleVisibility','off')
 hold(handles.axes3, "off")
 
-function FitRabi(handles)
+
+function FitRabi(handles, handles2)
 global gmSEQ
 cmp = tab10(20);
 
@@ -747,6 +756,11 @@ if get(handles.bShowLegend,'Value')
 end
 hold(handles.axes3, 'off');
 
+if piTime_err <= str2double(handles2.thrsRabi.String)
+   gmSEQ.RabiFitPi = piTime; 
+   gmSEQ.bGoAfterAvg = 0;
+end
+
 end
 
 function PlotT1Data(handles,raw_j)
@@ -787,7 +801,7 @@ plot(handles.axes2,...
 
 
 
-grid on;
+grid(handles.axes2, 'on');
 set(handles.axes2,'FontSize',8);
 ylabel(handles.axes2, 'Fluorescence counts');
 xlabel(handles.axes2, gmSEQ.ScaleStr);
@@ -818,8 +832,8 @@ refD11 = signal(12,:);
 sig = sig00 - sig01;
 ref = (refB00+refB01)/2 - (refD00+refD01)/2;
 data1 = sig./ref;
-ref_err = 1./sqrt(gmSEQ.iAverage * ref);
-sig_err = 1./sqrt(gmSEQ.iAverage * sig);
+ref_err = 1./sqrt(gmSEQ.iAverage * abs(ref));
+sig_err = 1./sqrt(gmSEQ.iAverage * abs(sig));
 rel_err = sqrt(ref_err.^2 + sig_err.^2);
 data1_err = rel_err .* data1;
 
@@ -828,8 +842,8 @@ data1_err = rel_err .* data1;
 sig = sig11 - sig10;
 ref = (refB10+refB11)/2 - (refD10+refD11)/2;
 data2 = sig./ref;
-ref_err = 1./sqrt(gmSEQ.iAverage * ref); % Relative error of reference
-sig_err = 1./sqrt(gmSEQ.iAverage * sig); % Relative error of signal
+ref_err = 1./sqrt(gmSEQ.iAverage * abs(ref)); % Relative error of reference
+sig_err = 1./sqrt(gmSEQ.iAverage * abs(sig)); % Relative error of signal
 rel_err = sqrt(ref_err.^2 + sig_err.^2);
 data2_err = rel_err .* data2;
 
@@ -859,7 +873,6 @@ if get(handles.bShowLegend,'Value')
     legend(handles.axes2, 'Location', 'best')
     legend(handles.axes3, 'Location', 'best')
 end
-
 
 function StartCounters(task)
 DAQmxStartTask(task);

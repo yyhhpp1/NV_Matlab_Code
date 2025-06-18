@@ -2698,7 +2698,4 @@ function button_T1_Semi_Auto_Callback(hObject, eventdata, handles)
 % hObject    handle to button_T1_Semi_Auto (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-hFigExp = gcf; 
-T1_SemiAuto_ParamInput(hFigExp, hObject, eventdata);
-
+handles

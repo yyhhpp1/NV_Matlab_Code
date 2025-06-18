@@ -16,8 +16,7 @@ switch what
         LoadSEQ(hObject, eventdata, handles, varargin{1});
     case 'Run'
         LoadUserInputs(hObject,eventdata,handles);
-        %RunSequence(hObject, eventdata, handles);
-        T1_SemiAuto_Run(hObject, eventdata, handles);
+        RunSequence(hObject, eventdata, handles);
         %RunSequenceTimeTagger(hObject, eventdata, handles);
         % SaveIgorText(handles); % move to RunSequence
     case 'PlotExtRaw'
@@ -35,6 +34,11 @@ switch what
     case 'RabiTrack'
         RabiTrack(hObject, eventdata, handles);
     case 'T1_Semi_Auto'
+        % read seqeuence param
+        
+        % run esr 
+        
+        %
         
     case 'AutoRun'
         gmSEQ.bAutoRun = 1;

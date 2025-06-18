@@ -22,7 +22,7 @@ function varargout = T1_SemiAuto_ParamInput(varargin)
 
 % Edit the above text to modify the response to help T1_SemiAuto_ParamInput
 
-% Last Modified by GUIDE v2.5 17-Jun-2025 14:37:25
+% Last Modified by GUIDE v2.5 18-Jun-2025 14:22:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -54,6 +54,21 @@ function T1_SemiAuto_ParamInput_OpeningFcn(hObject, eventdata, handles, varargin
 
 % Choose default command line output for T1_SemiAuto_ParamInput
 handles.output = hObject;
+
+% Check if we received the parent GUI Experimental_PB_DAQ handle
+% (GUI A is the parant GUI Experimentak_PB_DAQ)
+% Unpack inputs if present
+if length(varargin) >= 1
+    handles.hFigA = varargin{1};  % GUI A figure handle
+end
+
+if length(varargin) >= 2
+    handles.hObjectA = varargin{2};  % hObject from GUI A
+end
+
+if length(varargin) >= 3
+    handles.eventdataA = varargin{3};  % eventdata from GUI A
+end
 
 % Update handles structure
 guidata(hObject, handles);
@@ -454,6 +469,107 @@ function thrsRabi_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function thrsRabi_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to thrsRabi (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton_startProg.
+function pushbutton_startProg_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_startProg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% rest the stop flag
+handles.pushbutton_stopProg.UserData = 0;
+
+% Retrieve GUI Exp_PB_DAQ handles (labeled as A)
+
+hFigA = handles.hFigA;
+handlesA = guidata(hFigA);
+hObjectA = handles.hObjectA;
+eventdataA = handles.eventdataA;
+
+% Retrieve GUI T1_SemiAuto (current) handles
+handlesB = handles;
+
+% Call T1_SemiAuto_Program
+T1_SemiAuto_Program(hObjectA, eventdataA, handlesA, handlesB);
+
+
+
+% --- Executes on button press in pushbutton_stopProg.
+function pushbutton_stopProg_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_stopProg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.pushbutton_stopProg.UserData = 1;
+
+
+
+function RepeatT1_Callback(hObject, eventdata, handles)
+% hObject    handle to RepeatT1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of RepeatT1 as text
+%        str2double(get(hObject,'String')) returns contents of RepeatT1 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function RepeatT1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to RepeatT1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function RepeatRabi_Callback(hObject, eventdata, handles)
+% hObject    handle to RepeatRabi (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of RepeatRabi as text
+%        str2double(get(hObject,'String')) returns contents of RepeatRabi as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function RepeatRabi_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to RepeatRabi (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function RepeatESR_Callback(hObject, eventdata, handles)
+% hObject    handle to RepeatESR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of RepeatESR as text
+%        str2double(get(hObject,'String')) returns contents of RepeatESR as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function RepeatESR_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to RepeatESR (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

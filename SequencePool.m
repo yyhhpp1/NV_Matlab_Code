@@ -1190,7 +1190,7 @@ ConstructSeq(T,DT)
 
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
-T=[0 (d+p+u)*4+i*8+d*4+(m+m)*2-r];
+T=[0, d+d+2*p+u+m+d+p+u+d+d+2*p+u+m+d+p+u+d+d+2*p+u+m+d+p+u+d+d+2*p+u+m+d+p+u+i*11-20];
 DT=[20 20];
 ConstructSeq(T,DT)
 
