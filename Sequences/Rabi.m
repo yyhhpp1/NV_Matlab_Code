@@ -7,8 +7,8 @@ gSG.bModSrc = 'External';
 
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
 
-T_AfterLaser = 10000;
-T_AfterPulse = 10000;
+T_AfterLaser = gmSEQ.post_init_wait;
+T_AfterPulse = gmSEQ.post_MW_wait;
 T_initial_wait = T_AfterLaser + gmSEQ.To + T_AfterPulse;
 
 

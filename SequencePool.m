@@ -99,10 +99,18 @@ switch varargin{1}
         T1();
     case 'T1_S00_S01'
         T1_S00_S01();
-    case 'T1_Rb_S00_S01_Rd_newRef'
-        T1_Rb_S00_S01_Rd_newRef();
+    case 'T1_S00_S01_fdc'
+        T1_S00_S01_fdc();
     case 'T1_S00_S01_S10_S11'
         T1_S00_S01_S10_S11();
+    case 'T1_S00_S01_S10_S11_darkRef'
+        T1_S00_S01_S10_S11_darkRef();
+    case 'T1_S00_S01_S10_S11_fdc'
+        T1_S00_S01_S10_S11_fdc();
+    case 'T1_Test_Charge'
+        T1_Test_Charge();        
+    case 'T1_Rb_S00_S01_Rd_newRef'
+        T1_Rb_S00_S01_Rd_newRef();
     case 'T1_S00_R0_S01_R1_fixDutyCycle'
         T1_S00_R0_S01_R1_fixDutyCycle();
     case 'ODMR'
@@ -184,11 +192,15 @@ StrL{numel(StrL)+1}='XY8_N_wDarkRef';
 StrL{numel(StrL)+1}='XY8_N_tomo1';
 
 StrL{numel(StrL)+1}='--------------------T1--------------------';
-StrL{numel(StrL)+1}='T1';
 StrL{numel(StrL)+1}='T1_S00_S01';
+StrL{numel(StrL)+1}='T1_S00_S01_fdc';
+StrL{numel(StrL)+1}='T1_Test_Charge';
 StrL{numel(StrL)+1}='T1_Rb_S00_S01_Rd_newRef';
 StrL{numel(StrL)+1}='T1_S00_R0_S01_R1_fixDutyCycle';
 StrL{numel(StrL)+1}='T1_S00_S01_S10_S11';
+StrL{numel(StrL)+1}='T1_S00_S01_S10_S11_darkRef';
+StrL{numel(StrL)+1}='T1_S00_S01_S10_S11_fdc';
+
 
 StrL{numel(StrL)+1}='--------------------SCC--------------------';
 StrL{numel(StrL)+1}='SCC_scan_orange';
@@ -965,7 +977,7 @@ gmSEQ.CHN(5).DT=[60,60];
 
 ApplyDelays();
 
-function T1_S00_S01
+function T1_S00_S01_fdc
 %fdc stands for fixed duty cycle
 global gmSEQ gSG
 gSG.bfixedPow=1;
@@ -1019,7 +1031,7 @@ ConstructSeq(T,DT)
 
 ApplyDelays();
 
-function T1_S00_S01_S10_S11
+function T1_S00_S01_S10_S11_fdc
 global gmSEQ gSG
 gSG.bfixedPow=1;
 gSG.bfixedFreq=1;
@@ -1039,8 +1051,8 @@ index_m = find(arr ==m); %find the index of the current t
 index_n = 1 + max_index - index_m; %find the index of the differential t
 n = arr(index_n); %find the differential t
 
-d = 1e7; %AfterLaser
-u = 10000; %AfterPulse
+d = gmSEQ.post_init_wait; %AfterLaser
+u = gmSEQ.post_MW_wait; %AfterPulse
 w = 1e6; %initial wait
 i = gmSEQ.readout; 
 r = gmSEQ.CtrGateDur;
@@ -1079,40 +1091,163 @@ ConstructSeq(T,DT)
 
 ApplyDelays();
 
-function T1
+
+
+function T1_S00_S01_S10_S11
 global gmSEQ gSG
 gSG.bfixedPow=1;
 gSG.bfixedFreq=1;
-gSG.bMod='IQ';
+gSG.bMod='LOL';
+gSG.bModSrc='External';
+
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
+
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 4000;
+end
+
+m = gmSEQ.m;
+d = gmSEQ.post_init_wait; %AfterLaser
+u = gmSEQ.post_MW_wait; %AfterPulse
+% w = 1e6; %initial wait
+i = gmSEQ.readout; 
+r = gmSEQ.CtrGateDur;
+p = gmSEQ.pi;
+
+%%%%% Variable sequence length%%%%%%
+
+gmSEQ.CHN(1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(1).NRise=16;
+T=[d,i-2*r,d+p+u+m,i-2*r,d,i-2*r,d+p+u+m,i-2*r,d,i-2*r,d+p+u+m,i-2*r,d,i-2*r,d+p+u+m,i-2*r];
+DT=[r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r];
+ConstructSeq(T,DT)
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('GreenAOM');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=8;
+T=[d,d+p+u+m,d,d+p+u+m,d,d+p+u+m,d,d+p+u+m];
+DT=[i,i,i,i,i,i,i,i];
+ConstructSeq(T,DT)
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+T=[d+i+d+p+u+m+i+d+i+d+m,u+i+d+i+d,u+m+i+d+i+d,m-p];
+DT=[p,p,p,p];
+ConstructSeq(T,DT)
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+T=[0 (d+p+u)*4+i*8+d*4+(m+m)*2-r];
+DT=[20 20];
+ConstructSeq(T,DT)
+
+ApplyDelays();
+
+
+
+function T1_S00_S01_S10_S11_darkRef
+global gmSEQ gSG
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='LOL';
+gSG.bModSrc='External';
+
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
+
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 4000;
+end
+
+m = gmSEQ.m;
+d = gmSEQ.post_init_wait; %AfterLaser
+u = gmSEQ.post_MW_wait; %AfterPulse
+% w = 1e6; %initial wait
+i = gmSEQ.readout; 
+r = gmSEQ.CtrGateDur;
+p = gmSEQ.pi;
+
+%%%%% Variable sequence length%%%%%%
+
+gmSEQ.CHN(1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(1).NRise=12;
+T=[d,i-r+d+u+m+2*p,i-r+d+u+p,i-r+d,i-r+d+u+m+2*p,i-r+d+u+p,i-r+d,...
+    i-r+d+u+2*p+m,i-r+d+u+p,i-r+d,i-r+d+u+m+2*p,i-r+d+u+p];
+DT = [r];
+DT = repmat(DT, 1, 12);
+ConstructSeq(T,DT)
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('GreenAOM');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=12;
+T=[d,d+2*p+u+m,d+p+u,d,d+2*p+u+m,d+p+u,d,d+2*p+u+m,d+p+u,d,d+2*p+u+m,d+p+u];
+DT=[i,i,i,i,i,i,i,i,i,i,i,i];
+ConstructSeq(T,DT)
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=8;
+T=[d+i+d+u+2*p+m+i+d,u+i+d+i+d+m+p,u+i+d,u+i+d+i+d,u+m+i+d+p,u+i+d+i+d,m,u+i+d];
+DT=[p];
+DT = repmat(DT, 1, 8);
+ConstructSeq(T,DT)
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+T=[0 (d+p+u)*4+i*8+d*4+(m+m)*2-r];
+DT=[20 20];
+ConstructSeq(T,DT)
+
+ApplyDelays();
+
+
+
+function T1_S00_S01
+% unfixed duty cycle
+% measures S00 and S01 only 
+global gmSEQ gSG
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='LOL';
 gSG.bModSrc='External';
 
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.m);
 
 if strcmp(gmSEQ.meas,'APD')
-    gmSEQ.CtrGateDur = 1000;
+    gmSEQ.CtrGateDur = 4000;
 end
 
-WaitTime = 0.1e6; % charge equilibrium
-AfterPi = 2000;
 
-Total_Length = WaitTime+gmSEQ.readout+gmSEQ.m+gmSEQ.readout;
-%%%%% Variable sequence length%%%%%%
+
+% d = 1000;   % after laser
+% u = 1000;   % after pulse
+d = gmSEQ.post_init_wait;
+u = gmSEQ.post_MW_wait;
+i = gmSEQ.readout; 
+r = gmSEQ.CtrGateDur;
+p = gmSEQ.pi;
+m = gmSEQ.m;
 
 gmSEQ.CHN(1).PBN=PBDictionary('ctr0');
-gmSEQ.CHN(1).NRise=2;
-gmSEQ.CHN(1).T=[WaitTime WaitTime+gmSEQ.readout+gmSEQ.m];
-gmSEQ.CHN(1).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+gmSEQ.CHN(1).NRise=8;
+T=[d,i-2*r,d+p+u+m,i-2*r,d,i-2*r,d+p+u+m,i-2*r];
+DT=[r,r,r,r,r,r,r,r];
+ConstructSeq(T,DT)
 
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('GreenAOM');
-gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T=[WaitTime WaitTime+gmSEQ.readout+gmSEQ.m];
-gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.readout gmSEQ.readout];
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+T=[d, d+p+u+m, d,d+p+u+m];    % T records the off time excluding the very last off time
+DT=[i,i,i,i];
+ConstructSeq(T,DT)
 
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=1;
+T=[d+i+d+p+u+m+i+d+i+d+m];
+DT=[p];
+ConstructSeq(T,DT)
 
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 Total_Length-20];
-gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[20 20];
+T=[0 (d+p+u)*2+i*4+d*2+m+m-r];
+DT=[20 20];
+ConstructSeq(T,DT)
+
 
 ApplyDelays();
 

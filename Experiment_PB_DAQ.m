@@ -22,7 +22,7 @@ function varargout = Experiment_PB_DAQ(varargin)
 
 % Edit the above text to modify the response to help Experiment_PB_DAQ
 
-% Last Modified by GUIDE v2.5 04-Nov-2024 20:31:01
+% Last Modified by GUIDE v2.5 16-Apr-2025 11:57:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2325,7 +2325,7 @@ function fpga_connect_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global fpga
 if isempty(fpga.client_socket) || isempty(fpga)
-    fpga = FPGA_AWG_Client();
+    fpga = FPGA_AWG_Client(handles);
     msg = fpga.connect(PortMap('FPGA Host'),PortMap('FPGA Port'));
     handles.fpga_ack_str.String = msg;
 else
@@ -2674,3 +2674,20 @@ function StopAuto_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global gmSEQ
 gmSEQ.bAutoRun=0;
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over useCustPoints.
+function useCustPoints_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to useCustPoints (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in use_FPGA.
+function use_FPGA_Callback(hObject, eventdata, handles)
+% hObject    handle to use_FPGA (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of use_FPGA

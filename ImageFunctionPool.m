@@ -362,7 +362,8 @@ disp('Image correlation tracking starts!')
 % gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2022-2-22_Img011.txt'; % S011
 % gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2021-11-23_Img021.txt'; % Update for L026 11/23/2021
 % gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2021-8-10_Img004.txt';
-gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2024-10-1_Img029.txt';
+% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2024-10-1_Img029.txt';
+gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2025-6-11_Img006.txt';
 
 [IMG_ref, Info_ref]=ReadImageFile_ImgCorr(gImageCorr.RefIMG);
 gImageCorr.RefVx = IMG_ref.FixVx;
@@ -656,7 +657,7 @@ global gScan gConfocal gTracking;
 %added new functionality for Track Continuously checkbox
 TrackCenter(1);
 bTrackContinuously = get(handles.cbTrackCont,'Value');
-while bTrackContinuously,
+while bTrackContinuously
     pause(10);
     TrackCenter(1);
     bTrackContinuously = get(handles.cbTrackCont,'Value');
@@ -705,6 +706,12 @@ gConfocal.path = PortMap('gConfocal path');
 gConfocal.positionfile='CurrentNV_Position.txt';
 gConfocal.V_per_um='V_per_um.txt';
 ReadStartingFile(handles);
+
+
+%%% connect to attocube motor
+IP = PortMap('attocube_motor_host');
+gPiezo.amc = AMC_connect(IP);
+
 
 %%Load PI MATLAB Driver GCS2 (Piezo) added by Weijie 09/21/2021
 %piezoPFM450FunctionPool('connect');
@@ -907,10 +914,45 @@ end
 
 ImageFillUpForm('UpdateScan', hObject, eventdata, handles);
 
+
+%%%%% helper function for peak finding for attocube z motor
+function helper_scan_attocube(hObject, eventdata, handles, amc, axis, Nstep, thresh)
+    global gScan 
+    %%%%% determine uphill or downhill   
+    
+    ref_count = RunCPSOnce(gScan,hObject, eventdata, handles);
+    move_setNSteps(amc, axis, true, Nstep);    % move 1 step backward  
+%     pause(1)
+    bkw_count = RunCPSOnce(gScan,hObject, eventdata, handles);
+    percent_change = (bkw_count - ref_count) / ref_count;
+    go_bkw = percent_change > 0;    % if bkw_count is brighter, bkw is uphill.
+    
+    ref_count = bkw_count;
+    % coarse scan for hill climbing
+    while abs(percent_change) > thresh
+        move_setNSteps(amc, axis, go_bkw, Nstep);
+%         pause(1)
+        curr_count = RunCPSOnce(gScan,hObject, eventdata, handles);
+        percent_change = (curr_count - ref_count) / ref_count;
+        
+        if percent_change < 0
+           go_bkw = ~go_bkw;
+           move_setNSteps(amc, axis, go_bkw, Nstep);
+%            pause(1)
+           disp("change_dir");
+           break
+        end
+        
+        ref_count = curr_count; 
+    end
+
+
+
 function TrackZ(hObject, eventdata, handles)
 %%modified to be used with Thorlabs piezo PFM450 (CL - 9/24/24)
+%%% modified to be used with Attocube motors (Cl - 6/8/25)
 
-global gScan gbManChange gConfocal hCPS
+global gScan gbManChange gConfocal hCPS gPiezo
 minLz = eval(get(handles.minVz,'String'));
 maxLz = eval(get(handles.maxVz,'String'));
 NLz = eval(get(handles.NVz,'String'));
@@ -921,73 +963,104 @@ NN = length(zscan);
 WriteVoltage(PortMap('Galvo x'),gScan.FixVx + gConfocal.XOffSet);
 WriteVoltage(PortMap('Galvo y'),gScan.FixVy + gConfocal.YOffSet);
 
-%connect to attocube
-% IP = '192.168.0.110';
-% amc = tcpclient(IP, 9090);
-% axis = 2; 
-% control_setControlOutput(amc, axis, true); % Activate Axis Z
-% pause(1)
-% [~, z0] = move_getPosition(amc, axis);
 
-% returns position in um
-z0 = piezoPFM450FunctionPool('getposition');
-% TODO
-%fprintf('Current Z = %s\n', z0);
-%disp(['Current Z =' z0 'µm'])
-%get current z
-%z_current = 
-count =zeros(1,NN);
-scan = zscan;
-try
-    for j=1:NN
-        %Move to target z
-        %atto_MoveZ(amc,axis,zscan(j))       
-        piezoPFM450FunctionPool('setposition', zscan(j));
-        pause(0.5);
-        z_j = piezoPFM450FunctionPool('getposition');
+using_attocube = 1;
+if using_attocube
+    %%%%%assumes attocube is already connected
+    amc = gPiezo.amc;
+    axis = 2; %0,1,2; 2 is z axis
+    try
+        control_setControlOutput(amc, axis, true); % Activate Axis Z 
+        pause(1)   % wait
         
-        fprintf('Current Z = %s\n', z_j);
-        %%%%% measure count rate %%%%%%
-        count(j)=RunCPSOnce(gScan,hObject, eventdata, handles);
-        %[~, z_j] = move_getPosition(amc, axis);
-        scan(j) = z_j;
-        plot(handles.axes1, scan,count,'.-r');
+        coarse_amp = 60000;    % 60V
+        fine_amp = 40000;      % 40V
+        Nstep_coarse = 3; 
+        Nstep_fine = 1;
         
-        xlim('auto');
-        ylim('auto');
-        xlabel( 'z(um)');
-        ylabel('Counts ');
+        disp("start z scan");
+
+        % set to coarse mode
+        control_setControlAmplitude(amc, axis, coarse_amp); 
+
+        %%% coarse scan
+        coarse_thresh = 0.01; % stop scan if percentage change in photon count is 5%
+        helper_scan_attocube(hObject, eventdata, handles, amc, axis, Nstep_coarse, coarse_thresh);
+        disp("done coarse z scan")
         
-        if get(handles.StopTracking, 'Value')
-            pause(0.3);
-            break; 
-        end
+        % set to fine amplitude
+        control_setControlAmplitude(amc, axis, fine_amp); 
+
+        %%% fine scan
+        fine_thresh = 0.001; % fine scan thresh
+        helper_scan_attocube(hObject, eventdata, handles, amc, axis, Nstep_fine, fine_thresh);
+        disp("done fine z scan");
+        
+    catch ME
+        KillAllTasks;
+        rethrow(ME);
     end
-    
-    %go to old position 
-    %piezoPFM450FunctionPool('setposition', z0);
-    %go to new position 
-    [~, ind] = max(count);
-    new_z = scan(ind);
-    piezoPFM450FunctionPool('setposition', new_z);    
-    pause(1);
-    curr_z = piezoPFM450FunctionPool('getposition');
-    pause(0.5);
-    set(handles.FixVz,'String', num2str(new_z));
 
     
-    fprintf('Current Z = %s\n', curr_z);
-    %atto_MoveZ(amc,axis,z0);
-    %clear amc    
-catch ME
-    KillAllTasks;
-    %control_setControlOutput(amc, axis, false); %Deactivate axis
-    %clear amc
-    rethrow(ME);
+else    % else we are using the RT set up, use the following piezo
+    
+    % returns position in um
+    z0 = piezoPFM450FunctionPool('getposition');
+    % TODO
+    %fprintf('Current Z = %s\n', z0);
+    %disp(['Current Z =' z0 'µm'])
+    %get current z
+    %z_current =
+    count =zeros(1,NN);
+    scan = zscan;
+    try
+        for j=1:NN
+            %Move to target z
+            %atto_MoveZ(amc,axis,zscan(j))
+            piezoPFM450FunctionPool('setposition', zscan(j));
+            pause(0.5);
+            z_j = piezoPFM450FunctionPool('getposition');
+            
+            fprintf('Current Z = %s\n', z_j);
+            %%%%% measure count rate %%%%%%
+            count(j)=RunCPSOnce(gScan,hObject, eventdata, handles);
+            %[~, z_j] = move_getPosition(amc, axis);
+            scan(j) = z_j;
+            plot(handles.axes1, scan,count,'.-r');
+            
+            xlim('auto');
+            ylim('auto');
+            xlabel( 'z(um)');
+            ylabel('Counts ');
+            
+            if get(handles.StopTracking, 'Value')
+                pause(0.3);
+                break;
+            end
+        end
+        
+        %go to old position
+        %piezoPFM450FunctionPool('setposition', z0);
+        %go to new position
+        [~, ind] = max(count);
+        new_z = scan(ind);
+        piezoPFM450FunctionPool('setposition', new_z);
+        pause(1);
+        curr_z = piezoPFM450FunctionPool('getposition');
+        pause(0.5);
+        set(handles.FixVz,'String', num2str(new_z));
+        
+        
+        fprintf('Current Z = %s\n', curr_z);
+
+    catch ME
+        KillAllTasks;
+        rethrow(ME);
+    end
 end
 
 function atto_MoveZ(amc,axis,target)
-
+target = target*1e3;%in um
 [errNo, sensor_status] = status_getOlStatus(amc, axis);
 if sensor_status == 1
     control_setControlOutput(amc, axis, false); %Deactivate axis
@@ -1293,7 +1366,7 @@ planScan = PlanScan(Scan,hObject, eventdata, handles);
 %Turn On Laser : JM 2008-07-27
 % PBFunctionPool('PBON',0);
 
-I = zeros(planScan.SizeImg);
+I = nan(planScan.SizeImg);
 
 itl = 0;
 
@@ -2609,7 +2682,7 @@ try
     
     if handles.checkbox_cps_show_trace.Value
     figure();%
-    h = animatedline;%
+    h = animatedline('Color','k','LineWidth',3);%
     numpoints = 10000;%
     x = linspace(1,10000,numpoints)*DT*NRead;%
     k=1;

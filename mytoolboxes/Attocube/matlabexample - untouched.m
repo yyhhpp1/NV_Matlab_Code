@@ -8,10 +8,10 @@ amc = connect(IP);
 % Activate axis 1
 % Internally, axes are numbered 0 to 2
 axis = 0; % Axis 1
-control_setControlOutput(amc, axis, true);
+control_setControlOutput(amc, axis, true);    % enables an axis 
 
 [errNo, sensor_status] = status_getOlStatus(amc, axis);
-if sensor_status == 1
+if sensor_status == 1    % 1 means the positioner is connected and openloop
     % Continuous open loop drive forward
     % Start
     move_setControlContinuousFwd(amc, axis, true);
@@ -26,10 +26,11 @@ if sensor_status == 1
     move_setNSteps(amc, axis, backwards, nSteps);
 else
     % Closed loop drive 10000nm in forward direction
-    [errNo, position] = move_getPosition(amc, axis);
-    move_setControlTargetPosition(amc, axis, position + 10000);
-    control_setControlMove(amc, axis, true);
+    [errNo, position] = move_getPosition(amc, axis);    % get the position
+    move_setControlTargetPosition(amc, axis, position + 10000);  % set abs position
+    control_setControlMove(amc, axis, true);    % start going to target
 
+    % print current position until in range
     [errNo, inTargetRange] = status_getStatusTargetRange(amc, axis);
     while ~status_getStatusTargetRange(amc, axis)
         % Read out position in nm

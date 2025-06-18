@@ -22,7 +22,7 @@ function varargout = ImageNVC(varargin)
 
 % Edit the above text to modify the response to help ImageNVC
 
-% Last Modified by GUIDE v2.5 24-Sep-2024 16:04:53
+% Last Modified by GUIDE v2.5 06-Jun-2025 17:20:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2861,6 +2861,10 @@ function ImageNVCGUI_DeleteFcn(hObject, eventdata, handles)
 global gPiezo
 disp("Disconnecting the piezo controller.")
 piezoPFM450FunctionPool('disconnect');
+
+disp("Disconnecting Attocube motors");
+AMC_disconnect(gPiezo.amc);
+
 pause(5);
 % gPiezo.Controller.Destroy;
 % clear gPiezo.Controller;
@@ -2931,3 +2935,12 @@ function TrackZ_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to TrackZ (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in user_attocube.
+function user_attocube_Callback(hObject, eventdata, handles)
+% hObject    handle to user_attocube (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of user_attocube

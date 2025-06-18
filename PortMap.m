@@ -83,5 +83,19 @@ switch what
     case 'FPGA Host'
         path = '192.168.0.234';
     case 'FPGA Port'
-        path = 8080;
+        path = 2345;
+    case 'attocube_motor_host'      % attocube motor controller
+        path = '192.168.0.200';
+    case 'magnet_611_x'             % dilfridge superconducting magnet
+        path = '192.168.0.103';
+    case 'magnet_611_y'
+        path = '192.168.0.102';
+    case 'magnet_611_z'
+        path = '192.168.0.101';
+    case 'magnet_611_port'
+        path = 7185;
+    case 'bluefors_temp_controller'
+        path = '192.168.0.145';
+    case 'bluefors_temp_controller_port'
+        path = 5001;
 end
