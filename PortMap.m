@@ -15,6 +15,8 @@ switch what
         path='/Dev1/PFI13';
     case 'SG ip'
         path = '169.254.215.80';
+    case 'SG2 ip'
+        path = '192.168.0.170';
     case 'SG com'
         path='com7';
     case 'SG com 2'

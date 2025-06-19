@@ -73,12 +73,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
     SignalGeneratorFunctionPool('WriteFreq');
     gSG.bOn=1;  SignalGeneratorFunctionPool('RFOnOff');
     
-    if 1
-        SignalGeneratorFunctionPool2('SetMod');
-        SignalGeneratorFunctionPool2('WritePow');
-        SignalGeneratorFunctionPool2('WriteFreq');
-        gSG2.bOn=1;  SignalGeneratorFunctionPool2('RFOnOff');
-    end
+    
     
     CreateCaliLog(hObject, eventdata, handles);
     
@@ -268,7 +263,6 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
         KillAllTasks; %kill all niDAQ tasks
         set(handles.runningText,'string','Error!')
         gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
-        if 1; gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff'); end
         fpga.stop_program();
         Set_FPGA_GUI_buttons(handles, 'on')
         %turn on laser
@@ -482,7 +476,7 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
 end
 
 gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
-if 1; gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff'); end
+% gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff');
 % gSG3.bOn=0; SignalGeneratorFunctionPool3('RFOnOff');
 
 % The following stop is just for test, added by Weijie 07/30/2022

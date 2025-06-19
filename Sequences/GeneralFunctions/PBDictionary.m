@@ -24,7 +24,7 @@ switch type
         pbn=15;
     case 'PD'
         pbn=14;
-    case 'OrangeAOM'
+    case 'MWSwitch2' %changed from OrangeAOM on 6/19/2025 Haopu
         pbn=3;
     case 'TimeTaggerTrig'
         pbn=9;        

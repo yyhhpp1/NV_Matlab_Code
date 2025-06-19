@@ -156,9 +156,10 @@ SignalGeneratorFunctionPool('SetMod');
 
 fpga = FPGA_AWG_Client(handles);
 
-% gSG2.bMod='IQ';
-% gSG2.bModSrc='External';
-% SignalGeneratorFunctionPool2('SetMod');
+SignalGeneratorFunctionPool2('Init',PortMap('SG2 ip'));
+gSG2.bMod='none';
+gSG2.bModSrc='External';
+SignalGeneratorFunctionPool2('SetMod');
 % 
 % gSG3.bMod='IQ';
 % gSG3.bModSrc='External';
@@ -270,6 +271,8 @@ gmSEQ.post_MW_wait = str2double(get(handles.post_MW_wait,'String'));
 
 gSG.Pow = str2double(get(handles.fixPow, 'String'));
 gSG.Freq = str2double(get(handles.fixFreq, 'String'))*1e9;
+gSG2.Pow = str2double(get(handles.fixPow2, 'String'));
+gSG2.Freq = str2double(get(handles.fixFreq2, 'String'))*1e9;
 gSG.ACmodAWG = get(handles.ACmodAWG,'Value'); % AC modulation of two SG is controlled by a single button
 gSG2.ACmodAWG = get(handles.ACmodAWG,'Value');
 gSG3.ACmodAWG = get(handles.ACmodAWG,'Value');
