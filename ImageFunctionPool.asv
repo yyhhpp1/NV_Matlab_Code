@@ -353,7 +353,7 @@ global gScan gbManChange gConfocal gImageCorr gSaveImg
 disp('Image correlation tracking starts!')
 % Get the information from reference figure
 
-gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2025-6-25_Img006.txt';
+gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2025-6-11_Img006.txt';
 
 [IMG_ref, Info_ref]=ReadImageFile_ImgCorr(gImageCorr.RefIMG);
 gImageCorr.RefVx = IMG_ref.FixVx;
@@ -364,14 +364,26 @@ gImageCorr.RefNVx = IMG_ref.NVx; gImageCorr.RefNVy = IMG_ref.NVy;
 gImageCorr.RefPixx = round((gImageCorr.RefVx-gImageCorr.RefRangeVx(1))/(gImageCorr.RefRangeVx(2)-gImageCorr.RefRangeVx(1))*(gImageCorr.RefNVx-1)+1);
 gImageCorr.RefPixy = round((gImageCorr.RefVy-gImageCorr.RefRangeVy(1))/(gImageCorr.RefRangeVy(2)-gImageCorr.RefRangeVy(1))*(gImageCorr.RefNVy-1)+1);
 
+% disp('Image correlation tracking starts!')
+% % Get the information from reference figure
+% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2021-1-18_Img026.txt';
+% [IMG_ref, Info_ref]=ReadImageFile_ImgCorr(gImageCorr.RefIMG);
+% gImageCorr.RefVx = IMG_ref.FixVx;
+% gImageCorr.RefVy = IMG_ref.FixVy;
+% gImageCorr.RefRangeVx = [IMG_ref.minVx IMG_ref.maxVx]*gConfocal.Vx_per_um;
+% gImageCorr.RefRangeVy = [IMG_ref.minVy IMG_ref.maxVy]*gConfocal.Vy_per_um;
+% gImageCorr.RefNVx = IMG_ref.NVx; gImageCorr.RefNVy = IMG_ref.NVy;
+% gImageCorr.RefPixx = round((gImageCorr.RefVx-gImageCorr.RefRangeVx(1))/(gImageCorr.RefRangeVx(2)-gImageCorr.RefRangeVx(1))*(gImageCorr.RefNVx-1)+1);
+% gImageCorr.RefPixy = round((gImageCorr.RefVy-gImageCorr.RefRangeVy(1))/(gImageCorr.RefRangeVy(2)-gImageCorr.RefRangeVy(1))*(gImageCorr.RefNVy-1)+1);
+% prepare for scan
 
 bGo = 1;
-set(handles.minVx,'String',num2str(gScan.FixVx-20*(gImageCorr.RefRangeVx(2)-gImageCorr.RefRangeVx(1))/(gImageCorr.RefNVx-1)))
-set(handles.maxVx,'String',num2str(gScan.FixVx+20*(gImageCorr.RefRangeVx(2)-gImageCorr.RefRangeVx(1))/(gImageCorr.RefNVx-1)))
-set(handles.NVx,'String',num2str(41))
-set(handles.minVy,'String',num2str(gScan.FixVy-20*(gImageCorr.RefRangeVy(2)-gImageCorr.RefRangeVy(1))/(gImageCorr.RefNVy-1)))
-set(handles.maxVy,'String',num2str(gScan.FixVy+20*(gImageCorr.RefRangeVy(2)-gImageCorr.RefRangeVy(1))/(gImageCorr.RefNVy-1)))
-set(handles.NVy,'String',num2str(41))
+set(handles.minVx,'String',num2str(gScan.FixVx-50*(gImageCorr.RefRangeVx(2)-gImageCorr.RefRangeVx(1))/(gImageCorr.RefNVx-1)))
+set(handles.maxVx,'String',num2str(gScan.FixVx+50*(gImageCorr.RefRangeVx(2)-gImageCorr.RefRangeVx(1))/(gImageCorr.RefNVx-1)))
+set(handles.NVx,'String',num2str(101))
+set(handles.minVy,'String',num2str(gScan.FixVy-50*(gImageCorr.RefRangeVy(2)-gImageCorr.RefRangeVy(1))/(gImageCorr.RefNVy-1)))
+set(handles.maxVy,'String',num2str(gScan.FixVy+50*(gImageCorr.RefRangeVy(2)-gImageCorr.RefRangeVy(1))/(gImageCorr.RefNVy-1)))
+set(handles.NVy,'String',num2str(101))
 
 while bGo == 1
     ImageFunctionPool('Scan',hObject, eventdata, handles);

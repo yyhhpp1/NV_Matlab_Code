@@ -55,41 +55,16 @@ function T1_SemiAuto_ParamInput_OpeningFcn(hObject, eventdata, handles, varargin
 % Choose default command line output for T1_SemiAuto_ParamInput
 handles.output = hObject;
 
-handles.output = hObject;
+% Check if we received the parent GUI Experimental_PB_DAQ handle
+% (GUI A is the parant GUI Experimentak_PB_DAQ)
+% Unpack inputs if present
+if length(varargin) >= 1
+    handles.hFigA = varargin{1};  % GUI A figure handle
+end
 
-if exist('T1_SemiAuto_GUI_save.mat', 'file')
-    loaded = load('T1_SemiAuto_GUI_save.mat');
-    state = loaded.state;
-    
-    fields = fieldnames(state);
-    for i = 1:length(fields)
-        if isfield(handles, fields{i})
-            h = handles.(fields{i});
-            if isgraphics(h, 'uicontrol')
-                style = get(h, 'Style');
-                switch style
-                    case {'edit'}
-                        set(h, 'String', state.(fields{i}));
-                    case {'checkbox', 'radiobutton'}
-                        set(h, 'Value', state.(fields{i}));
-                    otherwise
-                        % Do nothing
-                end
-            end
-        end
-    end
-end    
-    
-    % Check if we received the parent GUI Experimental_PB_DAQ handle
-    % (GUI A is the parant GUI Experimentak_PB_DAQ)
-    % Unpack inputs if present
-    if length(varargin) >= 1
-        handles.hFigA = varargin{1};  % GUI A figure handle
-    end
-    
-    if length(varargin) >= 2
-        handles.hObjectA = varargin{2};  % hObject from GUI A
-    end
+if length(varargin) >= 2
+    handles.hObjectA = varargin{2};  % hObject from GUI A
+end
 
 if length(varargin) >= 3
     handles.eventdataA = varargin{3};  % eventdata from GUI A
@@ -1090,9 +1065,13 @@ for i = 1:length(fields)
     if isgraphics(h, 'uicontrol')
         style = get(h, 'Style');
         switch style
-            case {'edit'}
+            case {'edit', 'text'}
                 state.(fields{i}) = get(h, 'String');
-            case {'checkbox', 'radiobutton'}
+            case {'checkbox', 'radiobutton', 'togglebutton'}
+                state.(fields{i}) = get(h, 'Value');
+            case 'popupmenu'
+                state.(fields{i}) = get(h, 'Value');
+            case 'slider'
                 state.(fields{i}) = get(h, 'Value');
             otherwise
                 % Do nothing for other control types
@@ -1100,5 +1079,6 @@ for i = 1:length(fields)
     end
 end
 
-save('T1_SemiAuto_GUI_save.mat', 'state');
+save('myGUI_state.mat', 'state');
+delete(hObject);
 delete(hObject);

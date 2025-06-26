@@ -1,4 +1,4 @@
-function Rabi
+function Rabi_SG2
 global gmSEQ gSG
 gSG.bfixedPow = 1;
 gSG.bfixedFreq = 1;
@@ -21,7 +21,7 @@ gmSEQ.CHN(1).T = [T_initial_wait, ...
     T_initial_wait + gmSEQ.readout + T_AfterLaser + gmSEQ.To + T_AfterPulse];
 gmSEQ.CHN(1).DT = [gmSEQ.CtrGateDur, gmSEQ.CtrGateDur];
 
-gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('MWSwitch2');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
 gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_initial_wait + gmSEQ.readout + T_AfterLaser;
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = gmSEQ.m;

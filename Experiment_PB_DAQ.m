@@ -22,7 +22,7 @@ function varargout = Experiment_PB_DAQ(varargin)
 
 % Edit the above text to modify the response to help Experiment_PB_DAQ
 
-% Last Modified by GUIDE v2.5 18-Jun-2025 14:02:36
+% Last Modified by GUIDE v2.5 20-Jun-2025 14:57:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2702,3 +2702,12 @@ function button_T1_Semi_Auto_Callback(hObject, eventdata, handles)
 hFigExp = gcf; 
 T1_SemiAuto_ParamInput(hFigExp, hObject, eventdata);
 
+
+
+% --- Executes on button press in useSG2.
+function useSG2_Callback(hObject, eventdata, handles)
+% hObject    handle to useSG2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of useSG2

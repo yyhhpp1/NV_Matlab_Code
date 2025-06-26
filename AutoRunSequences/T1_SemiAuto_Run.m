@@ -1,7 +1,7 @@
 function T1_SemiAuto_Run(hObject, eventdata, handles, handles2)
 [y,Fs] = audioread('ExptCompleted.mp3');
 BackupFile = 'C:\MATLAB_Code\Data\TempDataBackup\Temp.mat';
-global gmSEQ gSG tmax hCPS
+global gmSEQ gSG gSG2 tmax hCPS
 
 % default setting
 gmSEQ.bRaman = 0;
@@ -23,6 +23,8 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
     
     numPDChan=0;
     
+    gmSEQ.dataN = gmSEQ.ctrN
+    
     %append the voltage data to the counts data. Hence we need to expand
     %the counts array by the corresponding voltage channels to read.
     %TODO: store voltage data to a separate file
@@ -38,6 +40,14 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
     SignalGeneratorFunctionPool('WritePow');
     SignalGeneratorFunctionPool('WriteFreq');
     gSG.bOn=1;  SignalGeneratorFunctionPool('RFOnOff');
+    
+    if handles.useSG2.Value
+        SignalGeneratorFunctionPool2('SetMod');
+        SignalGeneratorFunctionPool2('WritePow');
+        SignalGeneratorFunctionPool2('WriteFreq');
+        gSG2.bOn=1;  SignalGeneratorFunctionPool2('RFOnOff');
+    end
+    
     
     try
         %DAQmxResetDevice('Dev1');
@@ -127,13 +137,18 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                 % save a backup of the data here in case matlab crashes
                 TemporarySave(BackupFile);
                 if gmSEQ.ctrN<=24 %do not plot if too many counter gates
-                    %PlotData(handles,raw_j);
                 
-                    if strcmp(gmSEQ.name,'Rabi')
+                    if strcmp(gmSEQ.name,'Rabi')||strcmp(gmSEQ.name,'Rabi_SG2')
                         PlotRabiData(handles,raw_j);
                         FitRabi(handles, handles2);
+                    elseif strcmp(gmSEQ.name, 'T1_S00_S01_S10_S11_S1m1')
+                        PlotT1Data_method2(handles,raw_j)
+                    elseif strcmp(gmSEQ.name, 'T1_S11_S1m1')
+                        PlotT1Data_method3(handles,raw_j)      
                     elseif strcmp(gmSEQ.name,'T1_S00_S01_S10_S11_darkRef')
                         PlotT1Data(handles,raw_j)
+                    else
+                        PlotData(handles,raw_j);
                     end
                 end
                 drawnow;
@@ -162,6 +177,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
         KillAllTasks; %kill all niDAQ tasks
         set(handles.runningText,'string','Error!')
         gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
+        if handles.useSG2.Value; gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff'); end
         rethrow(ME);
     end
     if gmSEQ.bTrack
@@ -363,7 +379,7 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
 end
 
 gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
-
+if handles.useSG2.Value; gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff'); end
 gmSEQ.bGo = 0;
 gmSEQ.bExp = 0;
 SaveIgorText(handles);
@@ -403,6 +419,12 @@ if (gmSEQ.bSweep3)
     else
         gmSEQ.SweepParam=[gmSEQ.SweepParam linspace(gmSEQ.From3,gmSEQ.To3,gmSEQ.N3)];
     end
+end
+
+if strcmp(gmSEQ.name, 'T1_S00_S01_S10_S11_S1m1') || strcmp(gmSEQ.name, 'T1_S11_S1m1')
+    gmSEQ.SweepParam = unique(round(gmSEQ.SweepParam,-3),'first'); %remove repeating elements
+else
+    gmSEQ.SweepParam = unique(gmSEQ.SweepParam,'first');
 end
 
 % Customized in the input data here
@@ -557,321 +579,6 @@ if ~isfield(gmSEQ,'bLiO')&&gmSEQ.ctrN~=1 % Do not plot ESR
     if raw_j~=0
         xline(handles.axes3, single(gmSEQ.SweepParam(raw_j))*gmSEQ.ScaleT,'--', 'color','r','HandleVisibility','off')
     end
-end
-
-function PlotESRData(handles)
-global gmSEQ
-
-cmp = tab10(20);
-colors = {cmp(1,:),cmp(2,:)};
-plot(handles.axes2, single(gmSEQ.SweepParam)*gmSEQ.ScaleT, single(gmSEQ.signal(1, :)),'-', ...
-            'color', colors{1},...
-            'LineWidth', 0.5,...
-            'DisplayName', 'data')
-hold(handles.axes2, 'on');
-grid(handles.axes2, 'on');
-set(handles.axes2,'FontSize',8);
-ylabel(handles.axes2, 'Fluorescence counts');
-xlabel(handles.axes2, gmSEQ.ScaleStr);
-
-% don't rescale x axis of the plots if num of sweep param is set to 1
-if length(gmSEQ.SweepParam) ~= 1
-    xlim(handles.axes2, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
-end
-
-if get(handles.bShowLegend,'Value')
-    legend(handles.axes2)
-end
-hold(handles.axes2, 'off')
-
-function FitESR(handles, handles2)
-global gmSEQ
-x = double(gmSEQ.SweepParam)*gmSEQ.ScaleT;
-y = double(gmSEQ.signal(1, :));
-
-lorentz = @(p,x) - p(1) * (p(2)^2 ./ ((x - p(3)).^2 + p(2)^2)) + p(4);
-% p1 is amp, p2 is width, p3 is loc, p4 is bg
-
-amp0 = max(y) - min(y); 
-width0 = 5e-3; %GHz
-loc0 = x(y == min(y));
-bg0 = max(y);
-p0 = [amp0, width0, loc0, bg0];
-lb = [0, 0, min(x), min(y)];
-ub = [max(y), 1e-2, max(x), max(y)*2];
-
-opts = optimoptions('lsqcurvefit', 'Display', 'off');
-[popt, ~, ~, ~, ~, ~, jacob] = lsqcurvefit(lorentz, p0, x, y, lb, ub, opts);
-res = y - lorentz(popt, x);
-dof = length(y) - length(popt);
-mse = sum(res.^2) / dof;
-pcov = mse * inv(jacob' * jacob);
-perr = full(sqrt(diag(pcov)));
-
-loc = popt(3) * 1000; %MHz
-loc_err = perr(3) * 1000; %MHz
-contrast = popt(1)/popt(4)*100;
-width = popt(2) * 1000; %MHz
-width_err = perr(2) * 1000; %MHz
-fit_text = sprintf('Freqency = %.2f ± %.2f MHz\nContrast = %.1f %%\nWidth = %.2f ± %.2f MHz',...
-    loc, loc_err, contrast, width, width_err);
-
-hold(handles.axes2, 'on');
-
-x_plot = linspace(x(1),x(end),301);
-y_plot = lorentz(popt, x_plot);
-plot(handles.axes2, x_plot, y_plot, 'DisplayName', fit_text)
-
-if get(handles.bShowLegend,'Value')
-    legend(handles.axes2, 'Location', 'best')
-end
-
-hold(handles.axes2, 'off'); 
-
-if loc_err <= str2double(handles2.thrsESR.String)
-   gmSEQ.ESRFitFreq =  loc; %in MHz
-   gmSEQ.bGoAfterAvg = 0;
-end
-  
-
-function PlotRabiData(handles,raw_j)
-global gmSEQ
-
-%dataN is number of counters
-cmp = tab10(20);
-colors = {cmp(1,:),cmp(2,:),cmp(3,:)};
-
-for i = 1:gmSEQ.ctrN 
-    plot(handles.axes2,...
-        single(gmSEQ.SweepParam*gmSEQ.ScaleT),...
-        single(gmSEQ.signal(i, :)),'-', ...
-        'color', colors{i},...
-        'LineWidth', 0.5,...
-        'DisplayName', sprintf('signal %d', i))
-    if i == 1
-       hold(handles.axes2, 'on')
-    end
-end
-
-grid(handles.axes2, 'on');
-set(handles.axes2,'FontSize',8);
-ylabel(handles.axes2, 'Fluorescence counts');
-xlabel(handles.axes2, gmSEQ.ScaleStr);
-xlim(handles.axes2, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
-
-if get(handles.bShowLegend,'Value')
-    legend(handles.axes2)
-end
-
-% draw vertical dashed line to indicate where is the current measruement
-xline(handles.axes2, single(gmSEQ.SweepParam(raw_j))*gmSEQ.ScaleT,'--', 'color','r','HandleVisibility','off')
-hold(handles.axes2, 'off')
-
-signal = gmSEQ.signal(:, ~any(isnan(gmSEQ.signal), 1)); %remove nan values
-sig = signal(2,:);
-ref = signal(1,:);
-data = sig./ref;
-ref_err = 1./sqrt(gmSEQ.iAverage * ref); % Relative error of reference
-sig_err = 1./sqrt(gmSEQ.iAverage * sig); % Relative error of signal
-rel_err = sqrt(ref_err.^2 + sig_err.^2);
-data_err = rel_err .* data;
-
-errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT, data, data_err,...
-    'LineStyle', '-', ...
-    'Marker', 'o',...
-    'Color', colors{3})
-hold(handles.axes3, "on");
-grid(handles.axes3, "on");
-set(handles.axes3,'FontSize',8);
-ylabel(handles.axes3, 'Contrast');
-xlabel(handles.axes3, gmSEQ.ScaleStr);
-xlim(handles.axes3, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
-xline(handles.axes3, single(gmSEQ.SweepParam(raw_j))*gmSEQ.ScaleT,'--', 'color','r','HandleVisibility','off')
-hold(handles.axes3, "off")
-
-
-function FitRabi(handles, handles2)
-global gmSEQ
-cmp = tab10(20);
-
-signal = gmSEQ.signal(:, ~any(isnan(gmSEQ.signal), 1)); %remove nan values
-sig = signal(2,:);
-ref = signal(1,:);
-data = sig./ref;
-ref_err = 1./sqrt(gmSEQ.iAverage * ref); % Relative error of reference
-sig_err = 1./sqrt(gmSEQ.iAverage * sig); % Relative error of signal
-rel_err = sqrt(ref_err.^2 + sig_err.^2);
-data_err = rel_err .* data;
-
-x = double(gmSEQ.SweepParam); %ns
-y = data;
-
-if length(x) == length(y)
-
-func = @(p,x) p(1)*cos(2*pi*p(2)*x+p(3))+1-p(1);
-% p1 is amp, p2 is freq, p3 phase
-
-
-amp0 = max(y) - min(y);
-%pi_0 = x(C == min(C));
-pi0 = max(x)/4;
-freq0 = 1/(2*pi0);
-phi0 = -0.01;
-
-p0 = [amp0, freq0, phi0];
-lb = [0, 0, -pi/2];
-ub = [1, inf, pi/2];
-
-opts = optimoptions('lsqcurvefit', 'Display', 'off');
-[popt, ~, ~, ~, ~, ~, jacob] = lsqcurvefit(func, p0, x, y, lb, ub, opts);
-res = y - func(popt, x);
-dof = length(y) - length(popt);
-mse = sum(res.^2) / dof;
-pcov = mse * inv(jacob' * jacob);
-perr = full(sqrt(diag(pcov)));
-
-phi = popt(3); %rad
-phi_err = perr(3); %rad
-contrast = popt(1)*2*100;
-contrast_err = perr(1)*2*100;
-freq = popt(2) * 1000; %MHz
-freq_err = perr(2) * 1000; %MHz
-piTime = (pi - phi)/(2*pi*popt(2));
-% piTime_err = sqrt((1/(2*pi*popt(2)))^2*phi_err+((pi-phi)/(2*pi*popt(2)^2))^2*perr(2));
-piTime_err = 1/(2*pi*popt(2))*sqrt(perr(3)^2 + (pi - phi)^2/(popt(2)^2)*perr(2)^2);
-piHalfTime = (pi/2 - phi)/(2*pi*popt(2));
-piHalfTime_err =  1/(2*pi*popt(2))*sqrt(perr(3)^2 + (pi/2 - phi)^2/(popt(2)^2)*perr(2)^2);
-fit_text = sprintf('Pi Time = %.1f ± %.1f ns\nPi/2 Time = %.1f ± %.1f ns\nFreq = %.2f ± %.2f MHz\nC = %.1f ± %.1f%%',...
-    piTime, piTime_err, piHalfTime, piHalfTime_err, freq, freq_err, contrast, contrast_err);
-
-hold(handles.axes3, 'on');
-
-x_plot = linspace(x(1),x(end),301);
-y_plot = func(popt, x_plot);
-plot(handles.axes3, x_plot*gmSEQ.ScaleT, y_plot, 'DisplayName', fit_text,...
-    'Color', cmp(4,:), 'LineStyle', '-.')
-
-if get(handles.bShowLegend,'Value')
-    legend(handles.axes3, 'Location', 'best')
-end
-hold(handles.axes3, 'off');
-
-if piTime_err <= str2double(handles2.thrsRabi.String)
-   gmSEQ.RabiFitPi = piTime; 
-   gmSEQ.bGoAfterAvg = 0;
-end
-
-end
-
-function PlotT1Data(handles,raw_j)
-global gmSEQ
-
-%dataN is number of counters
-cmp = tab10(10);
-colors = {cmp(1,:),cmp(2,:),cmp(3,:),cmp(4,:),cmp(5,:),cmp(6,:)};
-labels = ["S00","S01","S10","S11","RefB","RefD"];
-ctrShow = [2,5,8,11];%S00, S01, S10, S11
-refB_mean = (gmSEQ.signal(1, :)+gmSEQ.signal(4, :)+gmSEQ.signal(7, :)+gmSEQ.signal(10, :))/4;
-refD_mean = (gmSEQ.signal(3, :)+gmSEQ.signal(6, :)+gmSEQ.signal(9, :)+gmSEQ.signal(12, :))/4;
-ct = 1;
-for i = ctrShow
-    plot(handles.axes2,...
-        single(gmSEQ.SweepParam)*gmSEQ.ScaleT,...
-        single(gmSEQ.signal(i, :)),'-', ...
-        'color', colors{ct},...
-        'LineWidth', 0.5,...
-        'DisplayName', labels(ct))
-    
-    if ct == 1; hold(handles.axes2, 'on'); end
-    ct = ct + 1;
-end
-
-plot(handles.axes2,...
-        single(gmSEQ.SweepParam)*gmSEQ.ScaleT,...
-        single(refB_mean),'-', ...
-        'color', colors{5},...
-        'LineWidth', 0.5,...
-        'DisplayName', labels(5))
-plot(handles.axes2,...
-        single(gmSEQ.SweepParam)*gmSEQ.ScaleT,...
-        single(refD_mean),'-', ...
-        'color', colors{6},...
-        'LineWidth', 0.5,...
-        'DisplayName', labels(6))
-
-
-
-grid(handles.axes2, 'on');
-set(handles.axes2,'FontSize',8);
-ylabel(handles.axes2, 'Fluorescence counts');
-xlabel(handles.axes2, gmSEQ.ScaleStr);
-xlim(handles.axes2, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
-
-% draw vertical dashed line to indicate where is the current measruement
-xline(handles.axes2, single(gmSEQ.SweepParam(raw_j))*gmSEQ.ScaleT,'--', 'color','r','HandleVisibility','off')
-hold(handles.axes2, 'off')
-
-for jj = 1:length(gmSEQ.signal(:,1))
-    signal(jj,:) = gmSEQ.signal(jj, ~isnan(gmSEQ.signal(jj,:)));
-end
-
-refB00 = signal(1,:);
-sig00 = signal(2,:);
-refD00 = signal(3,:);
-refB01 = signal(4,:);
-sig01 = signal(5,:);
-refD01 = signal(6,:);
-refB10 = signal(7,:);
-sig10 = signal(8,:);
-refD10 = signal(9,:);
-refB11 = signal(10,:);
-sig11 = signal(11,:);
-refD11 = signal(12,:);
-
-%S00-S01
-sig = sig00 - sig01;
-ref = (refB00+refB01)/2 - (refD00+refD01)/2;
-data1 = sig./ref;
-ref_err = 1./sqrt(gmSEQ.iAverage * abs(ref));
-sig_err = 1./sqrt(gmSEQ.iAverage * abs(sig));
-rel_err = sqrt(ref_err.^2 + sig_err.^2);
-data1_err = rel_err .* data1;
-
-
-%S11-S10
-sig = sig11 - sig10;
-ref = (refB10+refB11)/2 - (refD10+refD11)/2;
-data2 = sig./ref;
-ref_err = 1./sqrt(gmSEQ.iAverage * abs(ref)); % Relative error of reference
-sig_err = 1./sqrt(gmSEQ.iAverage * abs(sig)); % Relative error of signal
-rel_err = sqrt(ref_err.^2 + sig_err.^2);
-data2_err = rel_err .* data2;
-
-
-
-errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data1)).*gmSEQ.ScaleT, data1, data1_err,...
-    'LineStyle', '-',...
-    'Marker', 'o',...
-    'Color', cmp(7,:),...
-    'DisplayName', 'S00-S01')
-hold(handles.axes3, "on");
-errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data2)).*gmSEQ.ScaleT, data2, data2_err,...
-    'LineStyle', '-',...
-    'Marker', 'square',...
-    'Color', cmp(10,:),...
-    'DisplayName', 'S11-S10')
-
-grid(handles.axes3, "on");
-set(handles.axes3,'FontSize',8);
-ylabel(handles.axes3, 'Contrast');
-xlabel(handles.axes3, gmSEQ.ScaleStr);
-xlim(handles.axes3, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
-xline(handles.axes3, single(gmSEQ.SweepParam(raw_j))*gmSEQ.ScaleT,'--', 'color','r','HandleVisibility','off')
-hold(handles.axes3, "off")
-
-if get(handles.bShowLegend,'Value')
-    legend(handles.axes2, 'Location', 'best')
-    legend(handles.axes3, 'Location', 'best')
 end
 
 function StartCounters(task)

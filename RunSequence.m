@@ -73,7 +73,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
     SignalGeneratorFunctionPool('WriteFreq');
     gSG.bOn=1;  SignalGeneratorFunctionPool('RFOnOff');
     
-    if 1
+    if handles.useSG2.Value
         SignalGeneratorFunctionPool2('SetMod');
         SignalGeneratorFunctionPool2('WritePow');
         SignalGeneratorFunctionPool2('WriteFreq');
@@ -237,6 +237,15 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                 if gmSEQ.ctrN<=20 %do not plot if too many counter gates              
                     if strcmp(gmSEQ.name, 'T1_S00_S01_S10_S11_darkRef')
                         PlotT1Data(handles,raw_j)
+                    elseif strcmp(gmSEQ.name, 'T1_S00_S01_S10_S11_S1m1')
+                        PlotT1Data_method2(handles,raw_j)
+                    elseif strcmp(gmSEQ.name, 'T1_S11_S1m1')
+                        PlotT1Data_method3(handles,raw_j)                      
+                    elseif strcmp(gmSEQ.name, 'Rabi')||strcmp(gmSEQ.name, 'Rabi_SG2')
+                        PlotRabiData(handles,raw_j)
+                        if get(handles.bShowLegend,'Value')
+                            FitRabi(handles);
+                        end
                     else
                         PlotData(handles,raw_j);
                     end
@@ -268,7 +277,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
         KillAllTasks; %kill all niDAQ tasks
         set(handles.runningText,'string','Error!')
         gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
-        if 1; gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff'); end
+        if handles.useSG2.Value; gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff'); end
         fpga.stop_program();
         Set_FPGA_GUI_buttons(handles, 'on')
         %turn on laser
@@ -298,10 +307,6 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
     SignalGeneratorFunctionPool('SetMod');
     PBFunctionPool('PBON',2^SequencePool('PBDictionary','GreenAOM')+2^SequencePool('PBDictionary','MWSwitch'));
     
-    %     if gmSEQ.bWarmUpAOM %%% probably not necessary for this method of ESR
-    %         gSG.bOn=1; SignalGeneratorFunctionPool('RFOnOff');
-    %         pause(30);
-    %     end
     try
         [vec, NN]=MakeSweepVector();
         
@@ -343,7 +348,13 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
             end
             
             TemporarySave(BackupFile);
-            PlotData(handles,0);
+            %PlotData(handles,0);
+            PlotESRData(handles);
+            if get(handles.bShowLegend,'Value')
+                FitESR(handles);
+            end
+            
+            
             drawnow;
             DAQmxClearTask(hCounter);
             DAQmxClearTask(hPulse);
@@ -482,7 +493,7 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
 end
 
 gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
-if 1; gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff'); end
+if handles.useSG2.Value; gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff'); end
 % gSG3.bOn=0; SignalGeneratorFunctionPool3('RFOnOff');
 
 % The following stop is just for test, added by Weijie 07/30/2022
@@ -534,7 +545,7 @@ end
 if strcmp(gmSEQ.name, 'T1_S00_S01_S10_S11_darkRef')
     gmSEQ.SweepParam = unique(round(gmSEQ.SweepParam,-3),'first'); %remove repeating elements
 else
-    gmSEQ.SweepParam = unique(round(gmSEQ.SweepParam, 1),'first');
+    gmSEQ.SweepParam = unique(gmSEQ.SweepParam,'first');
 end
 % Customized in the input data here
 % DEER ODMR Weijie 04/19/2022

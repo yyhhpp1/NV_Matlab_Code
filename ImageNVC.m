@@ -182,27 +182,6 @@ else
     clear sg;
 end
 
-function ShutterControl(bOn)
-
-% awg = gpib('ni',0,6);
-% fopen(awg);
-
-% if bOn
-% fprintf(awg,'SOURce1:FUNCtion DC'); % turn on arb function
-% %fprintf(awg,'SOURCE1:VOLT 0'); % set max waveform amplitude to 3 Vpp
-% fprintf(awg,'SOURCE1:VOLT:OFFSET 2'); % set offset to 0 V
-% fprintf(awg,'OUTPUT1:LOAD 50'); % set output load to 50 ohms
-% %fprintf(awg,'SOURCE1:FUNCtion:ARB:SRATe 10000000'); % set sample rate
-% %Enable Output for channel 1
-% fprintf(awg,'OUTPUT1 ON');
-% else
-%     fprintf(awg,'OUTPUT1 OFF');
-% end
-
-% fclose(awg);
-% delete(awg);
-% clear awg;
-
 function minVx_Callback(hObject, eventdata, handles)
 % hObject    handle to minVx (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB

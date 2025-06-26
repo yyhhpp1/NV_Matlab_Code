@@ -106,7 +106,7 @@ global gSG2
 
 function WritePow()
 global gSG2
-if gSG2.Pow>0
+if gSG2.Pow>16
     error('Microwave amplitude is probably too large')
 end  
 writeline(gSG2.device, strcat('AMPR ', num2str(gSG2.Pow)));
@@ -187,7 +187,7 @@ end
 function RFOnOff()
 global gSG2
 
-if (gSG2.Pow>0 && ~strcmp(gSG2.bMod,'IQ')) % || (strcmp(gSG2.bMod,'IQ') && strcmp(gSG2.bModSrc,'Noise'))
+if (gSG2.Pow>16 && ~strcmp(gSG2.bMod,'IQ')) % || (strcmp(gSG2.bMod,'IQ') && strcmp(gSG2.bModSrc,'Noise'))
     fclose(gSG2.device);
     error('NO ONE MAN SHOULD HAVE ALL THAT POWER')
 end

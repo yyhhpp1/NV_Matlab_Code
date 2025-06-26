@@ -18,6 +18,7 @@ gmSEQ.CHN(1).T=0;
 gmSEQ.CHN(1).DT=1;
 
 gmSEQ.CHN(2).PBN=PBDictionary('MWSwitch');
+%gmSEQ.CHN(2).PBN=3;
 gmSEQ.CHN(2).NRise=1;
 gmSEQ.CHN(2).T=0;
 gmSEQ.CHN(2).DT=1;

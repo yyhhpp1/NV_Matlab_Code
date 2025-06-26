@@ -101,12 +101,16 @@ switch varargin{1}
         T1_S00_S01();
     case 'T1_S00_S01_fdc'
         T1_S00_S01_fdc();
+    case 'T1_S11_S1m1'
+        T1_S11_S1m1();
     case 'T1_S00_S01_S10_S11'
         T1_S00_S01_S10_S11();
     case 'T1_S00_S01_S10_S11_darkRef'
         T1_S00_S01_S10_S11_darkRef();
     case 'T1_S00_S01_S10_S11_fdc'
         T1_S00_S01_S10_S11_fdc();
+    case 'T1_S00_S01_S10_S11_S1m1'
+        T1_S00_S01_S10_S11_S1m1();
     case 'T1_Test_Charge'
         T1_Test_Charge();        
     case 'T1_Rb_S00_S01_Rd_newRef'
@@ -195,13 +199,14 @@ StrL{numel(StrL)+1}='XY8_N_tomo1';
 StrL{numel(StrL)+1}='--------------------T1--------------------';
 StrL{numel(StrL)+1}='T1_S00_S01';
 StrL{numel(StrL)+1}='T1_S00_S01_fdc';
+StrL{numel(StrL)+1}='T1_S11_S1m1';
 StrL{numel(StrL)+1}='T1_Test_Charge';
 StrL{numel(StrL)+1}='T1_Rb_S00_S01_Rd_newRef';
 StrL{numel(StrL)+1}='T1_S00_R0_S01_R1_fixDutyCycle';
 StrL{numel(StrL)+1}='T1_S00_S01_S10_S11';
 StrL{numel(StrL)+1}='T1_S00_S01_S10_S11_darkRef';
 StrL{numel(StrL)+1}='T1_S00_S01_S10_S11_fdc';
-
+StrL{numel(StrL)+1}='T1_S00_S01_S10_S11_S1m1';
 
 StrL{numel(StrL)+1}='--------------------SCC--------------------';
 StrL{numel(StrL)+1}='SCC_scan_orange';

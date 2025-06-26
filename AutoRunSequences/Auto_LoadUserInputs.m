@@ -1,5 +1,5 @@
 function Auto_LoadUserInputs(hObject,eventdata,handles)
-global gmSEQ gSG 
+global gmSEQ gSG gSG2
 
 gmSEQ.From= str2double(get(handles.FROM1, 'String'));
 gmSEQ.To= str2double(get(handles.TO1, 'String'));
@@ -34,6 +34,8 @@ gmSEQ.post_MW_wait = str2double(get(handles.post_MW_wait,'String'));
 
 gSG.Pow = str2double(get(handles.fixPow, 'String'));
 gSG.Freq = str2double(get(handles.fixFreq, 'String'))*1e9;
+gSG2.Pow = str2double(get(handles.fixPow2, 'String'));
+gSG2.Freq = str2double(get(handles.fixFreq2, 'String'))*1e9;
 
 gmSEQ.P1Pulse = str2double(get(handles.P1Pulse, 'String'));
 

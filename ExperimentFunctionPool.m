@@ -34,11 +34,6 @@ switch what
     case 'RabiTrack'
         RabiTrack(hObject, eventdata, handles);
     case 'T1_Semi_Auto'
-        % read seqeuence param
-        
-        % run esr 
-        
-        %
         
     case 'AutoRun'
         gmSEQ.bAutoRun = 1;
@@ -160,6 +155,8 @@ SignalGeneratorFunctionPool2('Init',PortMap('SG2 ip'));
 gSG2.bMod='none';
 gSG2.bModSrc='External';
 SignalGeneratorFunctionPool2('SetMod');
+
+
 % 
 % gSG3.bMod='IQ';
 % gSG3.bModSrc='External';
