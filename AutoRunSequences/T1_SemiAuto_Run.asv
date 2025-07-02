@@ -144,9 +144,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                     elseif strcmp(gmSEQ.name, 'T1_S00_S01_S10_S11_S1m1')
                         PlotT1Data_method2(handles,raw_j)
                     elseif strcmp(gmSEQ.name, 'T1_S11_S1m1')
-                        PlotT1Data_method3(handles,raw_j)
-                    elseif strcmp(gmSEQ.name, 'T1_S00_S01_S10')
-                        PlotT1Data_method4(handles,raw_j)
+                        PlotT1Data_method3(handles,raw_j)      
                     elseif strcmp(gmSEQ.name,'T1_S00_S01_S10_S11_darkRef')
                         PlotT1Data(handles,raw_j)
                     else
@@ -155,6 +153,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                 end
                 drawnow;
                 
+                if 
                 if ~gmSEQ.bGo
                     break
                 end
@@ -164,10 +163,6 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                     iwarmup=iwarmup+1;
                 end
                 
-            end
-            
-            if ~mod(i,str2double(handles2.slackUploadFreq.String)) && handles2.slackUploadFlag.Value
-                save_and_upload_GUI_figure(handles,handles2)
             end
             
             SaveIgorText_Average(handles);
@@ -256,18 +251,10 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
             DAQmxClearTask(hCounter);
             DAQmxClearTask(hPulse);
             DAQmxClearTask(hScan);
-            
-            if ~mod(i,str2double(handles2.slackUploadFreq.String)) && handles2.slackUploadFlag.Value
-                save_and_upload_GUI_figure(handles,handles2)
-            end
-            
-            SaveIgorText_Average(handles);
-            
             if ~gmSEQ.bGo || ~gmSEQ.bGoAfterAvg
                 break
             end
-            
-            
+            SaveIgorText_Average(handles);
         end
     catch ME
         KillAllTasks;
@@ -723,7 +710,7 @@ ImgN = ImgN + 1;
 gSaveDataAve.file = strrep(file,'.txt',sprintf('_%03d.txt',ImgN));
 
 
-function save_and_upload_GUI_figure(handles, handlesT1)
+function save_and_upload_GUI_figure(handlesT1)
 global gSaveDataAve
 % save the main exp GUI figure
 if handlesT1.use_title.Value
@@ -734,17 +721,9 @@ end
 filename = strcat('C:\Users\dilution_fridge_2\Desktop\T1_SemiAuto_Saves\',name);
 filename = replace(filename, '.txt', '.png');
 filename_char = filename{1};
-imwrite(getframe(handles.figure1).cdata, filename_char)
+imwrite(getframe(handles.figure1).cdata, filename_char{1})
 
-% upload saved GUI figure to slack
-message = [char(handlesT1.slackUploadText.String) '. Current sequence is still running.'];
+message = ['T = ' temp_char ' K'];
 default_keep = int32(100); %keep only 100 uploads
-scriptFolder = 'C:\Matlab_Code\AutoRunSequences';
-
-% Add it to Python's module search path if not already there
-if count(py.sys.path, scriptFolder) == 0
-    insert(py.sys.path, int32(0), scriptFolder)
-end
-
 py.slack_upload_v2.upload_and_cleanup(filename_char, message, default_keep);
 

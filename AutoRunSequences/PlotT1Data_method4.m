@@ -1,4 +1,4 @@
-function PlotT1Data_method3(handles,raw_j)
+function PlotT1Data_method4(handles,raw_j)
 % use on T1_S11_S1m1
 
 global gmSEQ
@@ -6,10 +6,10 @@ global gmSEQ
 %dataN is number of counters
 cmp = tab10(10);
 colors = {cmp(1,:),cmp(2,:),cmp(3,:),cmp(4,:),cmp(5,:),cmp(6,:),cmp(7,:)};
-labels = ["S_{-1,-1}","S_{-1,+1}", "Ref_B","Ref_D"];
-ctrShow = [2,5];%S11, S1m1
-refB_mean = (gmSEQ.signal(1, :)+gmSEQ.signal(4, :))/2;
-refD_mean = (gmSEQ.signal(3, :)+gmSEQ.signal(6, :))/2;
+labels = ["S_{0,0}","S_{0,-1}","S_{-1,0}", "Ref_B","Ref_D"];
+ctrShow = [2,5,8];%S11, S1m1
+refB_mean = (gmSEQ.signal(1, :)+gmSEQ.signal(4, :)+gmSEQ.signal(7, :))/2;
+refD_mean = (gmSEQ.signal(3, :)+gmSEQ.signal(6, :)+gmSEQ.signal(9, :))/2;
 ct = 1;
 for i = ctrShow
     plot(handles.axes2,...
@@ -74,8 +74,8 @@ cmp2 = tab20(20);
 errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT, data, data_err,...
     'LineStyle', '-',...
     'Marker', 'square',...
-    'Color', cmp2(3,:),...
-    'DisplayName', 'C_{-1,-1}-C_{-1,+1}')
+    'Color', cmp2(1,:),...
+    'DisplayName', 'C_{0,0}-C_{0,-1}')
 
 grid(handles.axes3, "on");
 set(handles.axes3,'FontSize',8);
@@ -93,14 +93,14 @@ if get(handles.bShowLegend,'Value')
     x1 = double(gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT); %ms
     y1 = data;
     [popt1, perr1, x1_plot, y1_plot] = fit_T1_func(x1, y1);
-    fit1_text = sprintf('\\Omega + 2\\gamma = %.2f \\pm %.2f kHz', popt1, perr1);
+    fit1_text = sprintf('3\\Omega = %.2f \\pm %.2f kHz', popt1, perr1);
     
 
     hold(handles.axes3, 'on');
 
     plot(handles.axes3, x1_plot, y1_plot,...
         'DisplayName', fit1_text,...
-        'Color', cmp2(4,:),...
+        'Color', cmp2(2,:),...
         'LineStyle', '-.')
     
     legend(handles.axes3, 'Location', 'best')

@@ -101,6 +101,8 @@ switch varargin{1}
         T1_S00_S01();
     case 'T1_S00_S01_fdc'
         T1_S00_S01_fdc();
+    case 'T1_S00_S01_S10'
+        T1_S00_S01_S10();
     case 'T1_S11_S1m1'
         T1_S11_S1m1();
     case 'T1_S00_S01_S10_S11'
@@ -199,6 +201,7 @@ StrL{numel(StrL)+1}='XY8_N_tomo1';
 StrL{numel(StrL)+1}='--------------------T1--------------------';
 StrL{numel(StrL)+1}='T1_S00_S01';
 StrL{numel(StrL)+1}='T1_S00_S01_fdc';
+StrL{numel(StrL)+1}='T1_S00_S01_S10';
 StrL{numel(StrL)+1}='T1_S11_S1m1';
 StrL{numel(StrL)+1}='T1_Test_Charge';
 StrL{numel(StrL)+1}='T1_Rb_S00_S01_Rd_newRef';

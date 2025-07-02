@@ -22,16 +22,16 @@ function varargout = T1_SemiAuto_ParamInput(varargin)
 
 % Edit the above text to modify the response to help T1_SemiAuto_ParamInput
 
-% Last Modified by GUIDE v2.5 25-Jun-2025 01:29:36
+% Last Modified by GUIDE v2.5 02-Jul-2025 17:54:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-    'gui_Singleton',  gui_Singleton, ...
-    'gui_OpeningFcn', @T1_SemiAuto_ParamInput_OpeningFcn, ...
-    'gui_OutputFcn',  @T1_SemiAuto_ParamInput_OutputFcn, ...
-    'gui_LayoutFcn',  [] , ...
-    'gui_Callback',   []);
+                   'gui_Singleton',  gui_Singleton, ...
+                   'gui_OpeningFcn', @T1_SemiAuto_ParamInput_OpeningFcn, ...
+                   'gui_OutputFcn',  @T1_SemiAuto_ParamInput_OutputFcn, ...
+                   'gui_LayoutFcn',  [] , ...
+                   'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -55,45 +55,50 @@ function T1_SemiAuto_ParamInput_OpeningFcn(hObject, eventdata, handles, varargin
 % Choose default command line output for T1_SemiAuto_ParamInput
 handles.output = hObject;
 
-handles.output = hObject;
+% Check if we received the parent GUI Experimental_PB_DAQ handle
+% (GUI A is the parant GUI Experimentak_PB_DAQ)
+% Unpack inputs if present
+if length(varargin) >= 1
+    handles.hFigA = varargin{1};  % GUI A figure handle
+end
 
-if exist('T1_SemiAuto_GUI_save.mat', 'file')
-    loaded = load('T1_SemiAuto_GUI_save.mat');
-    state = loaded.state;
-    
-    fields = fieldnames(state);
-    for i = 1:length(fields)
-        if isfield(handles, fields{i})
-            h = handles.(fields{i});
-            if isgraphics(h, 'uicontrol')
-                style = get(h, 'Style');
-                switch style
-                    case {'edit'}
-                        set(h, 'String', state.(fields{i}));
-                    case {'checkbox', 'radiobutton'}
-                        set(h, 'Value', state.(fields{i}));
-                    otherwise
-                        % Do nothing
-                end
-            end
-        end
-    end
-end    
-    
-    % Check if we received the parent GUI Experimental_PB_DAQ handle
-    % (GUI A is the parant GUI Experimentak_PB_DAQ)
-    % Unpack inputs if present
-    if length(varargin) >= 1
-        handles.hFigA = varargin{1};  % GUI A figure handle
-    end
-    
-    if length(varargin) >= 2
-        handles.hObjectA = varargin{2};  % hObject from GUI A
-    end
+if length(varargin) >= 2
+    handles.hObjectA = varargin{2};  % hObject from GUI A
+end
 
 if length(varargin) >= 3
     handles.eventdataA = varargin{3};  % eventdata from GUI A
 end
+
+
+    if exist('T1_SemiAuto_ParamInput_state.mat', 'file')
+        loaded = load('T1_SemiAuto_ParamInput_state.mat');
+        state = loaded.state;
+
+        fields = fieldnames(state);
+        for i = 1:length(fields)
+            if isfield(handles, fields{i})
+                h = handles.(fields{i});
+                if isgraphics(h, 'uicontrol')
+                    style = get(h, 'Style');
+                    switch style
+                        case {'edit', 'text'}
+                            set(h, 'String', state.(fields{i}));
+                        case {'checkbox', 'radiobutton', 'togglebutton'}
+                            set(h, 'Value', state.(fields{i}));
+                        case 'popupmenu'
+                            set(h, 'Value', state.(fields{i}));
+                        case 'slider'
+                            set(h, 'Value', state.(fields{i}));
+                        otherwise
+                            % Do nothing
+                    end
+                end
+            end
+        end
+    end
+
+
 
 % Update handles structure
 guidata(hObject, handles);
@@ -103,7 +108,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = T1_SemiAuto_ParamInput_OutputFcn(hObject, eventdata, handles)
+function varargout = T1_SemiAuto_ParamInput_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -522,6 +527,9 @@ eventdataA = handles.eventdataA;
 
 % Retrieve GUI T1_SemiAuto (current) handles
 handlesB = handles;
+
+% Save current inputs
+savestate(handles)
 
 % Call T1_SemiAuto_Program
 T1_SemiAuto_Program(hObjectA, eventdataA, handlesA, handlesB);
@@ -1074,31 +1082,202 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes when user attempts to close figure1.
-function figure1_CloseRequestFcn(hObject, eventdata, handles)
-% hObject    handle to figure1 (see GCBO)
+
+function startT12_Callback(hObject, eventdata, handles)
+% hObject    handle to startT12 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: delete(hObject) closes the figure
+% Hints: get(hObject,'String') returns contents of startT12 as text
+%        str2double(get(hObject,'String')) returns contents of startT12 as a double
 
-state = struct();
 
-fields = fieldnames(handles);
-for i = 1:length(fields)
-    h = handles.(fields{i});
-    if isgraphics(h, 'uicontrol')
-        style = get(h, 'Style');
-        switch style
-            case {'edit'}
-                state.(fields{i}) = get(h, 'String');
-            case {'checkbox', 'radiobutton'}
-                state.(fields{i}) = get(h, 'Value');
-            otherwise
-                % Do nothing for other control types
-        end
-    end
+% --- Executes during object creation, after setting all properties.
+function startT12_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to startT12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
 
-save('T1_SemiAuto_GUI_save.mat', 'state');
-delete(hObject);
+
+
+function stopT12_Callback(hObject, eventdata, handles)
+% hObject    handle to stopT12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of stopT12 as text
+%        str2double(get(hObject,'String')) returns contents of stopT12 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function stopT12_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to stopT12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function nPtsT12_Callback(hObject, eventdata, handles)
+% hObject    handle to nPtsT12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of nPtsT12 as text
+%        str2double(get(hObject,'String')) returns contents of nPtsT12 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function nPtsT12_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to nPtsT12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function maxAveT12_Callback(hObject, eventdata, handles)
+% hObject    handle to maxAveT12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of maxAveT12 as text
+%        str2double(get(hObject,'String')) returns contents of maxAveT12 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function maxAveT12_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to maxAveT12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+function T1_SemiAuto_ParamInput_CloseRequestFcn(hObject, eventdata, handles)
+    savestate(handles)
+    delete(hObject);
+
+function savestate(handles)
+
+    state = struct();
+
+    fields = fieldnames(handles);
+    for i = 1:length(fields)
+        h = handles.(fields{i});
+        if isgraphics(h, 'uicontrol')
+            style = get(h, 'Style');
+            switch style
+                case {'edit', 'text'}
+                    state.(fields{i}) = get(h, 'String');
+                case {'checkbox', 'radiobutton', 'togglebutton'}
+                    state.(fields{i}) = get(h, 'Value');
+                case 'popupmenu'
+                    state.(fields{i}) = get(h, 'Value');
+                case 'slider'
+                    state.(fields{i}) = get(h, 'Value');
+                otherwise
+                    % Do nothing for other control types
+            end
+        end
+    end
+
+    save('T1_SemiAuto_ParamInput_state.mat', 'state');
+
+
+
+
+function RepeatT12_Callback(hObject, eventdata, handles)
+% hObject    handle to RepeatT12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of RepeatT12 as text
+%        str2double(get(hObject,'String')) returns contents of RepeatT12 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function RepeatT12_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to RepeatT12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in slackUploadFlag.
+function slackUploadFlag_Callback(hObject, eventdata, handles)
+% hObject    handle to slackUploadFlag (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of slackUploadFlag
+
+
+
+function slackUploadText_Callback(hObject, eventdata, handles)
+% hObject    handle to slackUploadText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of slackUploadText as text
+%        str2double(get(hObject,'String')) returns contents of slackUploadText as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function slackUploadText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slackUploadText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function slackUploadFreq_Callback(hObject, eventdata, handles)
+% hObject    handle to slackUploadFreq (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of slackUploadFreq as text
+%        str2double(get(hObject,'String')) returns contents of slackUploadFreq as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function slackUploadFreq_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slackUploadFreq (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

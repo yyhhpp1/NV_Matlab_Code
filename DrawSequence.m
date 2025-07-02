@@ -4,7 +4,7 @@ function DrawSequence(SEQ, hObject, eventdata, ax)
 %%%%%%%%%% Harvard University, Cambridge, USA  %%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-global tmin tmax ScaleT bShowTimes bShowTypes ScaleStr Color;
+global tmin tmax ScaleT bShowTimes bShowTypes ScaleStr Color gmSEQ;
 
 if isempty(bShowTypes)
     bShowTypes = false;
@@ -27,7 +27,7 @@ end
 tmin = min(atmin);
 tmax = max(atmax);
 
-[ScaleT ScaleStr] = GetScale(tmax);
+[ScaleT, ScaleStr] = GetScale(tmax);
 
 ymin = -0.5;
 ymax = (size(SEQ.CHN,2) -1)*1.5 + 1 + 0.5;

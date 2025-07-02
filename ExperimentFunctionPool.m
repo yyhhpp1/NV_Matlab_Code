@@ -156,6 +156,21 @@ gSG2.bMod='none';
 gSG2.bModSrc='External';
 SignalGeneratorFunctionPool2('SetMod');
 
+% Load python env only once 
+pythonPath = 'C:\Users\dilution_fridge_2\miniconda3\envs\slackbot_haopu\python.exe';
+
+pe = pyenv;
+if strcmp(pe.Status, "NotLoaded") || isempty(pe.Executable)
+    % Configure Python only once
+    pe = pyenv( ...
+        'ExecutionMode','OutOfProcess', ...
+        'Version', pythonPath ...
+    );
+    fprintf('Configured Python at %s\n', pe.Executable);
+else
+    fprintf('Python already configured (%s)\n', pe.Executable);
+end
+
 
 % 
 % gSG3.bMod='IQ';

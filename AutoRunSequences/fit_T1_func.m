@@ -9,7 +9,7 @@ function [popt, perr, x_plot, y_plot] = fit_T1_func(x,y)
 
 func = @(p,x) exp(-p(1)*x);
 
-p0 = [max(x)/2];
+p0 = [2/max(x)];
 lb = [0];
 ub = [inf];
 
