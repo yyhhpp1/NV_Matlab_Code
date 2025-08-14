@@ -21,7 +21,7 @@ switch type
     case '+Y'
         pbn=7;
     case '-Y'
-        pbn=15;
+        pbn=8;
     case 'PD'
         pbn=14;
     case 'OrangeAOM'

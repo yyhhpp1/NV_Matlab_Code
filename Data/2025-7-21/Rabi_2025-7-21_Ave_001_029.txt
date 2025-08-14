@@ -1,0 +1,7 @@
+IGOR
+WAVES/D/O sweep,sig(1) 
+BEGIN
+200 0 
+202 0 
+
+END

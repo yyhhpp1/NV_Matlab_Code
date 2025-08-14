@@ -1,2 +1,2 @@
-XOffSet= 1.730000
-YOffSet= -0.130000
+XOffSet= 0.800000
+YOffSet= 0.000000

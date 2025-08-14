@@ -140,7 +140,7 @@ LoadPBESR;
 % LoadNIDAQmx;
 
 % load SRS SG386 DLL
-SignalGeneratorFunctionPool('Init',PortMap('SG ip'));
+SignalGeneratorFunctionPool('Init',PortMap('SG com'));
 gSG.bMod='IQ';
 gSG.bModSrc='External';
 SignalGeneratorFunctionPool('SetMod');

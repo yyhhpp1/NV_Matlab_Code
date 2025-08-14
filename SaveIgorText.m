@@ -4,7 +4,7 @@ global gSaveData gmSEQ  gSG
 %global gScan
 now = clock;
 date = [num2str(now(1)),'-',num2str(now(2)),'-',num2str(round(now(3)))];
-fullPath=fullfile('D:\Data\',date,'\');
+fullPath=fullfile('C:\NV_Matlab_Code\Data\',date,'\');
 if ~exist(fullPath,'dir')
     mkdir(fullPath);
 end

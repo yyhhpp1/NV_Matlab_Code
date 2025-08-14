@@ -22,7 +22,7 @@ function varargout = ImageNVC(varargin)
 
 % Edit the above text to modify the response to help ImageNVC
 
-% Last Modified by GUIDE v2.5 24-Sep-2024 16:04:53
+% Last Modified by GUIDE v2.5 28-Jul-2025 15:04:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -85,7 +85,6 @@ function Scan_Callback(hObject, eventdata, handles)
 
 global bGo
 bGo = 1;
-
 tic
 set(handles.bMinThresh,'Value',0);
 set(handles.bMaxThresh,'Value',0);
@@ -1206,7 +1205,7 @@ function Zm_Callback(hObject, eventdata, handles)
 global gbManChange 
 gbManChange.X = 0; 
 gbManChange.Y = 0; 
-gbManChange.Z = -1; 
+gbManChange.Z = -.01; 
 ImageFunctionPool('ManualChange',hObject,eventdata,handles); 
 
 % --- Executes on button press in Zp.
@@ -1217,7 +1216,7 @@ function Zp_Callback(hObject, eventdata, handles)
 global gbManChange 
 gbManChange.X = 0; 
 gbManChange.Y = 0; 
-gbManChange.Z = 1; 
+gbManChange.Z = .01; 
 ImageFunctionPool('ManualChange',hObject,eventdata,handles); 
 
 
@@ -2931,3 +2930,34 @@ function TrackZ_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to TrackZ (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+
+function squareScanSize_Callback(hObject, eventdata, handles)
+% hObject    handle to squareScanSize (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of squareScanSize as text
+%        str2double(get(hObject,'String')) returns contents of squareScanSize as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function squareScanSize_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to squareScanSize (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in squareScan.
+function squareScan_Callback(hObject, eventdata, handles)
+% hObject    handle to squareScan (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+ImageFunctionPool('SquareScan', hObject, eventdata, handles)

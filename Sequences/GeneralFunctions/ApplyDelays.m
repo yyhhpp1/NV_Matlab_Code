@@ -1,6 +1,6 @@
 function ApplyDelays
 global gmSEQ 
-green_aom_delay = 640; % 520 nm AOM
+green_aom_delay = 600; % 520 nm AOM
 orange_aom_delay = 1200;  % 594 nm AOM
 red_aom_delay = 100; % 637 nm AOM
 

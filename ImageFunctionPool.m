@@ -84,6 +84,8 @@ switch what
         UpdateVoltage1(hObject, eventdata, handles);
     case 'attoAutoScan'
         attoAutoScan(hObject, eventdata, handles);
+    case 'SquareScan'
+        SquareScan(hObject, eventdata, handles)
     otherwise
 end
 
@@ -353,16 +355,7 @@ global gScan gbManChange gConfocal gImageCorr gSaveImg
 disp('Image correlation tracking starts!')
 % Get the information from reference figure
 
-% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\L111-02-B.txt'; % L111-02 spot
-% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\L111_08072022.txt'; % S011 alternative spot
-% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Spot07302022.txt'; % S011 original spot
-% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Spot07052022.txt'; % S011 alternative spot
-% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2022-7-1_Img051.txt'; % S011 dark spot
-% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2022-7-1_Img034.txt'; % S011 bright spot
-% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2022-2-22_Img011.txt'; % S011
-% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2021-11-23_Img021.txt'; % Update for L026 11/23/2021
-% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2021-8-10_Img004.txt';
-gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2024-10-1_Img029.txt';
+gImageCorr.RefIMG = 'C:\NV_MATLAB_Code\ImageCorrelation\Image_2025-7-29_Img009.txt';
 
 [IMG_ref, Info_ref]=ReadImageFile_ImgCorr(gImageCorr.RefIMG);
 gImageCorr.RefVx = IMG_ref.FixVx;
@@ -656,17 +649,17 @@ global gScan gConfocal gTracking;
 %added new functionality for Track Continuously checkbox
 TrackCenter(1);
 bTrackContinuously = get(handles.cbTrackCont,'Value');
-while bTrackContinuously,
+while bTrackContinuously
     pause(10);
     TrackCenter(1);
     bTrackContinuously = get(handles.cbTrackCont,'Value');
-    L=size(gTracking.Trajectory,1)
-    if L>1,
+    L=size(gTracking.Trajectory,1);
+    if L>1
         gTracking.Trajectory(L-1,:);
         gTracking.Trajectory(L,:);
         sum(abs(gTracking.Trajectory(end-1,:) - gTracking.Trajectory(end,:)));
     end
-end;
+end
 
 set(handles.FixVx,'String',gScan.FixVx);
 set(handles.FixVy,'String',gScan.FixVy);
@@ -707,7 +700,7 @@ gConfocal.V_per_um='V_per_um.txt';
 ReadStartingFile(handles);
 
 %%Load PI MATLAB Driver GCS2 (Piezo) added by Weijie 09/21/2021
-%piezoPFM450FunctionPool('connect');
+piezoPFM450FunctionPool('connect');
 
 
 % gPiezo.axis = '1';
@@ -909,6 +902,7 @@ ImageFillUpForm('UpdateScan', hObject, eventdata, handles);
 
 function TrackZ(hObject, eventdata, handles)
 %%modified to be used with Thorlabs piezo PFM450 (CL - 9/24/24)
+%%modified to use closed loop Thorlabs piezo PFM450 (HY - 7/28/25)
 
 global gScan gbManChange gConfocal hCPS
 minLz = eval(get(handles.minVz,'String'));
@@ -921,32 +915,24 @@ NN = length(zscan);
 WriteVoltage(PortMap('Galvo x'),gScan.FixVx + gConfocal.XOffSet);
 WriteVoltage(PortMap('Galvo y'),gScan.FixVy + gConfocal.YOffSet);
 
-%connect to attocube
-% IP = '192.168.0.110';
-% amc = tcpclient(IP, 9090);
-% axis = 2; 
-% control_setControlOutput(amc, axis, true); % Activate Axis Z
-% pause(1)
-% [~, z0] = move_getPosition(amc, axis);
 
 % returns position in um
+% z0 = piezoPFM450FunctionPool('getvol');
 z0 = piezoPFM450FunctionPool('getposition');
-% TODO
-%fprintf('Current Z = %s\n', z0);
-%disp(['Current Z =' z0 'µm'])
-%get current z
-%z_current = 
 count =zeros(1,NN);
 scan = zscan;
 try
     for j=1:NN
-        %Move to target z
-        %atto_MoveZ(amc,axis,zscan(j))       
+        %Move to target z   
+        % piezoPFM450FunctionPool('setvol', zscan(j));
         piezoPFM450FunctionPool('setposition', zscan(j));
-        pause(0.5);
-        z_j = piezoPFM450FunctionPool('getposition');
+        pause(0.2);
+        % pause(0.5);
+        % z_j = piezoPFM450FunctionPool('getvol');
+        % z_j = piezoPFM450FunctionPool('getposition');
+        z_j =  zscan(j);
         
-        fprintf('Current Z = %s\n', z_j);
+        %fprintf('Current Z = %.2f\n', z_j);
         %%%%% measure count rate %%%%%%
         count(j)=RunCPSOnce(gScan,hObject, eventdata, handles);
         %[~, z_j] = move_getPosition(amc, axis);
@@ -960,25 +946,21 @@ try
         
         if get(handles.StopTracking, 'Value')
             pause(0.3);
-            break; 
+            break;
         end
     end
     
-    %go to old position 
+    %go to old position
     %piezoPFM450FunctionPool('setposition', z0);
-    %go to new position 
+    %new position
     [~, ind] = max(count);
     new_z = scan(ind);
-    piezoPFM450FunctionPool('setposition', new_z);    
-    pause(1);
-    curr_z = piezoPFM450FunctionPool('getposition');
+    fprintf('Max Z = %.2f\n', new_z)
+    %piezoPFM450FunctionPool('setvol', new_z);
+    piezoPFM450FunctionPool('setposition', new_z);
     pause(0.5);
     set(handles.FixVz,'String', num2str(new_z));
-
     
-    fprintf('Current Z = %s\n', curr_z);
-    %atto_MoveZ(amc,axis,z0);
-    %clear amc    
 catch ME
     KillAllTasks;
     %control_setControlOutput(amc, axis, false); %Deactivate axis
@@ -1173,6 +1155,7 @@ r = 0;
 while bGo & r<=R
     r = r+1;
     MakeScan(gScan,hObject, eventdata, handles);
+    MakeScan_Haopu(gScan,hObject, eventdata, handles);
     bScanCont = get(handles.bScanCont,'Value');
     if ~bScanCont,break; end
 end
@@ -1293,7 +1276,7 @@ planScan = PlanScan(Scan,hObject, eventdata, handles);
 %Turn On Laser : JM 2008-07-27
 % PBFunctionPool('PBON',0);
 
-I = zeros(planScan.SizeImg);
+I = nan(planScan.SizeImg);
 
 itl = 0;
 
@@ -1330,8 +1313,10 @@ for tl = planScan.TL
             DAQmxStopTask(planScan.hScan);
             A = ReadCounter( planScan.hCounter, planScan.NRead*2+1);
             A = ProcessDataVector(A, planScan.DT);
-            % I(ifl,:) = (A(1:planScan.NRead)+fliplr(A(planScan.NRead+1:planScan.NRead*2)))/2;
+            %I(ifl,:) = (A(1:planScan.NRead) + fliplr(A(planScan.NRead+1:end)))/2;
             I(ifl,:) = A(1:planScan.NRead);
+            
+            
             
             DAQmxStopTask(planScan.hCounter);
             
@@ -1348,8 +1333,8 @@ for tl = planScan.TL
             if ~get(handles.bFastScan,'Value') || fl==planScan.FL(end)
                 PlotScan(I,planScan,hObject, eventdata, handles,'Quick');
                 
-                CPS = ProcessDataCPS(I(ifl,:),planScan.NRead,1);
-                set(handles.CPS,'String',CPS);
+                %CPS = ProcessDataCPS(I(ifl,:),planScan.NRead,1);
+                %set(handles.CPS,'String',CPS);
             end
             drawnow;
             if ~bGo, break; end
@@ -1482,7 +1467,6 @@ elseif planScan.ND==2
 end
 
 
-
 function planScan = SetPulseAndContScan(cloop,cvalue,planScan,hObject, eventdata, handles)
 global hTasks;
 
@@ -1503,35 +1487,6 @@ planScan.hScan = SetXYOutPut(planScan,1/cvalue,hObject, eventdata, handles);
 hTasks.hScan = planScan.hScan;
 hTasks.hCounter = planScan.hCounter;
 hTasks.hPulse = planScan.hPulse;
-
-%    DupCount = DAQmxGet(planScan.hCounter, 'CI.DupCountPrevent', 'Dev1/ctr0');
-%    DAQmxSet(planScan.hCounter, 'CI.DupCountPrevent', 'Dev1/ctr0',1);
-
-% else %%% Fast Scan
-%     planScan.TimeOut = cvalue * planScan.NRead * 4;
-%
-%     Ntot = (planScan.NRead*2)*length(planScan.FL);
-%     planScan.hCounter = SetCounter(Ntot);
-%
-%     [status, planScan.hPulse(1)] = DigPulseTrainCont(1/cvalue,0.5,10000);
-%     [statusFL, planScan.hPulse(2)] = DigPulseTrainCont(1/cvalue/(planScan.NRead*2),0.5,10000);
-%     if status
-%     disp(['NI: Set Pulse            :' num2str(status)]);
-%     end
-%     if statusFL
-%     disp(['NI: Set PulseFL            :' num2str(statusFL)]);
-%     end
-%     planScan.hScan = SetXYOutPut(planScan,1/cvalue,hObject, eventdata, handles);
-%
-%     hTasks.hCounter = planScan.hCounter;
-%     hTasks.hScan = planScan.hScan;
-%     % planScan.hScan(1),(2)
-%     hTasks.hPulse = planScan.hPulse;
-%     % planScan.hScan(1),(2)
-%
-%     DupCount = DAQmxGet(planScan.hCounter, 'CI.DupCountPrevent', 'Dev1/ctr0');
-%     DAQmxSet(planScan.hCounter, 'CI.DupCountPrevent', 'Dev1/ctr0',1);
-% end
 
 
 function planScan = PlanScan(Scan,hObject, eventdata, handles)
@@ -1585,6 +1540,8 @@ Label{2} = 'V_y';
 Label{3} = 'V_z';
 Label{4} = 'DT';
 
+planScan.VV = VV;
+
 %Set Continuous
 planScan.Cont = [VV{PS(1,1)}(1) VV{PS(1,1)} fliplr(VV{PS(1,1)})];
 planScan.ContRange = VVRange{PS(1,1)};
@@ -1637,33 +1594,6 @@ end
 DAQmxErr(status);
 
 
-
-% function task = SetCounter(N)
-% DAQmx_Val_Volts= 10348; % measure volts
-% DAQmx_Val_Rising = 10280; % Rising
-% DAQmx_Val_FiniteSamps = 10178; % Finite Samples
-% DAQmx_Val_CountUp = 10128; % Count Up
-% DAQmx_Val_CountDown = 10124; % Count Down
-% DAQmx_Val_GroupByChannel = 0; % Group per channel
-% DAQmx_Val_ContSamps =10123; % Continuous Samples
-%
-% [ status, TaskName, task ] = DAQmxCreateTask([]);
-%
-% if status,
-% disp(['NI: Create Counter Task  :' num2str(status)]);
-% end
-% status = DAQmxCreateCICountEdgesChan(task,'Dev1/ctr0','',...
-%     DAQmx_Val_Rising , 0, DAQmx_Val_CountUp);
-%
-% if status,
-% disp(['NI: Create Counter       :' num2str(status)]);
-% end
-% status = DAQmxCfgSampClkTiming(task,'/Dev1/PFI13',1.0,...
-%     DAQmx_Val_Rising,DAQmx_Val_FiniteSamps ,N);
-% if status,
-% disp(['NI: Cofigure the Clk     :' num2str(status)]);
-% end
-
 function [task] = SetCounter(varargin)
 %varargin(1) is the number of total samples
 %varargin(2) is the frequency of the gating to expect
@@ -1700,6 +1630,7 @@ end
 
 V = planScan.Cont;
 N = length(planScan.Cont);
+% newV = [V, V];
 
 %Setting the clock
 [ status, TaskName, task ] = DAQmxCreateTask([]);
@@ -1707,6 +1638,11 @@ DAQmxErr(status);
 
 status = DAQmxCreateAOVoltageChan(task,Device,-10,10,DAQmx_Val_Volts);
 DAQmxErr(status);
+
+%%%
+% status = DAQmxCreateAOVoltageChan(task,'Dev1/ao1',-10,10,DAQmx_Val_Volts);
+% DAQmxErr(status);
+%%%
 
 status = DAQmxCfgSampClkTiming(task,PortMap('Ctr Trig'),rate,...
     DAQmx_Val_Rising,DAQmx_Val_FiniteSamps,N);
@@ -1720,50 +1656,10 @@ status = DAQmxWriteAnalogF64(task, N, 0, 10,...
     DAQmx_Val_GroupByChannel, V, zero_ptr);
 DAQmxErr(status);
 
-% %%%% Fast Scan
-% if get(handles.bFastScan,'Value')
-%     switch planScan.WhatFL
-%     case 1
-%         DeviceFL = PortMap('Galvo x');
-%     case 2
-%         DeviceFL = PortMap('Galvo y');
-%     case 3
-%         DeviceFL = 'Obj_Piezo';
-%     case 4
-%         disp('This functionality is not supported! 2014-05-24');
-%         return;
-%     end
-%
-%     VFL = [planScan.FL fliplr(planScan.FL)];
-%     NFL = 2*length(planScan.FL);
-%     rateFL = rate/N;
-%
-%     [ statusFL, TaskNameFL, taskFL ] = DAQmxCreateTask([]);
-%     if statusFL,
-%         disp(['NI: Create AO TaskFL       :' num2str(statusFL)]);
-%     end
-%
-%     statusFL = DAQmxCreateAOVoltageChan(taskFL,DeviceFL,-10,10,DAQmx_Val_Volts);
-%     if statusFL,
-%         disp(['NI: Create AO ChannelFL    :' num2str(statusFL)]);
-%     end
-%
-%     statusFL = DAQmxCfgSampClkTiming(taskFL,'/Dev1/PFI13',rateFL,...
-%             DAQmx_Val_Rising,DAQmx_Val_FiniteSamps,NFL);
-%     if statusFL,
-%         disp(['NI: Config Sample ClockFL  :' num2str(statusFL)]);
-%     end
-%
-%     empty_ptr = libpointer('doublePtr',[]);
-%     zero_ptr = libpointer('int32Ptr',zeros(1,NFL));
-%     %    zero_ptr = libpointer('uint32Ptr',0);   %The number of events counted by the counter
-%     statusFL = DAQmxWriteAnalogF64(taskFL, NFL, 0, 10,...
-%             DAQmx_Val_GroupByChannel, VFL, zero_ptr);
-%     if statusFL,
-%     disp(['NI: Write Analog F64     :' num2str(statusFL)])
-%     end
-%     task = [task taskFL];
-% end
+% zero_ptr = libpointer('int32Ptr',zeros(1,1));
+% status = DAQmxWriteAnalogF64(task, N, 0, 10,...
+%     DAQmx_Val_GroupByChannel, newV, zero_ptr);
+% DAQmxErr(status);
 
 
 function task = SetXYAlign(V,N,rate)
@@ -1875,8 +1771,8 @@ switch what
         Device = PortMap('Galvo y');
     case {3,'Obj_Piezo'}
         %%% Haopu added on 11/20/2024 since we want to manually control Z
-        disp('Z is controlled manually')
-        return
+%         disp('Z is controlled manually')
+%         return
         %%%
         
         if Voltage > gPiezo.maxposition
@@ -1885,15 +1781,13 @@ switch what
         if Voltage < gPiezo.minposition
             Voltage = gPiezo.minposition;
         end
-%         % for piezo in closed loop config, voltage is actually 
-%         % a position value in um
-
-        if 0
+        % for piezo in closed loop config, voltage is actually 
+        % a position value in um  
         piezoPFM450FunctionPool('setposition', Voltage);
-        pause(1);
+        pause(0.1);
         pos = piezoPFM450FunctionPool('getposition');
-        fprintf('Current Z position: %s\n', pos);
-        end
+        fprintf('Current Z position: %.2f\n', pos);
+
         %         % #EO
         %         if Voltage > gPiezo.maximumPosition
         %             Voltage = gPiezo.maximumPosition;
@@ -2330,7 +2224,7 @@ end
 function SaveImageCorrLog(hObject, eventdata, handles)
 global gScan
 Time = datetime(clock);
-fid = fopen('C:\MATLAB_Code\Sets\ImageCorrLog.txt','at'); % a means add data, w means new data
+fid = fopen('C:\NV_MATLAB_Code\Sets\ImageCorrLog.txt','at'); % a means add data, w means new data
 fprintf(fid,'%s',[datestr(Time)]);
 fprintf(fid,' %5.5f %5.5f\n', [gScan.FixVx, gScan.FixVy]);
 %fprintf(fid, '\n');
@@ -3142,3 +3036,16 @@ if strcmp(gmSEQ.meas,'SPCM')
 elseif strcmp(gmSEQ.meas,'APD')
     data=RawData(2:length(RawData));
 end
+
+function SquareScan(hObject, eventdata, handles)
+sz = str2double(get(handles.squareScanSize, 'String'));
+X = str2double(get(handles.FixVx,'String'));
+Y = str2double(get(handles.FixVy,'String'));
+
+
+handles.minVx.String = num2str( X - sz/2 );
+handles.maxVx.String = num2str( X + sz/2 );
+handles.minVy.String = num2str( Y - sz/2 );
+handles.maxVy.String = num2str( Y + sz/2 );
+
+

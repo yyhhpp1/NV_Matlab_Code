@@ -2,7 +2,7 @@ function SignalGeneratorFunctionPool(varargin)
 
 switch varargin{1}
     case 'Init'                            
-        Init(); 
+        Init(varargin{2}); 
     case 'InitGUI'
         InitGUI(varargin{2},varargin{3});
     case 'IDN'
@@ -34,106 +34,153 @@ function InitGUI(port, handles)
     set(handles.puMod,'String',StrL);
     clear StrL
 
-function Init()
+function Init(port)
 % This function initializes the SRS SG384 to the serial object gSG (a
 % global serial). You specify PORT with a string such as 'com4'. It sets
 % the baud rate and fcloses the device to prevent the possibility of
 % fopening twice.
 global gSG;  
-% Find a serial port object.
-gSG.device = tcpclient(PortMap('SG ip'), 5025);
 
-% Check the connection
+% Find a serial port object.
+gSG.serial = instrfind('Type', 'serial', 'Port', port, 'Tag', '');
+
+% Create the serial port object if it does not exist
+% otherwise use the object that was found.
+if isempty(gSG.serial)
+    gSG.serial = serial(port);
+else
+    
+    fclose(gSG.serial);
+    gSG.serial = gSG.serial(1);
+end
+set(gSG.serial,'BaudRate',115200);
+gSG.qErr=zeros(1,2);
 IDN();
 
 function IDN()
 global gSG
-writeline(gSG.device, '*IDN?')
-disp(readline(gSG.device)) % Successful connection to the AWG
+fopen(gSG.serial);
+pause(0.1)
+fprintf(gSG.serial,'*IDN?');
+A=fscanf(gSG.serial);
+if isempty(A)
+    warning('SRS384 was not properly initialized.');
+else
+    disp(A);
+end
+fclose(gSG.serial);
 
-function Query() % To be upgraded
+function Query()
 global gSG
-% To be upgraded
-% 	writeline(gSG.device,'AMPR?'); gSG.qPow = str2double(fscanf(gSG.device));
-% 	writeline(gSG.device,'FREQ?'); gSG.qFreq = str2double(fscanf(gSG.device));
-% 	writeline(gSG.device,'ENBR?'); gSG.qbOn = str2double(fscanf(gSG.device));
-%     writeline(gSG.device,'MODL?');
-%     if str2double(fscanf(gSG.device))
-%         writeline(gSG.device,'TYPE?');
-%         switch str2double(fscanf(gSG.device))
-%             case 0
-%                 gSG.qbMod='AM';
-%             case 1
-%                 gSG.qbMod='FM';
-%             case 2
-%                 gSG.qbMod='Phase';
-%             case 3
-%                 gSG.qbMod='Sweep';
-%                 writeline(gSG.device,'SRAT?'); gSG.qSweepRate = str2double(fscanf(gSG.device));
-%                 writeline(gSG.device,'SDEV?'); gSG.qSweepDev = str2double(fscanf(gSG.device));
-%                 writeline(gSG.device,'SFNC?'); 
-%                 switch str2double(fscanf(gSG.device))
-%                     case 0
-%                         gSG.qModSrc = 'Sine';
-%                     case 1
-%                         gSG.qModSrc = 'Ramp';
-%                     case 2
-%                         gSG.qModSrc = 'Triangle';
-%                     case 5
-%                         gSG.qModSrc = 'External';
-%                 end
-%             case 4
-%                 gSG.qbMod='Pulse';
-%             case 5
-%                 gSG.qbMod='Blank';
-%             case 6
-%                 gSG.qbMod='IQ';
-%                 writeline(gSG.device,'QFNC?'); 
-%                 switch str2double(fscanf(gSG.device))
-%                     case 4
-%                         gSG.qModSrc = 'Noise';
-%                     case 5
-%                         gSG.qModSrc = 'External';
-%                 end
-%         end
-%     else
-%         gSG.qbMod='None';
-%     end
-% 	writeline(gSG.device,'*ESR?'); gSG.qErr(1) = str2double(fscanf(gSG.device));
-% 	writeline(gSG.device,'INSR?'); gSG.qErr(2) = str2double(fscanf(gSG.device));
-% 	writeline(gSG.device,'*CLS');
-
+fopen(gSG.serial);
+pause(0.1)
+try 
+	fprintf(gSG.serial,'AMPR?'); gSG.qPow = str2double(fscanf(gSG.serial));
+	fprintf(gSG.serial,'FREQ?'); gSG.qFreq = str2double(fscanf(gSG.serial));
+	fprintf(gSG.serial,'ENBR?'); gSG.qbOn = str2double(fscanf(gSG.serial));
+    fprintf(gSG.serial,'MODL?');
+    if str2double(fscanf(gSG.serial))
+        fprintf(gSG.serial,'TYPE?');
+        switch str2double(fscanf(gSG.serial))
+            case 0
+                gSG.qbMod='AM';
+            case 1
+                gSG.qbMod='FM';
+            case 2
+                gSG.qbMod='Phase';
+            case 3
+                gSG.qbMod='Sweep';
+                fprintf(gSG.serial,'SRAT?'); gSG.qSweepRate = str2double(fscanf(gSG.serial));
+                fprintf(gSG.serial,'SDEV?'); gSG.qSweepDev = str2double(fscanf(gSG.serial));
+                fprintf(gSG.serial,'SFNC?'); 
+                switch str2double(fscanf(gSG.serial))
+                    case 0
+                        gSG.qModSrc = 'Sine';
+                    case 1
+                        gSG.qModSrc = 'Ramp';
+                    case 2
+                        gSG.qModSrc = 'Triangle';
+                    case 5
+                        gSG.qModSrc = 'External';
+                end
+            case 4
+                gSG.qbMod='Pulse';
+            case 5
+                gSG.qbMod='Blank';
+            case 6
+                gSG.qbMod='IQ';
+                fprintf(gSG.serial,'QFNC?'); 
+                switch str2double(fscanf(gSG.serial))
+                    case 4
+                        gSG.qModSrc = 'Noise';
+                    case 5
+                        gSG.qModSrc = 'External';
+                end
+        end
+    else
+        gSG.qbMod='None';
+    end
+	fprintf(gSG.serial,'*ESR?'); gSG.qErr(1) = str2double(fscanf(gSG.serial));
+	fprintf(gSG.serial,'INSR?'); gSG.qErr(2) = str2double(fscanf(gSG.serial));
+	fprintf(gSG.serial,'*CLS');
+catch ME
+	fclose(gSG.serial);
+	rethrow(ME);
+end
+fclose(gSG.serial);
 
 function WritePow()
 global gSG
-if gSG.Pow>0
-    error('Microwave amplitude is probably too large')
-end  
-writeline(gSG.device, strcat('AMPR ', num2str(gSG.Pow)));
+fopen(gSG.serial);
+pause(0.1)
+% fprintf(gSG.serial, 'DISP 6');
 
+if gSG.Pow>10
+    fclose(gSG.serial);
+    error('Microwave amplitude is probably too large')
+end    
+try
+	fprintf(gSG.serial,strcat('AMPR ', num2str(gSG.Pow))); 
+catch ME
+	fclose(gSG.serial);
+	rethrow(ME);
+end
+fclose(gSG.serial);
 
 function WriteFreq()
 global gSG
-
-if or(gSG.Freq<950000,gSG.Freq>6050000000) % hardware limit of the N-type output
+fopen(gSG.serial);
+pause(0.1)
+% fprintf(gSG.serial, 'DISP 2');
+if or(gSG.Freq<950000,gSG.Freq>6075000000) % hardware limit of the N-type output
+    fclose(gSG.serial);
     error('Microwave frequency is out of bounds');
 end
-writeline(gSG.device, strcat('FREQ ',num2str(gSG.Freq)));
+try
+    fprintf(gSG.serial,strcat('FREQ ',num2str(gSG.Freq)));
+    % disp(gSG.Freq)
+catch ME
+	fclose(gSG.serial);
+	rethrow(ME);
+end
 
+fclose(gSG.serial);
 
 function SetMod()
 global gSG
+fopen(gSG.serial);
+pause(0.1)
 try
     switch gSG.bMod
         case 'IQ'
-            writeline(gSG.device,'MODL 1');
-            writeline(gSG.device,'TYPE 6');
+            fprintf(gSG.serial,'MODL 1');
+            fprintf(gSG.serial,'TYPE 6');
             switch gSG.bModSrc
                 case 'External'
-                    writeline(gSG.device,'QFNC 5');
-                    writeline(gSG.device,'COUP 1');
+                    fprintf(gSG.serial,'QFNC 5');
+                    fprintf(gSG.serial,'COUP 1');
                 case 'Noise'
-                    writeline(gSG.device,'QFNC 4');
+                    fprintf(gSG.serial,'QFNC 4');
                 otherwise
                     error('Modulation source is not supported by IQ.')
             end
@@ -141,30 +188,32 @@ try
             if ~SweepCheck()
                 error('The frequency range is not correct!');
             end
-            writeline(gSG.device,'TYPE 3');
-            writeline(gSG.device,'MODL 1');
+            fprintf(gSG.serial,'TYPE 3');
+            fprintf(gSG.serial,'MODL 1');
             
             switch gSG.bModSrc
                 case 'External'
-                    writeline(gSG.device,'SFNC 5');
-                    writeline(gSG.device,'COUP 1');
+                    fprintf(gSG.serial,'SFNC 5');
+                    fprintf(gSG.serial,'COUP 1');
                 case 'Sine'
-                    writeline(gSG.device,'SFNC 0');
+                    fprintf(gSG.serial,'SFNC 0');
                 case 'Ramp'
-                    writeline(gSG.device,'SFNC 1');
+                    fprintf(gSG.serial,'SFNC 1');
                 case 'Triangle'
-                    writeline(gSG.device,'SFNC 2');
+                    fprintf(gSG.serial,'SFNC 2');
                 otherwise
                     error('Modulation source is not supported by Sweep.')
             end
-            writeline(gSG.device,strcat('SDEV ',num2str(gSG.sweepDev)));
-            writeline(gSG.device,strcat('SRAT ',num2str(gSG.sweepRate)));
+            fprintf(gSG.serial,strcat('SDEV ',num2str(gSG.sweepDev)));
+            fprintf(gSG.serial,strcat('SRAT ',num2str(gSG.sweepRate)));
         otherwise
-            writeline(gSG.device,'MODL 0');
+            fprintf(gSG.serial,'MODL 0');
     end
 catch ME
+	fclose(gSG.serial);
 	rethrow(ME);
 end
+fclose(gSG.serial);
 
 function bValid = SweepCheck() % Check whether the sweeping range is legal
 % The following criteria is only for SRS386. The scaling range of SRS384 is
@@ -173,26 +222,28 @@ global gSG
 from = gSG.Freq - gSG.sweepDev;
 to = gSG.Freq + gSG.sweepDev; 
 bValid = false;
-if from >= 0.7e9 && to <= 0.759375e9
+if from >= 1.425e9 && to <= 3.075e9
     bValid = true;
-elseif from >= 0.759375e9 && to <= 1.51875e9
-    bValid = true;
-elseif from >= 1.51875e9 && to <= 3.0375e9
-    bValid = true;
-elseif from >= 3.0375e9 && to <= 6e9
+elseif from >= 2.85e9 && to <= 6.15e9
     bValid = true;
 end
+
 
 
 function RFOnOff()
 global gSG
-
-if (gSG.Pow>0 && ~strcmp(gSG.bMod,'IQ')) % || (strcmp(gSG.bMod,'IQ') && strcmp(gSG.bModSrc,'Noise'))
-    fclose(gSG.device);
+fopen(gSG.serial);
+pause(0.1)
+if (gSG.Pow>6 && ~strcmp(gSG.bMod,'IQ')) || (strcmp(gSG.bMod,'IQ') && strcmp(gSG.bModSrc,'Noise'))
+    fclose(gSG.serial);
     error('NO ONE MAN SHOULD HAVE ALL THAT POWER')
 end
 try
-	writeline(gSG.device,strcat('ENBR ',num2str(gSG.bOn)));
+    %disp(strcat('ENBR ',num2str(gSG.bOn)));
+	fprintf(gSG.serial,strcat('ENBR ',num2str(gSG.bOn)));
 catch ME
+	fclose(gSG.serial);
 	rethrow(ME);
+    disp("couldn't close");
 end
+fclose(gSG.serial);

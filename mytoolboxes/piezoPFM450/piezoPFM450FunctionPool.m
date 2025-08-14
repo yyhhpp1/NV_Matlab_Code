@@ -23,8 +23,14 @@ function pos=piezoPFM450FunctionPool(varargin)
             else
                 setposition(varargin{2});
             end
-            
-            
+        case 'setvol'
+            if length(varargin)~=2
+                disp('Input argument invalid');
+            else
+                setvol(varargin{2});
+            end
+        case 'getvol'
+            pos = getvol();
         otherwise
             disp('Request Unknown!');
         
@@ -50,50 +56,51 @@ function pos=piezoPFM450FunctionPool(varargin)
 end
 
 function connectpfm(serial_no)
-    MOTORPATHDEFAULT = 'C:\Program Files\Thorlabs\Kinesis\';
-    DEVICEMANAGERDLL='Thorlabs.MotionControl.DeviceManagerCLI.dll';
-    GENERICMOTORDLL='Thorlabs.MotionControl.GenericMotorCLI.dll';
-    PRECISIONPIEZOMOTORDLL='Thorlabs.MotionControl.Benchtop.PrecisionPiezoCLI.dll';
-    asm_dev = NET.addAssembly([MOTORPATHDEFAULT, DEVICEMANAGERDLL]);
-    asm_gen = NET.addAssembly([MOTORPATHDEFAULT, GENERICMOTORDLL]);
-    asmInfo = NET.addAssembly([MOTORPATHDEFAULT, PRECISIONPIEZOMOTORDLL]);
-    import Thorlabs.MotionControl.DeviceManagerCLI.*;
-    import Thorlabs.MotionControl.GenericMotorCLI.*
-    import Thorlabs.MotionControl.Benchtop.PrecisionPiezoCLI.*
-    import Thorlabs.MotionControl.PrivateInternal.dll.*
-    import Thorlabs.MotionControl.Tools.Common.dll.*
-    import Thorlabs.MotionControl.GenericPiezoCLI.dll.*
+MOTORPATHDEFAULT = 'C:\Program Files\Thorlabs\Kinesis\';
+DEVICEMANAGERDLL='Thorlabs.MotionControl.DeviceManagerCLI.dll';
+GENERICMOTORDLL='Thorlabs.MotionControl.GenericMotorCLI.dll';
+PRECISIONPIEZOMOTORDLL='Thorlabs.MotionControl.Benchtop.PrecisionPiezoCLI.dll';
+asm_dev = NET.addAssembly([MOTORPATHDEFAULT, DEVICEMANAGERDLL]);
+asm_gen = NET.addAssembly([MOTORPATHDEFAULT, GENERICMOTORDLL]);
+asmInfo = NET.addAssembly([MOTORPATHDEFAULT, PRECISIONPIEZOMOTORDLL]);
+import Thorlabs.MotionControl.DeviceManagerCLI.*;
+import Thorlabs.MotionControl.GenericMotorCLI.*
+import Thorlabs.MotionControl.Benchtop.PrecisionPiezoCLI.*
+import Thorlabs.MotionControl.PrivateInternal.dll.*
+import Thorlabs.MotionControl.Tools.Common.dll.*
+import Thorlabs.MotionControl.GenericPiezoCLI.dll.*
+
+Thorlabs.MotionControl.DeviceManagerCLI.DeviceManagerCLI.BuildDeviceList();  % Build device list
+
+global gPiezo;
+try
+    gPiezo.deviceNET = Thorlabs.MotionControl.Benchtop.PrecisionPiezoCLI.BenchtopPrecisionPiezo.CreateBenchtopPiezo(serial_no);
+    gPiezo.deviceNET.Connect(serial_no);
+    gPiezo.isconnected = 1;
     
-    Thorlabs.MotionControl.DeviceManagerCLI.DeviceManagerCLI.BuildDeviceList();  % Build device list
-
-    global gPiezo;
-    try 
-        gPiezo.deviceNET = Thorlabs.MotionControl.Benchtop.PrecisionPiezoCLI.BenchtopPrecisionPiezo.CreateBenchtopPiezo(serial_no);
-        gPiezo.deviceNET.Connect(serial_no);
-        gPiezo.isconnected = 1;
-
-    catch
+catch
     gPiezo.isconnected = 0;
     error('Device is not properly connected.')
-    end
-    try
-        gPiezo.chan = gPiezo.deviceNET.GetChannel(1);
-        gPiezo.chan.WaitForSettingsInitialized(5000);
-        gPiezo.chan.StartPolling(250); %getting the voltage only works if you poll!
-        pause(0.250)
-        gPiezo.chan.EnableDevice();
-        pause(0.250)
-        gPiezo.config = gPiezo.chan.GetPiezoConfiguration(gPiezo.chan.DeviceID);
-        gPiezo.info = gPiezo.chan.GetDeviceInfo();
-        gPiezo.maxvol = gPiezo.chan.GetMaxOutputVoltage().ToString();
-        gPiezo.maxvol = str2double(char(gPiezo.maxvol));
-        gPiezo.maxposition = gPiezo.chan.GetMaxTravel().ToString();
-        gPiezo.maxposition = str2double(char(gPiezo.maxposition));
-        gPiezo.minposition = 0; 
-    catch
-        closepfm();
-        error('Failed to take initial data')
-    end
+end
+try
+    gPiezo.chan = gPiezo.deviceNET.GetChannel(1);
+    gPiezo.chan.WaitForSettingsInitialized(5000);
+    gPiezo.chan.StartPolling(250); %getting the voltage only works if you poll!
+    pause(0.250)
+    gPiezo.chan.EnableDevice();
+    pause(0.250)
+    gPiezo.config = gPiezo.chan.GetPiezoConfiguration(gPiezo.chan.DeviceID);
+    gPiezo.info = gPiezo.chan.GetDeviceInfo();
+    gPiezo.maxvol = gPiezo.chan.GetMaxOutputVoltage().ToString();
+    gPiezo.maxvol = str2double(char(gPiezo.maxvol));
+    gPiezo.minvol = 0;
+    gPiezo.maxposition = gPiezo.chan.GetMaxTravel().ToString();
+    gPiezo.maxposition = str2double(char(gPiezo.maxposition));
+    gPiezo.minposition = 0;
+catch
+    closepfm();
+    error('Failed to take initial data')
+end
 end
 
 function getcontrolmode()
@@ -135,10 +142,12 @@ end
 %     jogsteps = chan.GetJogSteps();
 % end
 
-function getvol()
+function pos=getvol()
     global gPiezo;
     try
-        gPiezo.currentvol = gPiezo.chan.GetOutputVoltage().ToString();
+        pos = gPiezo.chan.GetOutputVoltage().ToString();
+        pos = str2double(char(pos));
+
     catch
         gPiezo.deviceNET.ShutDown();
     end

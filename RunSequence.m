@@ -1,6 +1,6 @@
 function RunSequence(hObject, eventdata, handles)
 [y,Fs] = audioread('ExptCompleted.mp3');
-BackupFile = 'C:\MATLAB_Code\Data\TempDataBackup\Temp.mat';
+BackupFile = 'C:\NV_Matlab_Code\Data\TempDataBackup\Temp.mat';
 global gmSEQ gSG tmax hCPS gSG2 gSG3 fpga
 
 %connect to fpga if not already connected
@@ -11,11 +11,11 @@ if isempty(fpga.client_socket)
     handles.fpga_ack_str.String = msg;
 end
 
-fpga.delete_all_envelope_data();
-fpga.delete_all_waveform_cfg();
-fpga.delete_all_programs();
-% set trigger
-fpga.set_trigger_mode('external');
+% fpga.delete_all_envelope_data();
+% fpga.delete_all_waveform_cfg();
+% fpga.delete_all_programs();
+% % set trigger
+% fpga.set_trigger_mode('external');
 
 % default setting
 gmSEQ.bRaman = 0;
@@ -68,9 +68,9 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
     %%% TODO: add a button for turning on the FPGA. If using FPGA, skip the
     %%% following lines
     gmSEQ.refCounts=Track('Init');
+    SignalGeneratorFunctionPool('WriteFreq');
     SignalGeneratorFunctionPool('SetMod');
     SignalGeneratorFunctionPool('WritePow');
-    SignalGeneratorFunctionPool('WriteFreq');
     gSG.bOn=1;  SignalGeneratorFunctionPool('RFOnOff');
 
     CreateCaliLog(hObject, eventdata, handles);
@@ -158,7 +158,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                     if gmSEQ.measPD;StartCounters(hCounterPD0);end
                     %                     StartCounters(hCounter2);
                     %                     StartCounters(hCounter3);
-                    fpga.start_program(string(gmSEQ.name));
+                    %%% fpga.start_program(string(gmSEQ.name));
                     %handles.fpga_ack_str = msg;
                     pause(0.1)
                     Run_PB_Sequence();
@@ -171,7 +171,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                     
                     %%% fpga stop program
                     pause(0.1)
-                    fpga.stop_program();
+                    %%%fpga.stop_program();
                     if gmSEQ.measPD;DAQmxStopTask(hCounterPD0);end
                     %                     DAQmxStopTask(hCounter2);
                     %                     DAQmxStopTask(hCounter3);
@@ -256,12 +256,13 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
         KillAllTasks; %kill all niDAQ tasks
         set(handles.runningText,'string','Error!')
         gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
-        fpga.stop_program();
+        %%%fpga.stop_program();
         Set_FPGA_GUI_buttons(handles, 'on')
+        PBFunctionPool('PBON',2^SequencePool('PBDictionary','GreenAOM'));
         rethrow(ME);
     end
     if gmSEQ.bTrack
-        PBFunctionPool('PBON',2^SequencePool('PBDictionary','AOM'));
+        PBFunctionPool('PBON',2^SequencePool('PBDictionary','GreenAOM'));
     end
     
     
@@ -343,6 +344,7 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
         gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
         %gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff');
         set(handles.runningText,'string','Error!')
+        PBFunctionPool('PBON',2^SequencePool('PBDictionary','GreenAOM'));
         rethrow(ME);
     end
     if ~gmSEQ.bTrack
@@ -458,11 +460,13 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
         KillAllTasks;
         gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
         set(handles.runningText,'string','Error!')
+        PBFunctionPool('PBON',2^SequencePool('PBDictionary','GreenAOM'));
         rethrow(ME);
     end
 end
 
 gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
+PBFunctionPool('PBON',2^SequencePool('PBDictionary','GreenAOM'));
 % gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff');
 % gSG3.bOn=0; SignalGeneratorFunctionPool3('RFOnOff');
 
@@ -907,32 +911,32 @@ if ~exist(fullPath,'dir')
     mkdir(fullPath);
 end
 
-if gmSEQ.bCali
-    gCaliCounter.RFCali = 0;
-    gCaliLog.path = fullPath;
-    gCaliLog.file = ['_' date '_CaliLog.txt'];
-    name=regexprep(gmSEQ.name,'\W',''); % rewrite the sequence name without spaces/weird characters
-    %File name and prompt
-    B=fullfile(gCaliLog.path, strcat(name, gCaliLog.file));
-    file = strcat(name, gCaliLog.file);
-    
-    %Prevent overwriting
-    mfile = strrep(B,'.txt','*');
-    mfilename = strrep(gCaliLog.file,'.txt','');
-    A = ls(char(mfile));
-    ImgN = 0;
-    for f = 1:size(A,1)
-        sImgN = sscanf(A(f,:),strcat(name, string(mfilename), '_%d.txt'));
-        if ~isempty(sImgN)
-            if sImgN > ImgN
-                ImgN = sImgN;
-            end
-        end
-    end
-    ImgN = ImgN + 1;
-    file = strrep(file,'.txt',sprintf('_%03d.txt',ImgN));
-    gCaliLog.final= fullfile(gCaliLog.path, file);
-end
+% if gmSEQ.bCali
+%     gCaliCounter.RFCali = 0;
+%     gCaliLog.path = fullPath;
+%     gCaliLog.file = ['_' date '_CaliLog.txt'];
+%     name=regexprep(gmSEQ.name,'\W',''); % rewrite the sequence name without spaces/weird characters
+%     %File name and prompt
+%     B=fullfile(gCaliLog.path, strcat(name, gCaliLog.file));
+%     file = strcat(name, gCaliLog.file);
+%     
+%     %Prevent overwriting
+%     mfile = strrep(B,'.txt','*');
+%     mfilename = strrep(gCaliLog.file,'.txt','');
+%     A = ls(char(mfile));
+%     ImgN = 0;
+%     for f = 1:size(A,1)
+%         sImgN = sscanf(A(f,:),strcat(name, string(mfilename), '_%d.txt'));
+%         if ~isempty(sImgN)
+%             if sImgN > ImgN
+%                 ImgN = sImgN;
+%             end
+%         end
+%     end
+%     ImgN = ImgN + 1;
+%     file = strrep(file,'.txt',sprintf('_%03d.txt',ImgN));
+%     gCaliLog.final= fullfile(gCaliLog.path, file);
+% end
 if gmSEQ.bTrack
     gCaliCounter.ImageCorr = 0;
     gTrackLog.path = fullPath;
@@ -1099,7 +1103,7 @@ function CreateSavePath_Ave()
 global gSaveDataAve gmSEQ
 now = clock;
 date = [num2str(now(1)),'-',num2str(now(2)),'-',num2str(round(now(3)))];
-fullPath=fullfile('D:\Data\',date,'\');
+fullPath=fullfile('C:\NV_Matlab_Code\Data\',date,'\');
 if ~exist(fullPath,'dir')
     mkdir(fullPath);
 end

@@ -850,7 +850,7 @@ gmSEQ.CHN(1).DT=[gmSEQ.CtrGateDur];
 
 gmSEQ.CHN(2).PBN=PBDictionary('GreenAOM');
 gmSEQ.CHN(2).NRise=1;
-gmSEQ.CHN(2).T=[1e5];
+gmSEQ.CHN(2).T=[5000];
 gmSEQ.CHN(2).DT=[gmSEQ.readout];
 
 gmSEQ.CHN(3).PBN=PBDictionary('dummy1');
