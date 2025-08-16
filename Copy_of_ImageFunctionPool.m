@@ -926,7 +926,7 @@ try
         %Move to target z   
         % piezoPFM450FunctionPool('setvol', zscan(j));
         piezoPFM450FunctionPool('setposition', zscan(j));
-        pause(0.2);
+        pause(0.05);
         % pause(0.5);
         % z_j = piezoPFM450FunctionPool('getvol');
         % z_j = piezoPFM450FunctionPool('getposition');
@@ -1152,13 +1152,10 @@ else
     R = 0;
 end
 r = 0;
-while bGo && r<=R
+while bGo & r<=R
     r = r+1;
-    if get(handles.bFastScan,'Value')
-        MakeScan_Haopu(gScan,hObject, eventdata, handles);
-    else
-        MakeScan(gScan,hObject, eventdata, handles);
-    end
+    %MakeScan(gScan,hObject, eventdata, handles);
+    MakeScan_Haopu(gScan,hObject, eventdata, handles);
     bScanCont = get(handles.bScanCont,'Value');
     if ~bScanCont,break; end
 end
@@ -1306,12 +1303,11 @@ for tl = planScan.TL
             status = DAQmxStartTask(planScan.hPulse);
             DAQmxErr(status);
             
-%             if ~get(handles.bFastScan,'Value')
-%                 DAQmxWaitUntilTaskDone(planScan.hScan,planScan.TimeOut);
-%             else
-%                 DAQmxWaitUntilTaskDone(planScan.hScan,tl*planScan.NRead);
-%             end            
-            DAQmxWaitUntilTaskDone(planScan.hScan,planScan.TimeOut);
+            if ~get(handles.bFastScan,'Value')
+                DAQmxWaitUntilTaskDone(planScan.hScan,planScan.TimeOut);
+            else
+                DAQmxWaitUntilTaskDone(planScan.hScan,tl*planScan.NRead);
+            end
             
             DAQmxStopTask(planScan.hPulse);
             DAQmxStopTask(planScan.hScan);
@@ -1334,12 +1330,12 @@ for tl = planScan.TL
             end
             
             %plotting takes ~200 ms
-%             if ~get(handles.bFastScan,'Value') || fl==planScan.FL(end)
-%                 PlotScan(I,planScan,hObject, eventdata, handles,'Quick');
-%                 
-%                 %CPS = ProcessDataCPS(I(ifl,:),planScan.NRead,1);
-%                 %set(handles.CPS,'String',CPS);
-%             end
+            if ~get(handles.bFastScan,'Value') || fl==planScan.FL(end)
+                PlotScan(I,planScan,hObject, eventdata, handles,'Quick');
+                
+                %CPS = ProcessDataCPS(I(ifl,:),planScan.NRead,1);
+                %set(handles.CPS,'String',CPS);
+            end
             drawnow;
             if ~bGo, break; end
         end
@@ -3053,7 +3049,7 @@ handles.minVy.String = num2str( Y - sz/2 );
 handles.maxVy.String = num2str( Y + sz/2 );
 
 function MakeScan_Haopu(Scan,hObject, eventdata, handles)
-global bGo gScan gConfocal hTasks
+global bGo gScan gConfocal
 
 bGo = true;
 
@@ -3063,7 +3059,7 @@ planScan = PlanScan_Haopu(Scan,hObject, eventdata, handles);
 %premove the galvo to first scanning point
 WriteVoltage(PortMap('Galvo x'),Scan.minVx);
 WriteVoltage(PortMap('Galvo y'),Scan.minVy);
-pause(0.004) %make this wait longer if the first point of the image is strange
+pause(0.01)
 
 cvalue = Scan.FixDT;
 
@@ -3071,6 +3067,10 @@ planScan.DT = cvalue;
 
 %if ~get(handles.bFastScan,'Value') %%% Normal Scan
 planScan.TimeOut = cvalue * planScan.NRead * 4;
+
+hTasks.hScan = planScan.hScan;
+hTasks.hCounter = planScan.hCounter;
+hTasks.hPulse = planScan.hPulse;
 
 %%%% now assume we only do XY Scan
 
@@ -3086,10 +3086,6 @@ DAQmxErr(status);
 % Config AO Task (Voltage Scan)
 planScan.hScan = SetXYOutPut_Haopu(planScan,1/cvalue,hObject, eventdata, handles);
 
-hTasks.hScan = planScan.hScan;
-hTasks.hCounter = planScan.hCounter;
-hTasks.hPulse = planScan.hPulse;
-
 % Start all tasks
 status = DAQmxStartTask(planScan.hCounter);
 DAQmxErr(status);
@@ -3099,15 +3095,19 @@ status = DAQmxStartTask(planScan.hPulse);
 DAQmxErr(status);
 
 cumCounts = nan(1, planScan.Ntot+1);
-
-multiplier(1)=1/gConfocal.Vx_per_um;
-multiplier(2)=1/gConfocal.Vy_per_um;
+fig = figure;
+im = imagesc(nan(planScan.SizeImg));
+axis square
+colormap pink
+colorbar
+hold on
+ax = gca;
 
 currentScanIdx = 1;
 pause(0.1)
 while currentScanIdx < planScan.Ntot+2 && bGo
     %isDone = calllib('mynidaqmx', 'DAQmxIsTaskDone', planScan.hCounter);
-    MAX_BUFFER_SIZE = planScan.Ntot+1;
+    MAX_BUFFER_SIZE = 1000;
     [status,readArray,sampsRead] = ReadDataFromDAQ(planScan.hCounter, MAX_BUFFER_SIZE);
     DAQmxErr(status);
     
@@ -3122,16 +3122,7 @@ while currentScanIdx < planScan.Ntot+2 && bGo
         I = reshape(diff(cumCounts), planScan.SizeImg);
         II = I.'/Scan.FixDT;
         II(2:2:end, :) = fliplr(II(2:2:end,:));
-        imagesc(handles.axes1, II,...
-            'XData',planScan.ContRange*multiplier(1),...
-            'YData',planScan.FLRange*multiplier(2),...
-            'Parent',handles.axes1);
-        colormap(handles.axes1,pink);
-        axis(handles.axes1,'square');
-        colorbar('peer',handles.axes1,'location','EastOutside');
-        xlabel(handles.axes1,'distance [um]');
-        ylabel(handles.axes1,'distance [um]');
-        drawnow;
+        imagesc(II);
     end
     
     pause(0.01)
@@ -3141,21 +3132,6 @@ DAQmxClearTask(planScan.hPulse);
 DAQmxClearTask(planScan.hScan);
 DAQmxClearTask(planScan.hCounter);
 
-imagesc(handles.axes1, II,...
-    'XData',planScan.ContRange*multiplier(1),...
-    'YData',planScan.FLRange*multiplier(2),...
-    'Parent',handles.axes1, ...
-    'ButtonDownFcn',{@CallImageSetXYVoltage,hObject,handles});
-colormap(handles.axes1,pink);
-axis(handles.axes1,'square');
-colorbar('peer',handles.axes1,'location','EastOutside');
-xlabel(handles.axes1,'distance [um]');
-ylabel(handles.axes1,'distance [um]');
-drawnow;
-set(handles.axes1,'ButtonDownFcn',{@CallImageSetXYVoltage,hObject,handles});
-
-
-ImageSaveImage('Save',hObject, eventdata, handles);
 
 % added 13 Aug 2008
 % if Marker is checked, make cross hairs

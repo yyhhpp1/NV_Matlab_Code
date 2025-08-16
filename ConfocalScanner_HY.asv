@@ -1,0 +1,338 @@
+classdef ConfocalScanner < handle
+    %CONFocalScanner  2D raster scan with NI-DAQ and live display.
+    %
+    % Usage:
+    %   sc = ConfocalScanner(Scan, handles, gConfocal, gScan);
+    %   sc.run();   % blocking; cleans up on exit/errors
+    %
+    % Notes:
+    %   - No user callbacks during the loop.
+    %   - Final image computed once; callbacks attached after.
+    %   - AO write buffer kept as 1×2N (GroupByChannel = 0).
+
+    properties
+        Scan
+        handles
+        gConfocal
+        gScan
+
+        planScan
+        tasks struct = struct('hCounter',[], 'hPulse',[], 'hScan',[])
+        bGo logical = true
+
+        CPS_buf           % [NY x NX] live buffer
+        himg              % image handle
+        linMap            % serpentine linear->(row,col) mapping
+        cumCounts double  % 1 x (Ntot+1)
+        currentScanIdx double = 1
+    end
+
+    methods
+        function obj = ConfocalScanner(Scan, handles, gConfocal, gScan)
+            obj.Scan = Scan;
+            obj.handles = handles;
+            obj.gConfocal = gConfocal;
+            obj.gScan = gScan;
+
+            obj.planScan = obj.plan(Scan, handles);
+            obj.prePosition();
+            obj.setupLiveImage();
+            obj.setupDAQ();
+        end
+
+        function delete(obj)
+            % Auto-clean DAQ on object destruction
+            obj.clearDAQ();
+        end
+
+        function run(obj)
+            % Blocking acquisition + live plotting (no custom callbacks inside loop).
+            try
+                obj.startDAQ();
+                pause(0.1);
+
+                MAX_BUFFER_SIZE = obj.planScan.Ntot + 1;
+
+                while obj.currentScanIdx < obj.planScan.Ntot+2 && obj.bGo
+                    [status, readArray, sampsRead] = ReadDataFromDAQ(obj.tasks.hCounter, MAX_BUFFER_SIZE); %#ok<*NASGU>
+                    DAQmxErr(status);
+
+                    if sampsRead > 0
+                        valid = readArray(1:sampsRead);
+                        valid(valid == 0) = [];
+                        if ~isempty(valid)
+                            nvalid = numel(valid);
+                            lastIdx = min(obj.currentScanIdx + nvalid - 1, obj.planScan.Ntot+1);
+                            writeCount = lastIdx - obj.currentScanIdx + 1;
+                            obj.cumCounts(obj.currentScanIdx:lastIdx) = double(valid(1:writeCount));
+                            obj.currentScanIdx = lastIdx + 1;
+                        end
+                    end
+
+                    obj.liveUpdate();
+                    pause(0.005);
+                end
+            catch ME
+                warning('ConfocalScanner:RunError','%s', getReport(ME));
+            end
+
+            obj.clearDAQ();
+            obj.finalizeAndSave();
+            obj.attachCallbacks();
+        end
+
+        function stop(obj)
+            obj.bGo = false;
+        end
+    end
+
+    methods (Access = private)
+        function planScan = plan(~, Scan, handles)
+            % (Same logic as your PlanScan_Haopu, trimmed for clarity)
+            global gConfocal %#ok<TLEV>  % only to satisfy your original offsets if needed
+
+            bScanX  = ~get(handles.bFixVx,'Value');
+            bScanY  = ~get(handles.bFixVy,'Value');
+            bScanZ  = ~get(handles.bFixVz,'Value');
+            bScanDT = ~get(handles.bFixDT,'Value');
+
+            mk = @(vmin,vmax,N) (N>1) * (vmin:(vmax-vmin)/(N-1):vmax) + (N==1) * vmin;
+
+            % X
+            if bScanX
+                VX = mk(Scan.minVx, Scan.maxVx, Scan.NVx);
+                VXr= [VX(1) VX(end)];
+                VX = VX + gConfocal.XOffSet;
+            else
+                VX = gConfocal.XOffSet + Scan.FixVx;
+                VXr= [VX(1) VX(end)] - gConfocal.XOffSet;
+            end
+
+            % Y
+            if bScanY
+                VY = mk(Scan.minVy, Scan.maxVy, Scan.NVy);
+                VYr= [VY(1) VY(end)];
+                VY = VY + gConfocal.YOffSet;
+            else
+                VY = gConfocal.YOffSet + Scan.FixVy;
+                VYr= [VY(1) VY(end)] - gConfocal.YOffSet;
+            end
+
+            % Z (kept for completeness)
+            if bScanZ
+                VZ = mk(Scan.minVz, Scan.maxVz, Scan.NVz);
+            else
+                VZ = Scan.FixVz;
+            end
+
+            % DT
+            if bScanDT
+                VDT = mk(Scan.minDT, Scan.maxDT, Scan.NDT);
+            elseif bScanZ && ~bScanX && ~bScanY
+                error('Please scan in 2D (XZ or YZ) rather than only Z.');
+            else
+                VDT = Scan.FixDT;
+            end
+
+            % Determine fast/slow axes (same policy as before)
+            PS = [1 ~get(handles.bFixVx,'Value') 1; ...
+                  2 ~get(handles.bFixVy,'Value') 2; ...
+                  3 ~get(handles.bFixVz,'Value') 3; ...
+                  4 ~get(handles.bFixDT,'Value') 4];
+            PS = sortrows(PS,[-2 3]);
+
+            VV = {VX, VY, VZ, VDT};
+            VVr= {VXr, VYr, [], []};
+
+            planScan.VV = VV;
+            planScan.Cont      = [VV{PS(1,1)}(1), VV{PS(1,1)}, fliplr(VV{PS(1,1)})];
+            planScan.ContRange = VVr{PS(1,1)};
+            planScan.WhatCont  = PS(1,1);
+            planScan.NRead     = (numel(planScan.Cont) - 1)/2;
+
+            planScan.FL        = VV{PS(2,1)};
+            planScan.FLRange   = VVr{PS(2,1)};
+            planScan.Ntot      = planScan.NRead * numel(planScan.FL);
+            planScan.SizeImg   = [numel(planScan.FL), planScan.NRead];
+
+            planScan.DT        = Scan.FixDT;
+            planScan.TimeOut   = planScan.DT * planScan.NRead * 4;
+
+            planScan.hCounter  = [];
+            planScan.hPulse    = [];
+            planScan.hScan     = [];
+        end
+
+        function prePosition(obj)
+            WriteVoltage(PortMap('Galvo x'), obj.Scan.minVx);
+            WriteVoltage(PortMap('Galvo y'), obj.Scan.minVy);
+            pause(0.004);
+        end
+
+        function setupLiveImage(obj)
+            multX = 1 / obj.gConfocal.Vx_per_um;
+            multY = 1 / obj.gConfocal.Vy_per_um;
+            x_um  = obj.planScan.ContRange * multX;
+            y_um  = obj.planScan.FLRange   * multY;
+
+            NY = obj.planScan.SizeImg(1);
+            NX = obj.planScan.SizeImg(2);
+
+            ax = obj.handles.axes1;
+            obj.CPS_buf = nan(NY, NX);
+            obj.himg = imagesc(ax, obj.CPS_buf, 'XData', x_um, 'YData', y_um, 'Parent', ax);
+            colormap(ax, pink);
+            axis(ax, 'square');
+            colorbar('peer', ax, 'location', 'EastOutside');
+            xlabel(ax, 'distance [\mum]');
+            ylabel(ax, 'distance [\mum]');
+            drawnow;
+
+            % Precompute serpentine mapping
+            p  = (1:(NY*NX)).';
+            r  = ceil(p / NX);
+            pos= p - (r-1)*NX;
+            c  = pos;
+            isEven = mod(r,2)==0;
+            c(isEven) = NX - c(isEven) + 1;
+            obj.linMap = sub2ind([NY, NX], r, c);
+
+            % Buffers
+            obj.cumCounts = nan(1, obj.planScan.Ntot+1);
+            obj.currentScanIdx = 1;
+        end
+
+        function setupDAQ(obj)
+            % Reset
+            DAQmxResetDevice('Dev1');
+
+            % CI
+            obj.tasks.hCounter = SetCounter(obj.planScan.Ntot+1, 1/obj.planScan.DT);
+            status = calllib('mynidaqmx','DAQmxSetReadReadAllAvailSamp',obj.tasks.hCounter,uint32(1));
+            DAQmxErr(status);
+
+            % CO
+            [status, obj.tasks.hPulse] = DigPulseTrainCont(1/obj.planScan.DT, 0.5, obj.planScan.Ntot+1);
+            DAQmxErr(status);
+
+            % AO
+            obj.tasks.hScan = obj.setupAO_1x2N();
+        end
+
+        function hAO = setupAO_1x2N(obj)
+            % Build serpentine AO patterns
+            xVals = obj.planScan.VV{1}; numX = numel(xVals);
+            yVals = obj.planScan.VV{2}; numY = numel(yVals);
+
+            xPattern = zeros(1, numX * numY);
+            yPattern = zeros(1, numX * numY);
+
+            idx = 1;
+            for i = 1:numY
+                if mod(i,2)==1, xLine = xVals; else, xLine = fliplr(xVals); end
+                n = numX;
+                xPattern(idx:idx+n-1) = xLine;
+                yPattern(idx:idx+n-1) = yVals(i);
+                idx = idx + n;
+            end
+
+            xPattern = [xPattern, xPattern(end)];
+            yPattern = [yPattern, yPattern(end)];
+            N = obj.planScan.Ntot + 1;
+
+            V = [xPattern, yPattern]; % 1×(2N), GroupByChannel=0
+            DAQmx_Val_Volts          = 10348;
+            DAQmx_Val_Rising         = 10280;
+            DAQmx_Val_FiniteSamps    = 10178;
+            DAQmx_Val_GroupByChannel = 0;
+
+            [status, ~, hAO] = DAQmxCreateTask([]);                    DAQmxErr(status);
+            status = DAQmxCreateAOVoltageChan(hAO, PortMap('Galvo x'), -10, 10, DAQmx_Val_Volts); DAQmxErr(status);
+            status = DAQmxCreateAOVoltageChan(hAO, PortMap('Galvo y'), -10, 10, DAQmx_Val_Volts); DAQmxErr(status);
+
+            status = DAQmxCfgSampClkTiming(hAO, PortMap('Ctr Trig'), 1/obj.planScan.DT, ...
+                                           DAQmx_Val_Rising, DAQmx_Val_FiniteSamps, N);         DAQmxErr(status);
+
+            zero_ptr = libpointer('int32Ptr', 0);
+            status = DAQmxWriteAnalogF64(hAO, N, 0, 10, DAQmx_Val_GroupByChannel, V, zero_ptr);  DAQmxErr(status);
+        end
+
+        function startDAQ(obj)
+            DAQmxErr( DAQmxStartTask(obj.tasks.hCounter) );
+            DAQmxErr( DAQmxStartTask(obj.tasks.hScan)    );
+            DAQmxErr( DAQmxStartTask(obj.tasks.hPulse)   );
+        end
+
+        function clearDAQ(obj)
+            try, DAQmxClearTask(obj.tasks.hPulse);  catch, end
+            try, DAQmxClearTask(obj.tasks.hScan);   catch, end
+            try, DAQmxClearTask(obj.tasks.hCounter);catch, end
+        end
+
+        function liveUpdate(obj)
+            % Fast, per-pixel live update with no user callbacks.
+            lastFinite = find(isfinite(obj.cumCounts), 1, 'last');
+            if isempty(lastFinite) || lastFinite < 2
+                return;
+            end
+
+            nPixAvail = min(lastFinite - 1, numel(obj.linMap));
+            if nPixAvail <= 0, return; end
+
+            Icounts = diff(obj.cumCounts(1:lastFinite));
+            Icounts = Icounts(1:nPixAvail);
+            CPS_vals = Icounts / obj.planScan.DT;
+
+            obj.CPS_buf(:) = NaN;
+            obj.CPS_buf(obj.linMap(1:nPixAvail)) = CPS_vals;
+
+            set(obj.himg, 'CData', obj.CPS_buf);
+            drawnow limitrate;
+        end
+
+        function finalizeAndSave(obj)
+            % Build the final frame & decorate/save (no user callbacks earlier)
+            try
+                Icounts = diff(obj.cumCounts);
+                I       = reshape(Icounts, obj.planScan.SizeImg);
+                II      = I.' / obj.planScan.DT;
+                II(2:2:end, :) = fliplr(II(2:2:end, :));
+
+                multX = 1 / obj.gConfocal.Vx_per_um;
+                multY = 1 / obj.gConfocal.Vy_per_um;
+                x_um  = obj.planScan.ContRange * multX;
+                y_um  = obj.planScan.FLRange   * multY;
+
+                set(obj.himg, 'CData', II, 'XData', x_um, 'YData', y_um);
+                ax = obj.handles.axes1;
+                colormap(ax, pink);
+                axis(ax, 'square');
+                colorbar('peer', ax, 'location', 'EastOutside');
+                xlabel(ax, 'distance [\mum]');
+                ylabel(ax, 'distance [\mum]');
+                drawnow;
+
+                ImageSaveImage('Save', [], [], obj.handles); % adapt if needed
+                if get(obj.handles.cbMarker,'Value') && ~get(obj.handles.bScanCont,'Value')
+                    DrawCrossHairs([],[],obj.handles);
+                end
+                if ~get(obj.handles.bScanCont,'Value')
+                    WriteVoltage(PortMap('Galvo x'), obj.gScan.FixVx + obj.gConfocal.XOffSet);
+                    WriteVoltage(PortMap('Galvo y'), obj.gScan.FixVy + obj.gConfocal.YOffSet);
+                end
+            catch ME
+                warning('ConfocalScanner:Finalize','%s', getReport(ME));
+            end
+        end
+
+        function attachCallbacks(obj)
+            % Attach click behavior AFTER the run
+            try
+                set(obj.himg,           'ButtonDownFcn', {@CallImageSetXYVoltage, [], obj.handles});
+                set(obj.handles.axes1,  'ButtonDownFcn', {@CallImageSetXYVoltage, [], obj.handles});
+            catch
+                % safe no-op if handlers unavailable
+            end
+        end
+    end
+end

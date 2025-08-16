@@ -5,10 +5,13 @@ bGo = true;
 
 planScan = PlanScan_Haopu(Scan,hObject, eventdata, handles);
 %status = DAQmxResetDevice('Dev1');
-I = nan(planScan.SizeImg);
-totalSamplesRead = 0;
 
-cvalue = 0.004;
+%premove the galvo to first scanning point
+WriteVoltage(PortMap('Galvo x'),Scan.minVx);
+WriteVoltage(PortMap('Galvo y'),Scan.minVy);
+pause(0.01)
+
+cvalue = Scan.FixDT;
 
 planScan.DT = cvalue;
 
@@ -52,7 +55,7 @@ ax = gca;
 
 currentScanIdx = 1;
 pause(0.1)
-while currentScanIdx < planScan.Ntot+2
+while currentScanIdx < planScan.Ntot+2 && bGo
     %isDone = calllib('mynidaqmx', 'DAQmxIsTaskDone', planScan.hCounter);
     MAX_BUFFER_SIZE = 1000;
     [status,readArray,sampsRead] = ReadDataFromDAQ(planScan.hCounter, MAX_BUFFER_SIZE);
@@ -67,7 +70,7 @@ while currentScanIdx < planScan.Ntot+2
     
     if sampsRead > 2
         I = reshape(diff(cumCounts), planScan.SizeImg);
-        II = I.'/0.004;
+        II = I.'/Scan.FixDT;
         II(2:2:end, :) = fliplr(II(2:2:end,:));
         imagesc(II);
     end
@@ -75,7 +78,6 @@ while currentScanIdx < planScan.Ntot+2
     pause(0.01)
 end
 
-% if ~get(handles.bFastScan,'Value')
 DAQmxClearTask(planScan.hPulse);
 DAQmxClearTask(planScan.hScan);
 DAQmxClearTask(planScan.hCounter);
@@ -88,9 +90,8 @@ if get(handles.cbMarker,'Value') && ~get(handles.bScanCont,'Value')
 end
 % go to initial point
 if ~get(handles.bScanCont,'Value')
-    %     WriteVoltage(PortMap('Galvo x'),gConfocal.XOffSet);
-    %     WriteVoltage(PortMap('Galvo y'),gConfocal.YOffSet);
-    %     WriteVoltage('Obj_Piezo',50);
+    WriteVoltage(PortMap('Galvo x'),gConfocal.XOffSet);
+    WriteVoltage(PortMap('Galvo y'),gConfocal.YOffSet);
 end
 
 
@@ -192,7 +193,7 @@ if bScanDT
 elseif bScanZ && ~bScanX && ~bScanY
     error('Please scan in 2D (XZ or YZ) rather than only in Z.');
 else
-    VV{4} = Scan.FixDT/2;
+    VV{4} = Scan.FixDT;
     VVRange{4}= [min(VV{4}) max(VV{4})];
 end
 
