@@ -355,7 +355,7 @@ global gScan gbManChange gConfocal gImageCorr gSaveImg
 disp('Image correlation tracking starts!')
 % Get the information from reference figure
 
-gImageCorr.RefIMG = 'C:\NV_MATLAB_Code\ImageCorrelation\Image_2025-7-29_Img009.txt';
+gImageCorr.RefIMG = 'C:\NV_MATLAB_Code\ImageCorrelation\Image_2025-8-26_Img013.txt';
 
 [IMG_ref, Info_ref]=ReadImageFile_ImgCorr(gImageCorr.RefIMG);
 gImageCorr.RefVx = IMG_ref.FixVx;
@@ -1152,8 +1152,9 @@ else
 end
 r = 0;
 
+planScan = PlanScan_Haopu(gScan,hObject, eventdata, handles);
+
 if get(handles.bFastScan,'Value') %preload image object
-    planScan = PlanScan_Haopu(gScan,hObject, eventdata, handles);
     
     % Convert axis to µm for display
     x_um_per_V = 1/gConfocal.Vx_per_um;
@@ -1174,11 +1175,22 @@ if get(handles.bFastScan,'Value') %preload image object
     drawnow;
 end
 
+
 while bGo && r<=R
 
     r = r+1;
     if get(handles.bFastScan,'Value')
-        MakeScan_Haopu(planScan, himg, hObject, eventdata, handles);
+        if ~gScan.bFixVz
+            z_lst = planScan.VV{3};
+            for z = z_lst 
+                piezoPFM450FunctionPool('setposition', z);
+                fprintf('Current z = %3.f \n', z)
+                MakeScan_Haopu(planScan, himg, hObject, eventdata, handles);            
+                if ~bGo; return; end
+            end
+        else
+            MakeScan_Haopu(planScan, himg, hObject, eventdata, handles);
+        end
     else
         MakeScan(gScan,hObject, eventdata, handles);
     end
@@ -1265,11 +1277,17 @@ try
     DAQmxErr( DAQmxStartTask(planScan.hScan)    );
     DAQmxErr( DAQmxStartTask(planScan.hPulse)   );
     
-    MAX_BUFFER_SIZE = planScan.Ntot + 1;
+    if planScan.Ntot < 50000
+        MAX_BUFFER_SIZE = planScan.Ntot + 1;
+    else
+        MAX_BUFFER_SIZE = 50000;
+    end
 
     while currentScanIdx < planScan.Ntot+2 && bGo    
         
-        pause(0.05); % adjust for CPU usage vs. latency
+        pause(0.1); % adjust for CPU usage vs. latency
+        
+        if ~bGo; break; end
         
         % Non-blocking: read "all available" U32 counter samples up to buffer size
         [status, readArray, sampsRead] = ReadDataFromDAQ(planScan.hCounter, MAX_BUFFER_SIZE);
@@ -1303,10 +1321,13 @@ try
         end
      
     end
-
+    
 catch ME
     % Surface any error after cleanup
     warning('MakeScan_Haopu:RuntimeError','%s',getReport(ME));
+    DAQmxClearTask(planScan.hPulse);
+    DAQmxClearTask(planScan.hScan);
+    DAQmxClearTask(planScan.hCounter);
 end
 
 % ---------- Always clear DAQ tasks!!! ----------

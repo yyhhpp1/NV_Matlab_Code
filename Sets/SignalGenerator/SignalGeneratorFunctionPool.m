@@ -53,7 +53,8 @@ else
     fclose(gSG.serial);
     gSG.serial = gSG.serial(1);
 end
-set(gSG.serial,'BaudRate',115200);
+gSG.serial.BaudRate =115200;
+gSG.serial.InputBufferSize = 4096;
 gSG.qErr=zeros(1,2);
 IDN();
 
@@ -149,6 +150,7 @@ fclose(gSG.serial);
 
 function WriteFreq()
 global gSG
+fclose(gSG.serial); pause(0.1)
 fopen(gSG.serial);
 pause(0.1)
 % fprintf(gSG.serial, 'DISP 2');
