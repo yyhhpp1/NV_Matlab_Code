@@ -27,10 +27,10 @@ vals{1}='111';
 vals{2}='1-1-1';
 vals{3}='-1-11';
 vals{4}='-11-1';
-% color{1}=[1 1 0];
-% color{2}=[1 0 1];
-% color{3}=[0 1 1];
-% color{4}=[0 1 0];
+color{1}=[1 1 0];
+color{2}=[1 0 1];
+color{3}=[0 1 1];
+color{4}=[0 1 0];
 set(app.AxisDropDown,'String',vals);
 % set(h,'Interpreter','latex','fontsize',12)
 gMag.B=[1 0 0];
@@ -145,7 +145,7 @@ if nargin>3
         delete(hMag);
      end
 end
-%color='r';
+color='r';
 % Plot the magnetic field direction
 hMag=plot3t([0 sin(B(2))*cos(B(3))],...
     [0 sin(B(2))*sin(B(3))], [0 cos(B(2))],.02, color,axes); 

@@ -55,7 +55,7 @@ switch what
             Auto_LoadUserInputs(hObject,eventdata,handles);
             RunSequence(hObject, eventdata, handles);
             
-            filename = strcat("C:\Users\dilution_fridge_2\Desktop\",string(datetime('now','Format', 'yyyy-MM-dd_HH-mm-ss')),".png");
+            filename = strcat("C:\Users\MoleculeExp\Desktop\autoruns\",string(datetime('now','Format', 'yyyy-MM-dd_HH-mm-ss')),".png");
             imwrite(getframe(handles.figure1).cdata, filename)
             if ~gmSEQ.bAutoRun
                 disp('AutoRun is stopped.')
@@ -140,7 +140,7 @@ LoadPBESR;
 % LoadNIDAQmx;
 
 % load SRS SG386 DLL
-SignalGeneratorFunctionPool('Init',PortMap('SG com'));
+SignalGeneratorFunctionPool('Init');
 gSG.bMod='IQ';
 gSG.bModSrc='External';
 SignalGeneratorFunctionPool('SetMod');

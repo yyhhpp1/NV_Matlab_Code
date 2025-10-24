@@ -22,9 +22,11 @@ switch type
         pbn=7;
     case '-Y'
         pbn=8;
+    case 'OrangeAOM'
+        pbn=15;
     case 'PD'
         pbn=14;
-    case 'OrangeAOM'
+    case 'FPGATrig'
         pbn=3;
     case 'TimeTaggerTrig'
         pbn=9;        

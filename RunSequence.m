@@ -10,12 +10,13 @@ if isempty(fpga.client_socket)
     msg = fpga.connect(PortMap('FPGA Host'),PortMap('FPGA Port'));
     handles.fpga_ack_str.String = msg;
 end
+if FPGA_output_power_check(handles); return; end
 
-% fpga.delete_all_envelope_data();
-% fpga.delete_all_waveform_cfg();
-% fpga.delete_all_programs();
-% % set trigger
-% fpga.set_trigger_mode('external');
+fpga.delete_all_envelope_data();
+fpga.delete_all_waveform_cfg();
+fpga.delete_all_programs();
+% set trigger
+fpga.set_trigger_mode('external');
 
 % default setting
 gmSEQ.bRaman = 0;
@@ -71,7 +72,10 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
     SignalGeneratorFunctionPool('WriteFreq');
     SignalGeneratorFunctionPool('SetMod');
     SignalGeneratorFunctionPool('WritePow');
-    gSG.bOn=1;  SignalGeneratorFunctionPool('RFOnOff');
+    gSG.bOn=1;     
+    if ~startsWith(gmSEQ.name, 'f_') %do not turn on SRS if use FPGA sequences
+        SignalGeneratorFunctionPool('RFOnOff');
+    end
 
     CreateCaliLog(hObject, eventdata, handles);
     
@@ -158,7 +162,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                     if gmSEQ.measPD;StartCounters(hCounterPD0);end
                     %                     StartCounters(hCounter2);
                     %                     StartCounters(hCounter3);
-                    %%% fpga.start_program(string(gmSEQ.name));
+                    fpga.start_program(string(gmSEQ.name));
                     %handles.fpga_ack_str = msg;
                     pause(0.1)
                     Run_PB_Sequence();
@@ -171,7 +175,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                     
                     %%% fpga stop program
                     pause(0.1)
-                    %%%fpga.stop_program();
+                    fpga.stop_program();
                     if gmSEQ.measPD;DAQmxStopTask(hCounterPD0);end
                     %                     DAQmxStopTask(hCounter2);
                     %                     DAQmxStopTask(hCounter3);
@@ -227,7 +231,14 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                 % save a backup of the data here in case matlab crashes
                 TemporarySave(BackupFile);
                 if gmSEQ.ctrN<=20 %do not plot if too many counter gates
-                    PlotData(handles,raw_j);
+                    if strcmp(gmSEQ.name, 'f_T1_S00_S01_S10')||strcmp(gmSEQ.name, 'T1_S00_S01_S10')
+                        PlotT1Data_method4(handles,raw_j);
+                    elseif strcmp(gmSEQ.name, 'f_T1_S11_S1m1')||strcmp(gmSEQ.name, 'T1_S11_S1m1')
+                        PlotT1Data_method3(handles,raw_j);
+                    else
+                        PlotData(handles,raw_j);
+                    end
+                    
                 end
                 drawnow;
                 if ~gmSEQ.bGo
@@ -256,7 +267,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
         KillAllTasks; %kill all niDAQ tasks
         set(handles.runningText,'string','Error!')
         gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
-        %%%fpga.stop_program();
+        fpga.stop_program();
         Set_FPGA_GUI_buttons(handles, 'on')
         PBFunctionPool('PBON',2^SequencePool('PBDictionary','GreenAOM'));
         rethrow(ME);
@@ -327,7 +338,7 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
                 gmSEQ.signal(1,:) = ProcessData(A);
                 gmSEQ.signal_Ave(1,:) = ProcessData(A);
             end
-            
+            plot(handles.axes3, gmSEQ.SweepParam.*gmSEQ.ScaleT, ProcessData(A))
             TemporarySave(BackupFile);
             PlotData(handles,0);
             drawnow;
@@ -362,7 +373,7 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
     gmSEQ.SweepParam=gmSEQ.SweepParam*1e9;
     CreateCaliLog(hObject, eventdata, handles);
     
-    gmSEQ.bTomo = gmSEQ.Alternate;
+    gmSEQ.bTomo = false;
     if gmSEQ.bTomo
         gmSEQ.dataN = 3*gmSEQ.ctrN;
         disp("Tomographical measurement ongoing...")
@@ -733,12 +744,21 @@ if ~isfield(gmSEQ,'bLiO')&&gmSEQ.ctrN~=1 % Do not plot ESR
                 sig_B = signal(2,:);
                 sig_D = signal(4,:); 
                 [data, data_err] = ContrastDiff2(ref_B, ref_D,sig_B, sig_D, gmSEQ.iAverage);
-            elseif strcmp(gmSEQ.name,'f_XY8')||strcmp(gmSEQ.name,'f_DEER_XY8')
+            elseif strcmp(gmSEQ.name,'f_XY8')||strcmp(gmSEQ.name,'f_DEER_XY8')...
+                    ||strcmp(gmSEQ.name,'f_XY4')||strcmp(gmSEQ.name,'f_DEER_XY4')...
+                    ||strcmp(gmSEQ.name,'f_XY2')||strcmp(gmSEQ.name,'f_DEER_XY2')...
+                    ||strcmp(gmSEQ.name,'f_Spin_Locking')
                 ref_B = signal(1,:);
                 sig_D = signal(2,:);
                 ref_D = signal(3,:);
                 sig_B = signal(4,:); 
-                [data, data_err] = ContrastDiff2(ref_B, ref_D,sig_B, sig_D, gmSEQ.iAverage);
+                [data, data_err] = ContrastDiff2(ref_B, ref_D, sig_B, sig_D, gmSEQ.iAverage);
+            elseif strcmp(gmSEQ.name,'f_XY8_fdc')
+                ref_B = signal(1,:);
+                sig_D = signal(2,:);
+                ref_D = signal(3,:);
+                sig_B = fliplr(signal(4,:)); 
+                [data, data_err] = ContrastDiff2(ref_B, ref_D, sig_B, sig_D, gmSEQ.iAverage);
             else          
                 ref_B = signal(3,:);
                 ref_D = signal(1,:);
@@ -758,6 +778,7 @@ if ~isfield(gmSEQ,'bLiO')&&gmSEQ.ctrN~=1 % Do not plot ESR
             data_err = data;
         end
         % plot(handles.axes3, gmSEQ.SweepParam(1:length(data)).*ScaleT,data,'-g')
+        
         if strcmp(gmSEQ.name,'Elec_Pol_Extract')|| strcmp(gmSEQ.name,'Rabi_fix_MWDutyCycle')
             errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data1)).*gmSEQ.ScaleT, data1, data_err1,'-r')
             hold(handles.axes3,'on')
@@ -1140,3 +1161,20 @@ handles.fpga_get_state.Enable = is_enable;
 handles.fpga_get_connect.Enable = is_enable;
 handles.fpga_get_disconnect.Enable = is_enable;
 
+function stop = FPGA_output_power_check(handles)
+FPGAGain6 = str2double(handles.FPGAGain6.String);
+FPGAGain7 = str2double(handles.FPGAGain7.String);
+if FPGAGain6 > 20 || FPGAGain7 > 20
+    answer = questdlg('Do you still want to proceed with current FPGA Gains?', ...
+        'FPGA Gain Check', ...
+        'Yes','No', 'No');
+
+    switch answer
+        case 'Yes'
+            stop = 0;
+        case 'No'
+            stop = 1;
+    end
+else
+    stop = 0;
+end

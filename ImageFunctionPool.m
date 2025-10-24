@@ -355,7 +355,7 @@ global gScan gbManChange gConfocal gImageCorr gSaveImg
 disp('Image correlation tracking starts!')
 % Get the information from reference figure
 
-gImageCorr.RefIMG = 'C:\NV_MATLAB_Code\ImageCorrelation\Image_2025-8-26_Img013.txt';
+gImageCorr.RefIMG = 'C:\NV_MATLAB_Code\ImageCorrelation\Image_2025-10-24_Img006.txt';
 
 [IMG_ref, Info_ref]=ReadImageFile_ImgCorr(gImageCorr.RefIMG);
 gImageCorr.RefVx = IMG_ref.FixVx;
@@ -1234,7 +1234,7 @@ bGo = true;
 % Galvo pre-position to starting pixel (upper-left)
 WriteVoltage(PortMap('Galvo x'), gScan.minVx);
 WriteVoltage(PortMap('Galvo y'), gScan.minVy);
-pause(0.004);  % Increase if the first pixel looks smeared
+pause(1);  % Increase if the first pixel looks off
 
 % Timing
 cvalue = gScan.FixDT;          % seconds per pixel (dwell time)

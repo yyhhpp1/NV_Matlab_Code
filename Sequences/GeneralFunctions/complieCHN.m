@@ -13,11 +13,12 @@ for i = 1:N_chn
     prog_save{i} = prog;
 end
 
+%channel number is changed here. 
 if N_chn == 1
-    ch.ch7 = prog_save{1};
+    ch.ch0 = prog_save{1};
 elseif N_chn == 2
-    ch.ch7 = prog_save{1};
-    ch.ch6 = prog_save{2};
+    ch.ch0 = prog_save{1};
+    ch.ch1 = prog_save{2};
 else
     warning('max number of channels is 2')
 end

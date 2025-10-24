@@ -13,10 +13,10 @@ switch what
         path='Dev1/ao2';
     case 'Ctr Trig'
         path='/Dev1/PFI13';
-    case 'SG ip'
-        path = '169.254.215.80';
     case 'SG com'
         path='com11';
+    case 'SG ip'
+        path='169.254.112.17';        
     case 'SG com 2'
         path='com7';
     case 'SG com 3'
@@ -81,7 +81,8 @@ switch what
     case 'keithleyZ'
         path='USB0::0x05E6::0x2200::9210716::INSTR';
     case 'FPGA Host'
-        path = '192.168.0.241';
+        %path = '192.168.137.2';
+        path = '192.168.3.1';
     case 'FPGA Port'
-        path = 2345;
+        path = 1234;
 end

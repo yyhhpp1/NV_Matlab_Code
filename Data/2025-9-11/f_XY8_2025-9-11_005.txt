@@ -1,0 +1,119 @@
+IGOR
+WAVES/D/O sweep,sig(4) 
+BEGIN
+10 2.085608e+06 2059211 2.048091e+06 2.073682e+06 
+16 2091864 2066731 2051364 2.076882e+06 
+22 2.092179e+06 2071137 2.051932e+06 2.077785e+06 
+28 2.089200e+06 2.070693e+06 2.050482e+06 2073466 
+34 2093775 2077308 2.054833e+06 2080093 
+40 2092695 2.076794e+06 2.053174e+06 2.077129e+06 
+46 2091467 2077083 2.051432e+06 2.076929e+06 
+52 2.092424e+06 2079992 2052445 2.078398e+06 
+58 2.093256e+06 2.082776e+06 2.054822e+06 2080137 
+64 2090155 2.078394e+06 2.050095e+06 2077554 
+70 2093963 2.083554e+06 2.053881e+06 2082296 
+
+END
+X//SEQUENCE PARAMETERS
+X//meas
+X//SPCM
+X//meas2
+X//PD0 not connected
+X//bGo
+X//0
+X//bExp
+X//0
+X//bTomo
+X//0
+X//name
+X//f_XY8
+X//From
+X//10
+X//To
+X//70
+X//bSweep1log
+X//0
+X//N
+X//11
+X//From2
+X//6
+X//bSweep2log
+X//0
+X//bSweep2
+X//0
+X//To2
+X//166
+X//N2
+X//11
+X//From3
+X//0
+X//bSweep3log
+X//0
+X//bSweep3
+X//0
+X//To3
+X//200
+X//N3
+X//21
+X//pi
+X//8
+X//halfpi
+X//4
+X//interval
+X//4
+X//readout
+X//200000
+X//misc
+X//8
+X//CtrGateDur
+X//30000
+X//bWarmUpAOM
+X//0
+X//bTrack
+X//1
+X//saveRaw
+X//0
+X//post_init_wait
+X//5000
+X//post_MW_wait
+X//1000
+X//P1Pulse
+X//0
+X//TrackPointN
+X//47
+X//DEERpi
+X//10
+X//DEERt
+X//100
+X//bAAR
+X//1
+X//Repeat
+X//10000
+X//Average
+X//99999
+X//bCust
+X//0
+X//measPD
+X//0
+X//bRaman
+X//0
+X//NSweepParam
+X//11
+X//bGoAfterAvg
+X//0
+X//bCtr
+X//0
+X//m
+X//70
+X//ctrN
+X//4
+X//bRandom
+X//0
+X//dataN
+X//4
+X//refCounts
+X//7034368.4211
+X//iAverage
+X//4
+X//bAutoRun
+X//0

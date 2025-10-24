@@ -17,7 +17,7 @@ global gSolver gMag
 gSolver.Sx = 1/sqrt(2)*[0 1 0;1 0 1;0 1 0];
 gSolver.Sy = 1/(1i*sqrt(2))*[0 1 0;-1 0 1;0 -1 0];
 gSolver.Sz = [1 0 0;0 0 0;0 0 -1];
-gSolver.Delta = 2870.3;
+gSolver.Delta = 2871.23;
 gSolver.gamma_e = 2.8035;
 gSolver.width=1; %linewidth for plotting
 gSolver.contrast=0.05; %contrast for plotting
@@ -28,18 +28,18 @@ gSolver.contrast=0.05; %contrast for plotting
 % algorithm, please ensure that the currents applied do not flip polarity;
 % i.e., do not flip the signal and ground wires between instances.
 
-i=[1.1932 2.4 3.1];
-i=[i; 1.1932 2.4 2.5];
-i=[i; 1.7 2.4 3.2];  
-i=[i; 1.1932 2 2.5];
+i=[2 1 0.5];
+i=[i; 3 1 0.5];
+i=[i; 3 1 0];  
+i=[i; 2 0 0];
 
 % Transition energies from your ODMR spectra (MHz). Each line must be in
 % the order: ms=-1 (111), ms=+1 (111), ...
-target(1,:)=[2923600000 3218330000 2981680000 3235900000 3088970000 3173460000 2862830000 3345060000];
-target(2,:)=[2951530000 3188580000 2968130000 3239020000 3091960000 3163050000 2873580000 3331030000];
-target(3,:)=[2920020000 3222240000 2966200000 3248540000 3058760000 3200170000 2878750000 3334640000];
-target(4,:)=[2944370000 3181430000 2984160000 3212140000 3073380000 3163440000 2907460000 3294640000];
-target=target/10^6;
+target(1,:)=[2654.1695 3123.0581 2697.2115 3091.5967 2848.1128 2981.6894 2884.7858 2946.2937];
+target(2,:)=[2625.7753 3168.6022 2717.4097 3109.0317 2754.2742 3086.3848 2836.5306 3023.5571];
+target(3,:)=[2613.0042 3177.4797 2702.0829 3124.4174 2761.4889 3085.1813 2840.0467 3023.9496];
+target(4,:)=[2683.7841 3074.9782 2776.2997 3007.3524 2817.6968 2979.6477 2889.5343 2913.906];
+%target=target/10^6;
 
 %---------------------------ALGORITHM-------------------------------------%
 % Given the three ODMR spectra, we need to determine the three

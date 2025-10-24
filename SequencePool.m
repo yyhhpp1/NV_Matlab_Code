@@ -27,6 +27,8 @@ switch varargin{1}
         Rabi_SG2();
     case 'f_PiCali'
         f_PiCali();
+    case 'f_PiCali_ch6'
+        f_PiCali_ch6();        
     case 'f_InitDurCali'
         f_InitDurCali();   
     case 'f_CtrGateCali'
@@ -51,16 +53,26 @@ switch varargin{1}
         f_Echo();
     case 'f_Rabi'
         f_Rabi();
+    case 'f_Rabi_ch6'
+        f_Rabi_ch6();
     case 'f_PulsedESR'
         f_PulsedESR();        
     case 'f_T1'
         f_T1();
+    case 'f_T1_S00_S01_S10'
+        f_T1_S00_S01_S10();
+    case 'f_T1_S11_S1m1'
+        f_T1_S11_S1m1();
     case 'f_FPGA_delay'
         f_FPGA_delay();
     case 'f_XY8'
         f_XY8();
+    case 'f_XY8_fdc'
+        f_XY8_fdc();        
     case 'f_XY4'
         f_XY4();
+    case 'f_Spin_Locking'
+        f_Spin_Locking();
     case 'f_DEER_scan_power'
         f_DEER_scan_power();
     case 'f_DEER_scan_freq'
@@ -71,6 +83,10 @@ switch varargin{1}
         f_DEER_scan_dur();
     case 'f_DEER_XY8'
         f_DEER_XY8();
+    case 'f_DEER_XY4'
+        f_DEER_XY4();
+    case 'f_DEER_XY2'
+        f_DEER_XY2();
     case 'f_DEER_scan_power_XXY'
         f_DEER_scan_power_XXY();
     case 'f_DEER_scan_dur_XXY'
@@ -99,6 +115,8 @@ switch varargin{1}
         T1();
     case 'T1_S00_S01'
         T1_S00_S01();
+    case 'T1_S00_S01_S10'
+        T1_S00_S01_S10();
     case 'T1_Rb_S00_S01_Rd_newRef'
         T1_Rb_S00_S01_Rd_newRef();
     case 'T1_S00_S01_S10_S11'
@@ -147,19 +165,27 @@ StrL{1} = 'Select Sequence';
 StrL{numel(StrL)+1}='--------------------FPGA--------------------';
 StrL{numel(StrL)+1}='f_PulsedESR';
 StrL{numel(StrL)+1}='f_Rabi';
+StrL{numel(StrL)+1}='f_Rabi_ch6';
 StrL{numel(StrL)+1}='f_Echo';
 StrL{numel(StrL)+1}='f_T1';
+StrL{numel(StrL)+1}='f_T1_S00_S01_S10';
+StrL{numel(StrL)+1}='f_T1_S11_S1m1';
 StrL{numel(StrL)+1}='f_FPGA_delay';
 StrL{numel(StrL)+1}='f_PiCali';
+StrL{numel(StrL)+1}='f_PiCali_ch6';
 StrL{numel(StrL)+1}='f_InitDurCali';
 StrL{numel(StrL)+1}='f_CtrGateCali';
 StrL{numel(StrL)+1}='f_XY8';
+StrL{numel(StrL)+1}='f_XY8_fdc';
 StrL{numel(StrL)+1}='f_XY4';
+StrL{numel(StrL)+1}='f_Spin_Locking';
 StrL{numel(StrL)+1}='f_DEER_scan_tau';
 StrL{numel(StrL)+1}='f_DEER_scan_dur';
 StrL{numel(StrL)+1}='f_DEER_scan_freq';
 StrL{numel(StrL)+1}='f_DEER_scan_power';
 StrL{numel(StrL)+1}='f_DEER_XY8';
+StrL{numel(StrL)+1}='f_DEER_XY4';
+StrL{numel(StrL)+1}='f_DEER_XY2';
 StrL{numel(StrL)+1}='f_DEER_scan_dur_XXY';
 StrL{numel(StrL)+1}='f_DEER_scan_power_XXY';
 StrL{numel(StrL)+1}='f_Corr_T1';
@@ -186,6 +212,7 @@ StrL{numel(StrL)+1}='XY8_N_tomo1';
 StrL{numel(StrL)+1}='--------------------T1--------------------';
 StrL{numel(StrL)+1}='T1';
 StrL{numel(StrL)+1}='T1_S00_S01';
+StrL{numel(StrL)+1}='T1_S00_S01_S10';
 StrL{numel(StrL)+1}='T1_Rb_S00_S01_Rd_newRef';
 StrL{numel(StrL)+1}='T1_S00_R0_S01_R1_fixDutyCycle';
 StrL{numel(StrL)+1}='T1_S00_S01_S10_S11';
@@ -982,6 +1009,7 @@ m = gmSEQ.m;
 index_m = find(arr ==m); %find the index of the current t
 index_n = 1 + max_index - index_m; %find the index of the differential t
 n = arr(index_n); %find the differential t
+n=m;
 
 d = 1000; %AfterLaser
 u = 1000; %AfterPulse

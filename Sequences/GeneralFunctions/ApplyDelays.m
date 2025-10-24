@@ -3,6 +3,7 @@ global gmSEQ
 green_aom_delay = 600; % 520 nm AOM
 orange_aom_delay = 1200;  % 594 nm AOM
 red_aom_delay = 100; % 637 nm AOM
+fpga_delay = 620;
 
 if strcmp(gmSEQ.meas,'APD')
     % detector_delay=-1100+610;
@@ -34,6 +35,8 @@ for i=1:numel(gmSEQ.CHN)
         gmSEQ.CHN(i).Delays=ones(1,2)*detector_delay;
     elseif gmSEQ.CHN(i).PBN == PBDictionary('PD')
         gmSEQ.CHN(i).Delays = ones(1, 2) * photodiode_delay;
+    elseif gmSEQ.CHN(i).PBN == PBDictionary('FPGATrig')
+        gmSEQ.CHN(i).Delays = ones(1, 2) * fpga_delay;
 %     elseif gmSEQ.CHN(i).PBN == PBDictionary('AWGTrig2') 
 %         gmSEQ.CHN(i).Delays = ones(1, 2) * AWG_Delay;
 %     elseif gmSEQ.CHN(i).PBN == PBDictionary('AWGTrig3') 

@@ -22,7 +22,7 @@ function varargout = Experiment_PB_DAQ(varargin)
 
 % Edit the above text to modify the response to help Experiment_PB_DAQ
 
-% Last Modified by GUIDE v2.5 04-Nov-2024 20:31:01
+% Last Modified by GUIDE v2.5 24-Sep-2025 19:49:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2674,3 +2674,18 @@ function StopAuto_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global gmSEQ
 gmSEQ.bAutoRun=0;
+
+
+% --- Executes on button press in symESR.
+function symESR_Callback(hObject, eventdata, handles)
+% hObject    handle to symESR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+f1  = str2num(handles.FROM1.String);
+f2  = str2num(handles.TO1.String);
+
+FROM1 = min(2.87*2-f1, 2.87*2-f2);
+TO1 = max(2.87*2-f1, 2.87*2-f2);
+
+handles.FROM1.String = num2str(FROM1);
+handles.TO1.String = num2str(TO1);

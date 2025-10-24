@@ -145,7 +145,7 @@ if nargin>3
         delete(hMag);
      end
 end
-%color='r';
+color='r';
 % Plot the magnetic field direction
 hMag=plot3t([0 sin(B(2))*cos(B(3))],...
     [0 sin(B(2))*sin(B(3))], [0 cos(B(2))],.02, color,axes); 

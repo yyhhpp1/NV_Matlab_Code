@@ -1,1 +1,1 @@
-{"name":"f_DEER_scan_power_XXY","prog_structure":{"ch7":"[+Xhalf,100,+X,100,+Yhalf,22308,+X,22308,+Xhalf,100,+X,100,-Yhalf]","ch6":"[5,97,X_DEER,97,5,22308,10,22308,5,97,X_DEER,97,5]"}}
+{"name":"f_DEER_scan_power_XXY","prog_structure":{"ch0":"[+Xhalf,5000,+X,5000,+Yhalf,40769,+X,40769,+Xhalf,5000,+X,5000,-Yhalf]","ch1":"[100,5000,X_DEER,5000,100,40769,50,40769,100,5000,X_DEER,5000,100]"}}

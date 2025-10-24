@@ -9,7 +9,7 @@ s.length = 10;
 s.mode = "periodic";
 
 js = jsonencode(s);
-temp_save_path = ['C:\MATLAB_Code\mytoolboxes\ZCU111_AWG\fpga_temp_files\' name '.json'];
+temp_save_path = ['C:\NV_MATLAB_Code\mytoolboxes\ZCU111_AWG\fpga_temp_files\' name '.json'];
 fileID = fopen(temp_save_path, 'w');
 fwrite(fileID, js, 'char');
 fclose(fileID);
