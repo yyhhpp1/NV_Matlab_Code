@@ -355,7 +355,7 @@ global gScan gbManChange gConfocal gImageCorr gSaveImg
 disp('Image correlation tracking starts!')
 % Get the information from reference figure
 
-gImageCorr.RefIMG = 'C:\NV_MATLAB_Code\ImageCorrelation\Image_2025-10-24_Img006.txt';
+gImageCorr.RefIMG = 'C:\NV_MATLAB_Code\ImageCorrelation\Image_2025-11-2_Img004.txt';
 
 [IMG_ref, Info_ref]=ReadImageFile_ImgCorr(gImageCorr.RefIMG);
 gImageCorr.RefVx = IMG_ref.FixVx;
@@ -1285,7 +1285,7 @@ try
 
     while currentScanIdx < planScan.Ntot+2 && bGo    
         
-        pause(0.1); % adjust for CPU usage vs. latency
+        pause(0.3); % adjust for CPU usage vs. latency
         
         if ~bGo; break; end
         

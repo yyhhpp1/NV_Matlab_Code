@@ -89,7 +89,7 @@ classdef FPGA_ABS_Client < handle
                     write(obj.client_socket, bytes_read);
                 end
                 fclose(fileID);
-                fprintf('File has been sent.\n');
+                %fprintf('File has been sent.\n');
             catch ME
                 fprintf('Error sending file: %s\n', ME.message);
             end
@@ -144,7 +144,9 @@ classdef FPGA_ABS_Client < handle
         % Receive acknowledgment from the server
         function ack = receive_server_ack(obj)
             ack = obj.receive_string();
-            fprintf('%s\n', ack);
+            
+            % print acknowledgement
+            %fprintf('%s\n', ack);
         end
     end
 end
