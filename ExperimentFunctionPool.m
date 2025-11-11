@@ -181,9 +181,7 @@ end
 
 
 function LoadUserInputs(hObject,eventdata,handles)
-global gmSEQ gSG gSG2 gSG3
-% gmSEQ.MWAWG = 1; % cardNum
-% gmSEQ.P1AWG = 2; % cardNum
+global gmSEQ gSG gSG2
 
 str=get(handles.sequence, 'String');
 val=get(handles.sequence, 'Value');
@@ -205,11 +203,6 @@ gmSEQ.bSweep3=get(handles.bSweep3,'Value');
 gmSEQ.To3= str2double(get(handles.TO3, 'String'));
 gmSEQ.N3=str2double(get(handles.SweepNPoints3,'String'));
 
-% edit by Chong on 3/1/2017
-% gmSEQ.PulseNum = str2double(get(handles.PulseNum, 'String'));
-% gmSEQ.tP1Polar = str2double(get(handles.tP1Polar, 'String'));
-% gmSEQ.tP1PolarStep = str2double(get(handles.tP1PolarStep, 'String'));
-% gmSEQ.tP1AfterPolarWait = str2double(get(handles.tP1AfterPolarWait, 'String'));
 
 gmSEQ.pi= str2double(get(handles.pi, 'String'));
 gmSEQ.halfpi= str2double(get(handles.halfpi, 'String'));
@@ -221,12 +214,7 @@ gmSEQ.bWarmUpAOM=get(handles.bWarmUpAOM,'Value');
 gmSEQ.bTrack=get(handles.bTrack,'Value');
 gSG.Pow = str2double(get(handles.fixPow, 'String'));
 gSG.Freq = str2double(get(handles.fixFreq, 'String'))*1e9;
-gSG.ACmodAWG = get(handles.ACmodAWG,'Value'); % AC modulation of two SG is controlled by a single button
-gSG2.ACmodAWG = get(handles.ACmodAWG,'Value');
-gSG3.ACmodAWG = get(handles.ACmodAWG,'Value');
 
-gSG.AWGFreq = str2double(get(handles.AWGFreq, 'String'));
-gSG.AWGAmp = str2double(get(handles.AWGAmp, 'String'));
 gmSEQ.P1Pulse = str2double(get(handles.P1Pulse, 'String'));
 
 % Point number for next tracking
@@ -235,62 +223,9 @@ gmSEQ.TrackPointN = str2double(get(handles.TrackPointN, 'String'));
 % Second SG (for DEER etc)
 gSG2.Freq = str2double(get(handles.fixFreq2, 'String'))*1e9;
 gSG2.Pow = str2double(get(handles.fixPow2, 'String'));
-gSG2.AWGFreq = str2double(get(handles.AWGFreq2, 'String'));
-gSG2.AWGAmp = str2double(get(handles.AWGAmp2, 'String'));
-
-% Third SG (for double quantum basis etc)
-gSG3.Freq = str2double(get(handles.fixFreq3, 'String'))*1e9;
-gSG3.Pow = str2double(get(handles.fixPow3, 'String'));
-gSG3.AWGFreq = str2double(get(handles.AWGFreq3, 'String'));
-gSG3.AWGAmp = str2double(get(handles.AWGAmp3, 'String'));
-
-% check the ACmodAWG mode, add by Chong on 10/6/2020
-if gSG.ACmodAWG
-    gSG.Freq = gSG.Freq-str2double(get(handles.AWGFreq, 'String'))*1e9;
-end
-
-if gSG2.ACmodAWG
-    gSG2.Freq = gSG2.Freq-str2double(get(handles.AWGFreq2, 'String'))*1e9;
-end
-
-if gSG3.ACmodAWG
-    gSG3.Freq = gSG3.Freq-str2double(get(handles.AWGFreq3, 'String'))*1e9;
-end
 
 gmSEQ.DEERpi = str2double(get(handles.DEERpi, 'String'));
 gmSEQ.DEERt = str2double(get(handles.DEERt, 'String'));
-
-% For AWG, added by Chong 9/29/2020
-%gSG.IQVoltage1 = 1; % 1 is approximate 0.4 V in AWG output. Yuanqi
-
-% Adding by Chong on 10/5/2020 for many-body cooling
-gmSEQ.SAmp1 = str2double(get(handles.SAmp1, 'String'));
-gmSEQ.SAmp2 = str2double(get(handles.SAmp2, 'String'));
-gmSEQ.SLockT1 = str2double(get(handles.SLockT1, 'String'));
-gmSEQ.SLockT2 = str2double(get(handles.SLockT2, 'String'));
-gmSEQ.LockN0 = str2double(get(handles.LockN0, 'String'));
-gmSEQ.SAmp1_M = str2double(get(handles.SAmp1_M, 'String'));
-gmSEQ.SAmp2_M = str2double(get(handles.SAmp2_M, 'String'));
-gmSEQ.SLockT1_M = str2double(get(handles.SLockT1_M, 'String'));
-gmSEQ.SLockT2_M = str2double(get(handles.SLockT2_M, 'String'));
-gmSEQ.CoolCycle = str2double(get(handles.CoolCycle, 'String'));
-gmSEQ.CoolSwitch = str2double(get(handles.CoolSwitch, 'String'));
-gmSEQ.CoolWait = str2double(get(handles.CoolWait, 'String'));
-gmSEQ.Alternate = get(handles.Alternate,'Value'); % Alternate between cooling and heating.
-gmSEQ.SweepDelta = get(handles.SweepDelta,'Value');
-gmSEQ.Ref = get(handles.Ref,'Value');
-gmSEQ.bCali = get(handles.bCali,'Value');
-gmSEQ.CaliN = str2double(get(handles.CaliN, 'String'));
-gmSEQ.LaserCooling = str2double(get(handles.LaserCooling, 'String'));
-gmSEQ.LaserDet = str2double(get(handles.LaserDet, 'String'));
-
-% % for spin diffusion measurement, add by Chong 3/28/2017
-% gmSEQ.Diffwait = str2double(get(handles.Diffwait, 'String'));
-% gmSEQ.Repolarize = str2double(get(handles.Repolarize, 'String'));
-
-% % for MREV8
-% gmSEQ.MREVN = str2double(get(handles.MREVN, 'String'));
-% gmSEQ.MREVtau = str2double(get(handles.MREVtau, 'String'));
 
 gmSEQ.bAAR=get(handles.bAAR,'Value');
 gmSEQ.Repeat=str2double(get(handles.Repeat,'String'));
@@ -300,6 +235,7 @@ if get(handles.bAverage,'Value')
 else
     gmSEQ.Average=1;
 end
+
 
 
 
