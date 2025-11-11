@@ -1,0 +1,1 @@
+{"name":"f_DEER_scan_freq","prog_structure":{"ch0":"[+Xhalf,5000,+X,5000,+Xhalf,40769,+X,40769,+Xhalf,5000,+X,5000,-Xhalf]","ch1":"[100,5000,X_DEER,5000,100,40769,50,40769,100,5000,X_DEER,5000,100]"}}

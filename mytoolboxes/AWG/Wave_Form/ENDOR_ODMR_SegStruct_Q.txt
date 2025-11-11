@@ -1,1 +1,0 @@
-C:\MATLAB_Code\mytoolboxes\AWG\Wave_Form\ENDOR_ODMR_Q_seg1.txt 143104 1 1

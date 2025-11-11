@@ -1,0 +1,1 @@
+{"name":"f_DEER_XY2","prog_structure":{"ch7":"[+Xhalf,loop(1,[4,+X,8,+X,4]),+Xhalf,79231,+X,79231,+Xhalf,loop(1,[4,+X,8,+X,4]),-Xhalf]","ch6":"[4,loop(1,[3,+X_DEER,6,+X_DEER,3]),4,79231,8,79231,4,loop(1,[3,+X_DEER,6,+X_DEER,3]),4]"}}

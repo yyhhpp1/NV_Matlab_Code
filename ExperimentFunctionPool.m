@@ -76,7 +76,7 @@ OutPuts = 0;
 PBFunctionPool('PBON',OutPuts);
 
 function Initialize(hObject, eventdata, handles)
-global gmSEQ gSG gSG2 gSG3
+global gmSEQ gSG gSG2 gSG3 fpga
 StrL = SequencePool('PopulateSeq');
 set(handles.sequence,'String',StrL);
 clear StrL;
@@ -89,67 +89,16 @@ gmSEQ.bGo=0;
 gmSEQ.bExp = 0;
 gmSEQ.bTomo = false;
 
-% load PulseBlaster DLL 
 LoadPBESR;
-% load NI-DAQ MX DLL
-% LoadNIDAQmx;
-% load SRS SG384 DLL
-SignalGeneratorFunctionPool('Init',PortMap('SG com'));
-% SignalGeneratorFunctionPool2('Init',PortMap('SG com 2'));
-% SignalGeneratorFunctionPool3('Init',PortMap('SG com 3'));
 
-% gSG2.bMod='IQ';
-% gSG2.bModSrc='External';
-% SignalGeneratorFunctionPool2('SetMod');
-% 
-% gSG3.bMod='IQ';
-% gSG3.bModSrc='External';
-% SignalGeneratorFunctionPool3('SetMod');
+SignalGeneratorFunctionPool('Init');
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+SignalGeneratorFunctionPool('SetMod');
 
-gmSEQ.meas='SPCM';
+fpga = FPGA_AWG_Client();
+gmSEQ.meas='APD';
 
-% AWG Initialize of AWG
-% % This part should be checked after the connection
-% gmSEQ.P1AWG = 2; % cardNum
-gmSEQ.MWAWG = 1; % cardNum
-% gmSEQ.MWAWG2 = 3; % cardNum
-% 
-chaseFunctionPool('loadChase')
-pause(0.5)
-% 
-% 1st AWG is for MW control
-chaseFunctionPool('Initialize', gmSEQ.MWAWG)
-pause(0.5)
-% chaseFunctionPool('ExtClk10MHzChase', gmSEQ.MWAWG, 0) 
-%%%
-% Temporarily disable external clock.
-chaseFunctionPool('ExtClk10MHzChase', gmSEQ.MWAWG, 1)
-pause(0.5)
-gSG.AWGClockRate = 2; % in GHz. Yuanqi
-chaseFunctionPool('setClkRate', gmSEQ.MWAWG, gSG.AWGClockRate * 1e9)
-pause(0.5)
-% 
-% % 2nd AWG is for P1 MW control
-% chaseFunctionPool('Initialize', gmSEQ.P1AWG)
-% pause(0.5)
-% chaseFunctionPool('ExtClk10MHzChase', gmSEQ.P1AWG, 1)
-% %%%
-% % Temporarily disable external clock.
-% pause(0.5)
-% gSG2.P1AWGClockRate = 2; % in GHz. Yuanqi
-% chaseFunctionPool('setClkRate', gmSEQ.P1AWG, gSG2.P1AWGClockRate * 1e9)
-% pause(0.5)
-% 
-% % 3rd AWG is for NV2 MW control
-% chaseFunctionPool('Initialize', gmSEQ.MWAWG2)
-% pause(0.5)
-% chaseFunctionPool('ExtClk10MHzChase', gmSEQ.MWAWG2, 1)
-% %%%
-% % Temporarily disable external clock.
-% pause(0.5)
-% gSG3.AWGClockRate = 2; % in GHz. 
-% chaseFunctionPool('setClkRate', gmSEQ.MWAWG2, gSG3.AWGClockRate * 1e9)
-% pause(0.5)
 
 
 function LoadSEQ(hObject, eventdata, handles,ax)

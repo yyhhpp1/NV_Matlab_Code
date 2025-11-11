@@ -11,6 +11,12 @@ switch what
         path='Dev3/ao2';
     case 'Ctr Trig'
         path='/Dev3/PFI13'; 
+    case 'FPGA Host'
+        path = '192.168.0.234';
+    case 'FPGA Port'
+        path = 1234;
+    case 'SG ip'
+        path='192.168.0.66'; 
     case 'SG com'
         path='com32'; 
     case 'SG com 2'

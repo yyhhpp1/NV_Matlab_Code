@@ -81,7 +81,7 @@ fprintf(fid,comment('SIGNAL GENERATOR PARAMETERS'));
 
 for i=1:length(fnSG)
     st=fnSG(i);
-    if ~strcmp(st,'serial')&&~strcmp(st,'qErr')
+    if ~strcmp(st,'serial')&&~strcmp(st,'qErr')&&~strcmp(st,'device')
         fprintf(fid,comment(string(st)));
         fprintf(fid,comment(string(gSG.(char(st)))));
     end

@@ -350,7 +350,6 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
     end
 end
 
-fclose(gSG.serial); %Zhelun added 2024/8/27
 gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
 % gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff');
 % gSG3.bOn=0; SignalGeneratorFunctionPool3('RFOnOff');

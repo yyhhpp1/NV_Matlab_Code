@@ -862,14 +862,6 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
                      'Yes','No','Yes');
  switch selection
    case 'Yes'
-     unloadlibrary('mypbesr')
-     % AWG Yuanqi Lyu (Sep 30, 2020)
-     % chaseFunctionPool('stopChase', gmSEQ.LaserAWG)
-     chaseFunctionPool('stopChase', gmSEQ.MWAWG)
-%      chaseFunctionPool('stopChase', gmSEQ.P1AWG)
-%      chaseFunctionPool('stopChase', gmSEQ.MWAWG2)
-     chaseFunctionPool('PWR_DWN', 1)
-     chaseFunctionPool('endChase') % It was annotated before 06/11/2021, changed by Weijie
      delete(hObject);
    case 'No'
      return

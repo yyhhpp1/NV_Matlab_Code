@@ -1,3 +1,0 @@
-C:\MATLAB_Code\mytoolboxes\AWG\Wave_Form\Single_HalfPulse_800ns.txt 1600 5 1
-C:\MATLAB_Code\mytoolboxes\AWG\Wave_Form\Single_HalfPulse_800ns.txt 1600 5 0
-C:\MATLAB_Code\mytoolboxes\AWG\Wave_Form\Single_NegPulse_800ns.txt 1600 1 1
