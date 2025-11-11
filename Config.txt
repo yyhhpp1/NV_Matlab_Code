@@ -1,2 +1,6 @@
-Port	ai1
-Log_Path	Data
+SerialPort_Name	COM19
+N_Heater	1
+N_TempSensor	1
+Log_Path	Tempterature Records
+Temp_LimLower	60
+Temp_LimUpper	330

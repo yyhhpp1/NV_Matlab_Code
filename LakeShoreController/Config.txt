@@ -1,4 +1,4 @@
-SerialPort_Name	COM5
+SerialPort_Name	COM19
 N_Heater	1
 N_TempSensor	1
 Log_Path	Tempterature Records

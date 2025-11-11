@@ -17,6 +17,8 @@ switch varargin{1}
         WriteDigitalChannel(varargin{2},varargin{3});
     case 'ReadDigitalChannel'
         ReadDigitalChannel(varargin{2});
+    case 'SetTwoGatedCounters'
+        SetTwoGatedCounters(varargin{2},varargin{3});
     case 'SetGatedCounter'
         SetGatedCounter(varargin{2},varargin{3},varargin{4},varargin{5});
     case 'SetGatedNCounter'
@@ -44,7 +46,7 @@ bytesPerSamp = 0;
 % DAQmx Configure Code
 [ status, ~, task ] = DAQmxCreateTask([]);
 DAQmxErr(status);
-DAQmxErr(DAQmxCreateDIChan(task,'Dev1/port0/line0:7','',DAQmx_Val_ChanForAllLines));
+DAQmxErr(DAQmxCreateDIChan(task,'Dev3/port0/line0:7','',DAQmx_Val_ChanForAllLines));
 % DAQmx Start Code
 DAQmxErr(DAQmxStartTask(task));
 % DAQmx Read Code
@@ -91,18 +93,17 @@ Answer.status = status;
 Answer.Voltage = output;
 
 function [meanCounts, stdCounts] = GetCounts(SamplingFreq,Samples)
-
+global hCPS
 TimeOut = 1.1*Samples/SamplingFreq;
-hCounter = SetCounter( Samples+1 );
+[status, hCounter] = SetCounter( Samples+1 );
+hCPS.hCounter=hCounter;
 [status, hPulse] = DigPulseTrainCont(SamplingFreq,0.5,Samples);
-
-% DupCount = DAQmxGet(hCounter, 'CI.DupCountPrevent', 'Dev2/ctr0');
-% DAQmxSet(hCounter, 'CI.DupCountPrevent', 'Dev2/ctr0',1);
-
+hCPS.hPulse=hPulse;
+% DupCount = DAQmxGet(hCounter, 'CI.DupCountPrevent', 'Dev3/ctr0');
+% DAQmxSet(hCounter, 'CI.DupCountPrevent', 'Dev3/ctr0',1);
+try
 status = DAQmxStartTask(hCounter);
-if status ~= 0,
-    disp(['NI: Start Counter        :' num2str(status)])
-end
+DAQmxErr(status);
 status = DAQmxStartTask(hPulse);    
 if status ~= 0,
     disp(['NI: Start Pulse          :' num2str(status)])
@@ -118,6 +119,10 @@ DAQmxClearTask(hCounter);
 A = diff(A);
 meanCounts = mean(A);
 stdCounts = std(A);
+catch ME
+    KillAllTasks;
+    rethrow(ME);
+end
 
 
 function [status, task] = SetCounter(N)
@@ -132,35 +137,39 @@ DAQmx_Val_ContSamps =10123; % Continuous Samples
 [ status, TaskName, task ] = DAQmxCreateTask([]);
 DAQmxErr(status);
 
-status = DAQmxCreateCICountEdgesChan(task,PortMap('Ctr in'),'',...
+status = DAQmxCreateCICountEdgesChan(task,'Dev3/ctr3','',...
     DAQmx_Val_Rising , 0, DAQmx_Val_CountUp);
 DAQmxErr(status);
 
 status = calllib('mynidaqmx','DAQmxSetCICountEdgesTerm',...
-    task, PortMap('Ctr in'), PortMap('SPCM')); 
+    task, 'Dev3/ctr3', '/Dev3/PFI0'); 
 DAQmxErr(status);
 
-status = DAQmxCfgSampClkTiming(task,PortMap('Ctr Trig'),1.0,...
+status = DAQmxCfgSampClkTiming(task,'/Dev3/PFI13',1.0,...
     DAQmx_Val_Rising,DAQmx_Val_FiniteSamps ,N);
+% what does this for? Chong
+
 DAQmxErr(status);
 
-function [status, task] = DigPulseTrainCont(Freq,DutyCycle,Samps)
-
-DAQmx_Val_Volts= 10348; % measure volts
-DAQmx_Val_Rising = 10280; % Rising
-DAQmx_Val_FiniteSamps = 10178; % Finite Samples
-DAQmx_Val_CountUp = 10128; % Count Up
-DAQmx_Val_CountDown = 10124; % Count Down
-DAQmx_Val_GroupByChannel = 0; % Group per channel
-DAQmx_Val_ContSamps =10123; % Continuous Samples
-DAQmx_Val_Hz = 10373; % Hz
-DAQmx_Val_Low =10214; % Low
-
-[~,~,task] = DAQmxCreateTask('');
-status = DAQmxCreateCOPulseChanFreq(task,PortMap('Ctr out'),'',DAQmx_Val_Hz,DAQmx_Val_Low,0.0,Freq, DutyCycle);
-DAQmxErr(status);
-status = DAQmxCfgImplicitTiming(task,DAQmx_Val_ContSamps,Samps);
-DAQmxErr(status);
+% function [status, task] = DigPulseTrainCont(Freq,DutyCycle,Samps)
+% 
+% DAQmx_Val_Volts= 10348; % measure volts
+% DAQmx_Val_Rising = 10280; % Rising
+% DAQmx_Val_FiniteSamps = 10178; % Finite Samples
+% DAQmx_Val_CountUp = 10128; % Count Up
+% DAQmx_Val_CountDown = 10124; % Count Down
+% DAQmx_Val_GroupByChannel = 0; % Group per channel
+% DAQmx_Val_ContSamps =10123; % Continuous Samples
+% DAQmx_Val_Hz = 10373; % Hz
+% DAQmx_Val_Low =10214; % Low
+% 
+% [~,~,task] = DAQmxCreateTask('');
+% status = DAQmxCreateCOPulseChanFreq(task,'Dev3/ctr1','',DAQmx_Val_Hz,DAQmx_Val_Low,0.0,Freq, DutyCycle);
+% % What does this channel means? Chong
+% 
+% DAQmxErr(status);
+% status = DAQmxCfgImplicitTiming(task,DAQmx_Val_ContSamps,Samps);
+% DAQmxErr(status);
 
 function readArray = ReadCounter(task,N,TimeOut)
 numSampsPerChan = N;
@@ -178,7 +187,7 @@ DAQmx_Val_Volts= 10348; % measure volts
 status = -1;
 for k=1:length(Devices),
     switch Devices{k}
-        case {PortMap('Galvo x'),PortMap('Galvo y')}
+        case {'Dev3/ao0','Dev3/ao1'}
             if abs(Voltages(k)) > 0.8
                 disp('Error in WriteVoltage (Voltage exceeds 0.8 volts)');
                 return;
@@ -197,7 +206,7 @@ function status = WriteVoltage(Device,Voltage)
 DAQmx_Val_Volts= 10348; % measure volts
 status = -1;
 switch Device
-    case {PortMap('Galvo x'),PortMap('Galvo y')}
+    case {'Dev3/ao0','Dev3/ao1'}
         if abs(Voltage) > 0.8
             disp('Error in WriteVoltage (Voltage exceeds 0.8 volts)');
             return;
@@ -212,6 +221,18 @@ if status ~= 0
 end
 DAQmxClearTask(task);
 
+function status = SetTwoGatedCounters(task1,task2)
+% added by Satcher 10/19/2016. The port mapping assumes that the input is
+% on ctr0 input, gate 1 is on ctr0 gate, gate 2 is on ctr1 gate.
+
+
+
+SetGatedCounter(task1,'Dev3/ctr3','/Dev3/PFI0','/Dev3/PFI1');
+
+SetGatedCounter(task2,'Dev3/ctr1','/Dev3/PFI8','/Dev3/PFI4');
+
+
+%DAQmxWaitUntilTaskDone(task1,wait);
 
 function status = SetGatedCounter(task,counter,src,gate)
 % added by Satcher 10/19/2016
@@ -252,12 +273,11 @@ DAQmx_Val_Low=10214;
 
 [ status, ~, task ] = DAQmxCreateTask([]);
 DAQmxErr(status);
-status = DAQmxCreateCICountEdgesChan(task,PortMap('Ctr in'),'',...
+status = DAQmxCreateCICountEdgesChan(task,'Dev3/ctr3','',...
     DAQmx_Val_Rising , 0, DAQmx_Val_CountUp);
-disp(PortMap('Ctr in'))
 DAQmxErr(status);
 status = calllib('mynidaqmx','DAQmxSetCICountEdgesTerm',...
-    task, PortMap('Ctr in'), PortMap('Ctr src')); 
+    task, 'Dev3/ctr3', '/Dev3/PFI0'); 
 DAQmxErr(status);
 
 status = calllib('mynidaqmx','DAQmxSetPauseTrigType',...
@@ -265,7 +285,7 @@ status = calllib('mynidaqmx','DAQmxSetPauseTrigType',...
 DAQmxErr(status);
 
 status = calllib('mynidaqmx','DAQmxSetDigLvlPauseTrigSrc',...
-    task, PortMap('Ctr gate')); 
+    task, '/Dev3/PFI1'); 
 DAQmxErr(status);
 
 status = calllib('mynidaqmx','DAQmxSetDigLvlPauseTrigWhen',...
@@ -274,9 +294,8 @@ DAQmxErr(status);
 
 max_freq=1e7;
 
-status = DAQmxCfgSampClkTiming(task,PortMap('Ctr gate'),max_freq,...
+status = DAQmxCfgSampClkTiming(task,'/Dev3/PFI1',max_freq,...
     DAQmx_Val_Rising,DAQmx_Val_ContSamps ,N);
-disp(['N ', num2str(N)])
 DAQmxErr(status);
 
 
@@ -293,7 +312,7 @@ DAQmxErr(status);
 % DAQmx_Val_Ticks =10304; % Ticks
 % 
 % 
-% status = DAQmxCreateCIPulseWidthChan(task,'Dev2/ctr0','',...
+% status = DAQmxCreateCIPulseWidthChan(task,'Dev3/ctr0','',...
 %     0.000000100,18.38860750,DAQmx_Val_Seconds,DAQmx_Val_Rising,'');
 % DAQmxErr(status);
 % 
@@ -302,13 +321,13 @@ DAQmxErr(status);
 % DAQmxErr(status);
 % 
 % %status = calllib('mynidaqmx','DAQmxSetCIPulseWidthTerm',...
-%      %task, 'Dev2/ctr0', '/Dev2/PFI8');
+%      %task, 'Dev3/ctr0', '/Dev3/PFI8');
 %  
-% result = DAQmxGet(task, 'CI.CtrTimebaseSrc', 'Dev2/ctr0');
-% DAQmxSet(task, 'CI.CtrTimebaseSrc', 'Dev2/ctr0', '/Dev2/PFI8');
+% result = DAQmxGet(task, 'CI.CtrTimebaseSrc', 'Dev3/ctr0');
+% DAQmxSet(task, 'CI.CtrTimebaseSrc', 'Dev3/ctr0', '/Dev3/PFI8');
 % 
-% DupCount = DAQmxGet(task, 'CI.DupCountPrevent', 'Dev2/ctr0');
-% DAQmxSet(task, 'CI.DupCountPrevent', 'Dev2/ctr0',1);
+% DupCount = DAQmxGet(task, 'CI.DupCountPrevent', 'Dev3/ctr0');
+% DAQmxSet(task, 'CI.DupCountPrevent', 'Dev3/ctr0',1);
 
 function [data, status] = ReadCounterScalar(task)
 % added by Satcher 10/19/2016
@@ -332,16 +351,18 @@ DAQmx_Val_GroupByChannel = 0; % Group per channel
 DAQmxErr(status);
 status = DAQmxCreateAOVoltageChan(hScan,chan,-5,5,DAQmx_Val_Volts);
 DAQmxErr(status);
-status = DAQmxCfgSampClkTiming(hScan,PortMap('Ctr Trig'),freq,...
+status = DAQmxCfgSampClkTiming(hScan,'/Dev3/PFI13',freq,...
     DAQmx_Val_Rising,DAQmx_Val_FiniteSamps,samps);
 DAQmxErr(status);
 zero_ptr = libpointer('int32Ptr',zeros(1,samps));
 status = DAQmxWriteAnalogF64(hScan, samps, 0, 10,...
     DAQmx_Val_GroupByChannel, vec, zero_ptr);
+%disp(['hscan is' hScan 'samps is' samps]); %testing by KP 4/10
 DAQmxErr(status);
 
 
-function [status, hRead] = CreateAIChannel(trig, samps, freq)
+function [status, hRead] = CreateAIChannel(gate, samps, freq)
+% DAQmx_Val_RSE=10083;
 DAQmx_Val_diff=10106;
 DAQmx_Val_Volts= 10348; % measure volts
 DAQmx_Val_Rising = 10280; % Rising
@@ -352,11 +373,11 @@ DAQmx_Val_FiniteSamps = 10178; % Finite Samples
 
 DAQmxErr(status);
 
-status = DAQmxCreateAIVoltageChan(hRead,PortMap('APD in'),'',...
+status = DAQmxCreateAIVoltageChan(hRead,'Dev3/ai0','',...
     DAQmx_Val_diff, -5,5, DAQmx_Val_Volts,[]);
 
 DAQmxErr(status);
-status = DAQmxCfgSampClkTiming(hRead,trig,freq,DAQmx_Val_Rising,DAQmx_Val_FiniteSamps,samps); %ctr1 out
+status = DAQmxCfgSampClkTiming(hRead,gate,freq,DAQmx_Val_Rising,DAQmx_Val_FiniteSamps,samps); %ctr1 out
 DAQmxErr(status);
 
 function [status, RawData] = ReadAnalogVoltage(task, samps, timeout)

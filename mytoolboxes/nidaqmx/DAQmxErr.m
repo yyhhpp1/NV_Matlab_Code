@@ -1,4 +1,4 @@
-function DAQmxErr(errorCode)
+                                          function DAQmxErr(errorCode)
 if errorCode == 0
     return;
 end

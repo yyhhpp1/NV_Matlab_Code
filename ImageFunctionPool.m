@@ -349,9 +349,16 @@ function TrackImageCorr(hObject, eventdata, handles)
 global gScan gbManChange gConfocal gImageCorr gSaveImg
 
 disp('Image correlation tracking starts!')
+% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2025-4-17_Img002.txt'; % 80 K, 10 hr sample 
 % Get the information from reference figure
-
-gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\L111-02-B.txt'; % L111-02 spot
+gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2025-5-6_Img005.txt'; %10 hr, 80 K, 0.5 mW
+% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2025-5-5_Img003.txt'; %10 hr, RT, 0.5 mW
+% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2025-4-15_Img007.txt'; % 80 K, 1 hr sample 
+% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2025-4-12_Img007.txt';
+% gImageCorr.RefIMG = 'C:\Data\2025-4-11\Image_2025-2-14_Img002.txt';
+% gImageCorr.RefIMG = 'C:\Data\2025-2-14\Image_2025-2-14_Img007.txt';
+% gImageCorr.RefIMG = 'C:\Data\2024-12-3\Image_2024-12-3_Img019.txt';
+% gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\L111-02-B.txt'; % L111-02 spot
 % gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\L111_08072022.txt'; % S011 alternative spot
 % gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Spot07302022.txt'; % S011 original spot
 % gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Spot07052022.txt'; % S011 alternative spot
@@ -362,6 +369,7 @@ gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\L111-02-B.txt'; % L111-02 s
 % gImageCorr.RefIMG = 'C:\MATLAB_Code\ImageCorrelation\Image_2021-8-10_Img004.txt';
 
 [IMG_ref, Info_ref]=ReadImageFile_ImgCorr(gImageCorr.RefIMG);
+disp(IMG_ref)
 gImageCorr.RefVx = IMG_ref.FixVx;
 gImageCorr.RefVy = IMG_ref.FixVy;
 gImageCorr.RefRangeVx = [IMG_ref.minVx IMG_ref.maxVx]*gConfocal.Vx_per_um;
@@ -452,7 +460,7 @@ else
     gScan.yLineHandle = line(handles.axes1, [p.x p.x],[YLimits(1),YLimits(2)],[1,1]);
 end
 
-disp("Plotting")
+%disp("Plotting")
 
 %WriteVoltage('Obj_Piezo',gScan.FixVz);     
 
@@ -939,13 +947,13 @@ end
 ImageFillUpForm('UpdateScan', hObject, eventdata, handles);
 
 function TrackZ(hObject, eventdata, handles) 
-global gScan gbManChange gConfocal
+global gScan gbManChange gConfocal;
 minVz = eval(get(handles.minVz,'String'));
 maxVz = eval(get(handles.maxVz,'String'));
 NVz = eval(get(handles.NVz,'String'));
-% zscan = linspace(minVz, maxVz, NVz);
+zscan = linspace(minVz, maxVz, NVz);
 Vz = eval(get(handles.FixVz,'String'));
-zscan = linspace(Vz-(maxVz-minVz)/2, Vz+(maxVz-minVz)/2, NVz);
+%zscan = linspace(Vz-(maxVz-minVz)/2, Vz+(maxVz-minVz)/2, NVz);
 
 % zscan = 54:0.2:61;
 dt = 0.01;
@@ -1050,6 +1058,7 @@ else
     % disp(count);
     [maxCount, maxPos] = max(count);
     z0 = scan(maxPos); % 0.3 is a experience value Weijie 12/11/2021
+    z0 = z0 - 7; %WL: hysteresis compensation 4/14/25
 end
 gScan.FixVz = z0;
 set(handles.FixVz,'String',num2str(z0)); 
@@ -1130,7 +1139,7 @@ plot(handles.axes1,V);
 Freq = 1/Scan.FixDT;
 TimeOut = Scan.FixDT * Scan.NVz * 2;
 
-status = DAQmxResetDevice('Dev1');
+status = DAQmxResetDevice('Dev3');
 disp(['NI: Reset Devie          :' num2str(status)]);
 
 [status, hPulse] = DigPulseTrainCont(Freq,0.5,10000);
@@ -1215,7 +1224,7 @@ N = length(VX);
 Freq = 1/Scan.FixDT;
 TimeOut = Scan.FixDT * N * 1.1;
 
-% status = DAQmxResetDevice('Dev1');
+% status = DAQmxResetDevice('Dev3');
 % disp(['NI: Reset Devie          :' num2str(status)]);
 
 [status, hPulse] = DigPulseTrainCont(Freq,0.5,10000);
@@ -1282,7 +1291,7 @@ bGo = true;
 planScan = PlanScan(Scan,hObject, eventdata, handles);
 %planScan.ContRange
 %planScan.FLRange
-%status = DAQmxResetDevice('Dev1');
+%status = DAQmxResetDevice('Dev3');
 %disp(['NI: Reset Devie          :' num2str(status)]);
 
 %Turn On Laser : JM 2008-07-27
@@ -1297,6 +1306,7 @@ for tl = planScan.TL
     [planScan] = SetPulseAndContScan(3,tl,planScan,hObject, eventdata, handles);
     WriteVoltage(planScan.WhatTL,tl);
     isl = 0;
+    
     for sl = planScan.SL
         isl = isl + 1;
         [planScan] = SetPulseAndContScan(2,sl,planScan,hObject, eventdata, handles);
@@ -1499,8 +1509,8 @@ planScan.DT = cvalue;
     hTasks.hCounter = planScan.hCounter;
     hTasks.hPulse = planScan.hPulse;
 
-%    DupCount = DAQmxGet(planScan.hCounter, 'CI.DupCountPrevent', 'Dev1/ctr0');
-%    DAQmxSet(planScan.hCounter, 'CI.DupCountPrevent', 'Dev1/ctr0',1);
+%    DupCount = DAQmxGet(planScan.hCounter, 'CI.DupCountPrevent', 'Dev3/ctr0');
+%    DAQmxSet(planScan.hCounter, 'CI.DupCountPrevent', 'Dev3/ctr0',1);
 
 % else %%% Fast Scan
 %     planScan.TimeOut = cvalue * planScan.NRead * 4;
@@ -1524,8 +1534,8 @@ planScan.DT = cvalue;
 %     hTasks.hPulse = planScan.hPulse;
 %     % planScan.hScan(1),(2)
 % 
-%     DupCount = DAQmxGet(planScan.hCounter, 'CI.DupCountPrevent', 'Dev1/ctr0');
-%     DAQmxSet(planScan.hCounter, 'CI.DupCountPrevent', 'Dev1/ctr0',1);
+%     DupCount = DAQmxGet(planScan.hCounter, 'CI.DupCountPrevent', 'Dev3/ctr0');
+%     DAQmxSet(planScan.hCounter, 'CI.DupCountPrevent', 'Dev3/ctr0',1);
 % end
     
 
@@ -1646,13 +1656,13 @@ DAQmxErr(status);
 % if status,
 % disp(['NI: Create Counter Task  :' num2str(status)]);
 % end
-% status = DAQmxCreateCICountEdgesChan(task,'Dev1/ctr0','',...
+% status = DAQmxCreateCICountEdgesChan(task,'Dev3/ctr0','',...
 %     DAQmx_Val_Rising , 0, DAQmx_Val_CountUp);
 % 
 % if status,
 % disp(['NI: Create Counter       :' num2str(status)]);
 % end
-% status = DAQmxCfgSampClkTiming(task,'/Dev1/PFI13',1.0,...
+% status = DAQmxCfgSampClkTiming(task,'/Dev3/PFI13',1.0,...
 %     DAQmx_Val_Rising,DAQmx_Val_FiniteSamps ,N);
 % if status,
 % disp(['NI: Cofigure the Clk     :' num2str(status)]);
@@ -1741,7 +1751,7 @@ DAQmxErr(status);
 %         disp(['NI: Create AO ChannelFL    :' num2str(statusFL)]);
 %     end
 %     
-%     statusFL = DAQmxCfgSampClkTiming(taskFL,'/Dev1/PFI13',rateFL,...
+%     statusFL = DAQmxCfgSampClkTiming(taskFL,'/Dev3/PFI13',rateFL,...
 %             DAQmx_Val_Rising,DAQmx_Val_FiniteSamps,NFL);
 %     if statusFL,
 %         disp(['NI: Config Sample ClockFL  :' num2str(statusFL)]);
@@ -1770,7 +1780,7 @@ DAQmx_Val_GroupByChannel = 0; % Group per channel
 %Setting the clock
 [ status, TaskName, task ] = DAQmxCreateTask([]);
 DAQmxErr(status);
-status = DAQmxCreateAOVoltageChan(task,'Dev1/ao0:1',-10,10,DAQmx_Val_Volts);
+status = DAQmxCreateAOVoltageChan(task,'Dev3/ao0:1',-10,10,DAQmx_Val_Volts);
 DAQmxErr(status);
 
 status = DAQmxCfgSampClkTiming(task,PortMap('Ctr Trig'),rate,...
@@ -1796,10 +1806,10 @@ DAQmx_Val_GroupByChannel = 0; % Group per channel
 [ status, TaskName, task ] = DAQmxCreateTask([]);
 disp(['NI: Create AO Task       :' num2str(status)]);
 
-status = DAQmxCreateAOVoltageChan(task,'Dev1/ao2',-10,10,DAQmx_Val_Volts);
+status = DAQmxCreateAOVoltageChan(task,'Dev3/ao2',-10,10,DAQmx_Val_Volts);
 disp(['NI: Create AO Channel    :' num2str(status)]);
 
-status = DAQmxCfgSampClkTiming(task,'/Dev1/PFI13',rate,...
+status = DAQmxCfgSampClkTiming(task,'/Dev3/PFI13',rate,...
     DAQmx_Val_Rising,DAQmx_Val_FiniteSamps,N);
 disp(['NI: Config Sample Clock  :' num2str(status)]);
 
@@ -1820,7 +1830,7 @@ switch what
     case {2,PortMap('Galvo y')}
         Device = PortMap('Galvo y');
     case {3,'Obj_Piezo'}
-        % Device = 'Dev1/ao2'; #PI
+        % Device = 'Dev3/ao2'; #PI
         
         % #EO
 %         global EO_handle;
@@ -1841,9 +1851,9 @@ switch what
 %     case 4
 %         return;
 %     case 'ao_2' 
-%         Device = 'Dev1/ao2';
+%         Device = 'Dev3/ao2';
 %     case 'ao_3'
-%         Device = 'Dev1/ao3';
+%         Device = 'Dev3/ao3';
     otherwise
         disp('Error in Write Voltage: I dont get it!');
         disp(what)
@@ -1853,7 +1863,7 @@ end
 status = status + DAQmxCreateAOVoltageChan(task,Device,-10,10,DAQmx_Val_Volts);
 status = status + DAQmxWriteAnalogScalarF64(task,1,0,Voltage);
 if status ~= 0
-    disp(['Error in writing voltage in Device ' Device]);
+    disp(['in Device ' Device]);
 end
 DAQmxClearTask(task);
 
@@ -1865,10 +1875,10 @@ DAQmx_Val_Volts= 10348; % measure volts
 switch what
     case {1,PortMap('Galvo x')}
         Device = PortMap('Galvo x');
-        disp(1);
+%         disp(1);
     case {2,PortMap('Galvo y')}
         Device = PortMap('Galvo y');
-        disp(2);
+%         disp(2);
     case {3,'Obj_Piezo'}        
         % #EO
 %         if Voltage > gPiezo.maximumPosition
@@ -1886,7 +1896,7 @@ switch what
 %             % disp('.')
 %        end
         % pause(1); % It seems that this value is crucial for the piezo to be stable after moving
-        disp('3');
+        %disp('3');
 
         maximumPosition = 100;
         minimumPosition = 0;
@@ -1910,10 +1920,14 @@ switch what
         disp(lastcommandpos);
         
         return;
+
+    case 4
+        return;
+
     otherwise
         disp('Error in Write Voltage: I dont get it!');
-        disp(what);
-        return
+        %disp(what);
+        %return
 end
 
 % COPY OF ABOVE
@@ -1928,7 +1942,7 @@ end
 %         Device = PortMap('Galvo y');
 %         disp(2);
 %         case {3,'Obj_Piezo'}
-%             % Device = 'Dev1/ao2'; #PI
+%             % Device = 'Dev3/ao2'; #PI
 %             % #EO
 % %             global EO_handle;
 % %             if Voltage > 100
@@ -1943,10 +1957,10 @@ end
 % %             return;
 % %         case 4
 % %             return;
-% %         case {5,'Dev1/ao2'} 
-% %             Device = 'Dev1/ao2';
-% %         case {6,'Dev1/ao3'} 
-% %             Device = 'Dev1/ao3';
+% %         case {5,'Dev3/ao2'} 
+% %             Device = 'Dev3/ao2';
+% %         case {6,'Dev3/ao3'} 
+% %             Device = 'Dev3/ao3';
 %             return;
 %         otherwise
 %             disp('Error in Write Voltage: I dont get it! here');
@@ -2675,7 +2689,7 @@ DT = 0.01;
 TimeOut = DT * NRead * 1.1;
 Freq = 1/DT;
 
-% status = DAQmxResetDevice('Dev1');
+% status = DAQmxResetDevice('Dev3');
 % disp(['NI: Reset Devie          :' num2str(status)]);
 try
 hCounter = SetCounter(NRead, Freq);

@@ -31,6 +31,12 @@ switch varargin{1}
         AOMDelay_Orange();
     case 'Echo'
         Echo();
+    case 'Echo_WW'
+        Echo_WW();
+    case 'Echo_WW_Czx'
+        Echo_WW_Czx();
+    case 'Echo_WW_Czy'
+        Echo_WW_Czy();
     case 'Echo_HR'
         Echo_HR();
     case 'Echo_Double'
@@ -41,10 +47,26 @@ switch varargin{1}
         Sz_local_probe()
     case 'Sz_local_probe_compare'
         Sz_local_probe_compare()
+    case 'eCPMG_SwpE_fixed'
+        eCPMG_SwpE_fixed()
+    case 'CPMG_N_fixed'
+        CPMG_N_fixed()
     case 'XY8'
         XY8();
     case 'XY8N'
         XY8N();
+    case 'XY8N_fixed'
+        XY8N_fixed();
+    case 'XY8N_fixed_WW'
+        XY8N_fixed_WW()
+    case 'XY8N_fixed_WW_Cxy'
+        XY8N_fixed_WW_Cxy()
+    case 'XY8N_fixed_WW_Cyz'
+        XY8N_fixed_WW_Cyz()
+    case 'XY8N_fixed_WW_Czx'
+        XY8N_fixed_WW_Czx()
+    case 'XY8T_fixed'
+        XY8T_fixed();
     case 'XY8N_debug'
         XY8N_debug();
     case 'XY8N_HR'
@@ -175,6 +197,14 @@ switch varargin{1}
         Pi_Cali_SG3();
     case 'HalfPi_Cali_SG2'
         HalfPi_Cali_SG2();
+    case 'Init_Haopu'
+        Init_Haopu();    
+    case 'Bright'
+        Bright();  
+    case 'cool_timescan'
+        cool_timescan();
+    case 'Test_DAQ'
+        Test_DAQ();
     case 'Select Sequence'
         return
         
@@ -198,6 +228,9 @@ StrL{numel(StrL)+1}='Rabi_TuneDensity';
 % StrL{numel(StrL)+1}='Test_NV_Polarization';
 StrL{numel(StrL)+1}='Ramsey';
 StrL{numel(StrL)+1}='Echo';
+StrL{numel(StrL)+1}='Echo_WW';
+StrL{numel(StrL)+1}='Echo_WW_Czx';
+StrL{numel(StrL)+1}='Echo_WW_Czy';
 StrL{numel(StrL)+1}='Echo_HR';
 StrL{numel(StrL)+1}='Echo_Double';
 StrL{numel(StrL)+1}='Echo_TuneDensity';
@@ -205,7 +238,15 @@ StrL{numel(StrL)+1}='Echo_TuneDensity';
 StrL{numel(StrL)+1}='Sz_local_probe';
 StrL{numel(StrL)+1}='Sz_local_probe_compare';
 % StrL{numel(StrL)+1}='XY8';
+StrL{numel(StrL)+1}='CPMG_N_fixed';
+StrL{numel(StrL)+1}='eCPMG_SwpE_fixed';
 StrL{numel(StrL)+1}='XY8N';
+StrL{numel(StrL)+1}='XY8N_fixed';
+StrL{numel(StrL)+1}='XY8N_fixed_WW';
+StrL{numel(StrL)+1}='XY8N_fixed_WW_Cxy';
+StrL{numel(StrL)+1}='XY8N_fixed_WW_Cyz';
+StrL{numel(StrL)+1}='XY8N_fixed_WW_Czx';
+StrL{numel(StrL)+1}='XY8T_fixed';
 StrL{numel(StrL)+1}='XY8N_debug';
 StrL{numel(StrL)+1}='XY8N_HR';
 StrL{numel(StrL)+1}='XY8N_Double';
@@ -226,7 +267,10 @@ StrL{numel(StrL)+1}='CtrDelay';
 % StrL{numel(StrL)+1}='Pulsed ESR';
 % StrL{numel(StrL)+1}= 'AWG Sync Testing';
 StrL{numel(StrL)+1}= 'Spin Locking';
-
+StrL{numel(StrL)+1}= 'Init_Haopu';
+StrL{numel(StrL)+1}= 'Bright';
+StrL{numel(StrL)+1}= 'cool_timescan';
+StrL{numel(StrL)+1}='Test_DAQ';
 % StrL{numel(StrL)+1}= 'Spin Locking LOOP';
 % StrL{numel(StrL)+1}= 'Spin Locking P1';
 % StrL{numel(StrL)+1}= 'PolarP1Res';
@@ -288,12 +332,12 @@ function Rabi
 global gmSEQ gSG
 gSG.bfixedPow = 1;
 gSG.bfixedFreq = 1;
-gSG.bMod = '';%'IQ'; 
-gSG.bModSrc = '';%'External';
-T_AfterLaser = 5000; %2000; %ejd
+gSG.bMod = 'IQ'; 
+gSG.bModSrc = 'External';
+T_AfterLaser = 1000; %2000; %ejd; %hBN1: 1000, Zilin: 2000; %WL: 5000 --> 2000, 4/2/25
 % T_AfterLaser = 0.1e6; FUCK Yuanqi
-T_AfterPulse = 500; %1000; % FUCK Yuanqi
-MWBuffer = 10; 
+T_AfterPulse = 500; %1000; % FUCK Yuanqi; %hBN1: 500, Zilin: 1000; %WL: 500 --> 1000, 4/2/25
+MWBuffer = 100; %hBN1: 100, Zilin: 20; %WL: 200 --> 100
 
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
 
@@ -304,19 +348,23 @@ end
 % Pulse Blaster
 gmSEQ.CHN(1).PBN = PBDictionary('ctr0');
 gmSEQ.CHN(1).NRise = 2;
-gmSEQ.CHN(1).T = [gmSEQ.readout - gmSEQ.CtrGateDur - 8000, gmSEQ.readout + T_AfterLaser + gmSEQ.To + T_AfterPulse]; %ejd
+gmSEQ.CHN(1).T = [gmSEQ.readout - gmSEQ.CtrGateDur - 1000, gmSEQ.readout + T_AfterLaser + gmSEQ.To + T_AfterPulse]; %ejd
 gmSEQ.CHN(1).DT = [gmSEQ.CtrGateDur, gmSEQ.CtrGateDur];
-
-gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('MWSwitch');
-gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T = gmSEQ.readout + T_AfterLaser - MWBuffer;
-gmSEQ.CHN(numel(gmSEQ.CHN)).DT = gmSEQ.m + 2*MWBuffer;
-disp(gmSEQ.m)
 
 gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('AOM');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
 gmSEQ.CHN(numel(gmSEQ.CHN)).T = [0, gmSEQ.readout + T_AfterLaser + gmSEQ.To + T_AfterPulse];
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.readout, 3000]; 
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = gmSEQ.readout + T_AfterLaser - MWBuffer;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = gmSEQ.m + 2*MWBuffer;
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = gmSEQ.readout + T_AfterLaser;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 500;
 
 gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('dummy1');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
@@ -324,39 +372,188 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).T = [0, ...
     gmSEQ.readout + T_AfterLaser + gmSEQ.To + T_AfterPulse];
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [1000, 1000];
 
-% gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('AWGTrig');
-% gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
-% gmSEQ.CHN(numel(gmSEQ.CHN)).T = gmSEQ.readout + T_AfterLaser;
-% gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 1000;
+% AWG
 
-% AWG.
-% chaseFunctionPool('stopChase', gmSEQ.P1AWG)
-% chaseFunctionPool('stopChase', gmSEQ.MWAWG)
-% if gSG.ACmodAWG % if we use AWG in AC modulation mode.
-%     WaveForm_1 = [0, gmSEQ.m, gSG.AWGFreq, 0*pi+0, gSG.AWGAmp];
-%     WaveForm_2 = [0, gmSEQ.m, gSG.AWGFreq, 0*pi-pi/2, gSG.AWGAmp];
-% else
-%     WaveForm_1 = [0, gmSEQ.m, gSG.AWGAmp];
-%     WaveForm_2 = [0, gmSEQ.m, 0];
-% end
-% WaveForm_Length = ceil((gmSEQ.m + 1000) / (16/gSG.AWGClockRate)) * (16/gSG.AWGClockRate);
-% WaveForm_PointNum = WaveForm_Length*gSG.AWGClockRate;
-% 
-% % gSG.AWGClockRate = 2; % in GHz. Yuanqi
-% % chaseFunctionPool('setClkRate', gmSEQ.MWAWG, gSG.AWGClockRate*1e9)
-% % pause(0.5)
+chaseFunctionPool('stopChase', gmSEQ.MWAWG) % WL: ChaseAWG command line orders are a bit different from the hBN1 case, need to check 4/2/25 
+if gSG.ACmodAWG % if we use AWG in AC modulation mode.
+    WaveForm_1 = [0, gmSEQ.m, gSG.AWGFreq, 0*pi+0, gSG.AWGAmp];
+    WaveForm_2 = [0, gmSEQ.m, gSG.AWGFreq, 0*pi-pi/2, gSG.AWGAmp];
+else
+    WaveForm_1 = [0, gmSEQ.m, gSG.AWGAmp];
+    WaveForm_2 = [0, gmSEQ.m, 0];
+end
+WaveForm_Length = ceil((gmSEQ.m + 1000) / (16/gSG.AWGClockRate)) * (16/gSG.AWGClockRate);
+WaveForm_PointNum = WaveForm_Length*gSG.AWGClockRate;
 
-% chaseFunctionPool('createWaveform', WaveForm_1, ...
-%     gSG.AWGClockRate, WaveForm_Length, 'Rabi_Ch1.txt')
-% chaseFunctionPool('createWaveform', ...
-%     WaveForm_2, gSG.AWGClockRate, WaveForm_Length, 'Rabi_Ch2.txt')
-% chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 1, ...
-%     WaveForm_PointNum, 1, 2047, 2047, 'Rabi_Ch1.txt', 1); 
-% pause(1.0);
-% chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 2, ...
-%     WaveForm_PointNum, 1, 2047, 2047, 'Rabi_Ch2.txt', 1);
-% pause(1.0);
-% chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+gSG.AWGClockRate = 2; % in GHz. Yuanqi
+chaseFunctionPool('setClkRate', gmSEQ.MWAWG, gSG.AWGClockRate*1e9)
+pause(0.5)
+
+chaseFunctionPool('createWaveform', WaveForm_1, ...
+    gSG.AWGClockRate, WaveForm_Length, 'Rabi_Ch1.txt')
+chaseFunctionPool('createWaveform', ...
+    WaveForm_2, gSG.AWGClockRate, WaveForm_Length, 'Rabi_Ch2.txt')
+chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 1, ...
+    WaveForm_PointNum, 1, 2047, 2047, 'Rabi_Ch1.txt', 1); 
+pause(1.0);
+chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 2, ...
+    WaveForm_PointNum, 1, 2047, 2047, 'Rabi_Ch2.txt', 1);
+pause(1.0);
+chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+ApplyDelays();
+
+function Bright
+global gmSEQ gSG
+gSG.bfixedPow = 1;
+gSG.bfixedFreq = 1;
+gSG.bMod = 'IQ'; 
+gSG.bModSrc = 'External';
+T_wait = 1000;
+T_AfterLaser = 1000; %2000; %ejd
+% T_AfterLaser = 0.1e6; FUCK Yuanqi
+T_AfterPulse = 1000; %1000; % FUCK Yuanqi
+MWBuffer = 200; 
+
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
+
+if strcmp(gmSEQ.meas,'APD') % If PL signal is collected via APD.
+    gmSEQ.CtrGateDur = 1000;
+end
+
+init_dur = gmSEQ.m;
+
+% Pulse Blaster
+gmSEQ.CHN(1).PBN = PBDictionary('ctr0');
+gmSEQ.CHN(1).NRise = 2;
+gmSEQ.CHN(1).T = [T_wait+200*1e3, T_wait+200*1e3+gmSEQ.CtrGateDur+T_AfterLaser+gmSEQ.pi+gmSEQ.m]; %yhp
+gmSEQ.CHN(1).DT = [gmSEQ.CtrGateDur, gmSEQ.CtrGateDur];
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('AOM');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [T_wait];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [420*1e3]; 
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_wait+200*1e3+gmSEQ.CtrGateDur+T_AfterLaser - MWBuffer;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = gmSEQ.pi + 2*MWBuffer;
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_wait+200*1e3+gmSEQ.CtrGateDur+T_AfterLaser;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 500;
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [0, ...
+     T_wait+420*1e3-1000];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [1000, 1000];
+
+
+%chaseFunctionPool('stopChase', gmSEQ.P1AWG)
+chaseFunctionPool('stopChase', gmSEQ.MWAWG)
+if gSG.ACmodAWG % if we use AWG in AC modulation mode.
+    WaveForm_1 = [0, gmSEQ.pi, gSG.AWGFreq, 0*pi+0, gSG.AWGAmp];
+    WaveForm_2 = [0, gmSEQ.pi, gSG.AWGFreq, 0*pi-pi/2, gSG.AWGAmp];
+else
+    WaveForm_1 = [0, gmSEQ.pi, gSG.AWGAmp];
+    WaveForm_2 = [0, gmSEQ.pi, 0];
+end
+WaveForm_Length = ceil((gmSEQ.m + 1000) / (16/gSG.AWGClockRate)) * (16/gSG.AWGClockRate);
+WaveForm_PointNum = WaveForm_Length*gSG.AWGClockRate;
+
+gSG.AWGClockRate = 2; % in GHz. Yuanqi
+chaseFunctionPool('setClkRate', gmSEQ.MWAWG, gSG.AWGClockRate*1e9)
+pause(0.5)
+
+chaseFunctionPool('createWaveform', WaveForm_1, ...
+    gSG.AWGClockRate, WaveForm_Length, 'Rabi_Ch1.txt')
+chaseFunctionPool('createWaveform', ...
+    WaveForm_2, gSG.AWGClockRate, WaveForm_Length, 'Rabi_Ch2.txt')
+chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 1, ...
+    WaveForm_PointNum, 1, 2047, 2047, 'Rabi_Ch1.txt', 1); 
+pause(1.0);
+chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 2, ...
+    WaveForm_PointNum, 1, 2047, 2047, 'Rabi_Ch2.txt', 1);
+pause(1.0);
+chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+ApplyDelays();
+
+function Init_Haopu
+global gmSEQ gSG
+gSG.bfixedPow = 1;
+gSG.bfixedFreq = 1;
+gSG.bMod = 'IQ'; 
+gSG.bModSrc = 'External';
+T_wait = 1000;
+T_AfterLaser = 1000; %2000; %ejd
+% T_AfterLaser = 0.1e6; FUCK Yuanqi
+T_AfterPulse = 1000; %1000; % FUCK Yuanqi
+MWBuffer = 200; 
+
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
+
+if strcmp(gmSEQ.meas,'APD') % If PL signal is collected via APD.
+    gmSEQ.CtrGateDur = 1000;
+end
+
+init_dur = gmSEQ.m;
+
+% Pulse Blaster
+gmSEQ.CHN(1).PBN = PBDictionary('ctr0');
+gmSEQ.CHN(1).NRise = 2;
+gmSEQ.CHN(1).T = [T_wait, T_wait+init_dur+T_AfterLaser+gmSEQ.pi+T_AfterPulse]; %yhp
+gmSEQ.CHN(1).DT = [gmSEQ.CtrGateDur, gmSEQ.CtrGateDur];
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('AOM');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [T_wait, T_wait+init_dur+T_AfterLaser+gmSEQ.pi+T_AfterPulse];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [init_dur, init_dur]; 
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_wait+init_dur+T_AfterLaser - MWBuffer;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = gmSEQ.pi + 2*MWBuffer;
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_wait+init_dur+T_AfterLaser;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 500;
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [0, ...
+     T_wait+init_dur+T_AfterLaser+gmSEQ.pi+T_AfterPulse];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [1000, 1000];
+
+
+%chaseFunctionPool('stopChase', gmSEQ.P1AWG)
+chaseFunctionPool('stopChase', gmSEQ.MWAWG)
+if gSG.ACmodAWG % if we use AWG in AC modulation mode.
+    WaveForm_1 = [0, gmSEQ.pi, gSG.AWGFreq, 0*pi+0, gSG.AWGAmp];
+    WaveForm_2 = [0, gmSEQ.pi, gSG.AWGFreq, 0*pi-pi/2, gSG.AWGAmp];
+else
+    WaveForm_1 = [0, gmSEQ.pi, gSG.AWGAmp];
+    WaveForm_2 = [0, gmSEQ.pi, 0];
+end
+WaveForm_Length = ceil((gmSEQ.m + 1000) / (16/gSG.AWGClockRate)) * (16/gSG.AWGClockRate);
+WaveForm_PointNum = WaveForm_Length*gSG.AWGClockRate;
+
+gSG.AWGClockRate = 2; % in GHz. Yuanqi
+chaseFunctionPool('setClkRate', gmSEQ.MWAWG, gSG.AWGClockRate*1e9)
+pause(0.5)
+
+chaseFunctionPool('createWaveform', WaveForm_1, ...
+    gSG.AWGClockRate, WaveForm_Length, 'Rabi_Ch1.txt')
+chaseFunctionPool('createWaveform', ...
+    WaveForm_2, gSG.AWGClockRate, WaveForm_Length, 'Rabi_Ch2.txt')
+chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 1, ...
+    WaveForm_PointNum, 1, 2047, 2047, 'Rabi_Ch1.txt', 1); 
+pause(1.0);
+chaseFunctionPool('CreateSingleSegment', gmSEQ.MWAWG, 2, ...
+    WaveForm_PointNum, 1, 2047, 2047, 'Rabi_Ch2.txt', 1);
+pause(1.0);
+chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
 ApplyDelays();
 
 function Rabi_Raman
@@ -2363,7 +2560,6 @@ end
 chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false'); pause(1);
 chaseFunctionPool('runChase', gmSEQ.P1AWG, 'false'); pause(1);
 ApplyDelays();
-
 
 function PolarP1_SwpT % have not tested yet
 global gmSEQ gSG gSG2
@@ -7868,9 +8064,9 @@ gSG.bModSrc='External';
 
 gmSEQ.halfpi = gmSEQ.pi/2;
 
-AfterPi = 2000;
-AfterLaser = 0.1e6;
-Wait_p = 0.1e6; 
+AfterPi = 500; %2000 --> 500, WL 9/6/25
+AfterLaser = 1000; %0.1e6 --> 1000, WL 9/6/25
+Wait_p = 1000; %0.1e6 --> 1000, WL 9/6/25
 Detect_Window = 5000;
 
 if strcmp(gmSEQ.meas,'APD')
@@ -7901,7 +8097,7 @@ gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
 gmSEQ.CHN(numel(gmSEQ.CHN)).T=[Wait_p+gmSEQ.readout+AfterLaser, ...
     Sig_D_start+gmSEQ.readout+AfterLaser];
-gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[2150 2150];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[500 500]; %2150 --> 500, WL 9/6/25
 
 % Check this point
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
@@ -7925,69 +8121,69 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[50 50];
 
 %% AWG
 % Initialization
-% chaseFunctionPool('stopChase',  gmSEQ.MWAWG)
-% 
-% if gSG.ACmodAWG % in AC modulation mode
-%     WaveForm_1I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;...
-%         gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
-%     WaveForm_1Q = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp;...
-%         gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq pi-pi/2 gSG.AWGAmp];
-% 
-%     WaveForm_1Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
-%         *(16 / gSG.AWGClockRate);
-%     WaveForm_1PointNum = WaveForm_1Length * gSG.AWGClockRate;
-% 
-%     WaveForm_2I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;...
-%         gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
-%     WaveForm_2Q = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp;...
-%         gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
-% 
-%     WaveForm_2Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
-%         *(16 / gSG.AWGClockRate);
-%     WaveForm_2PointNum = WaveForm_2Length * gSG.AWGClockRate;
-%             
-% else
-% 
-%     WaveForm_1I = [0 gmSEQ.halfpi 0 pi/2 gSG.AWGAmp;...
-%            gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi 0 3*pi/2 gSG.AWGAmp];
-%     WaveForm_1Q = [0 gmSEQ.halfpi 0 0 0;];
-%     
-%     WaveForm_1Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
-%         *(16 / gSG.AWGClockRate);
-%     WaveForm_1PointNum = WaveForm_1Length * gSG.AWGClockRate;
-%     
-%     % dark sequence
-%     WaveForm_2I = [0 gmSEQ.halfpi 0 pi/2 gSG.AWGAmp;...
-%            gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi 0 pi/2 gSG.AWGAmp];
-%     WaveForm_2Q = [0 gmSEQ.halfpi 0 0 0;];
-%     
-%     WaveForm_2Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+PulseGap+gmSEQ.pi+1000) / (16 / gSG.AWGClockRate)) ...
-%         *(16 / gSG.AWGClockRate);
-%     WaveForm_2PointNum = WaveForm_2Length * gSG.AWGClockRate;
-% 
-% end
-%     chaseFunctionPool('createWaveform', WaveForm_1I, gSG.AWGClockRate, WaveForm_1Length, 'Ramsey_I_seg1.txt'); pause(0.5);
-%     chaseFunctionPool('createWaveform', WaveForm_1Q, gSG.AWGClockRate, WaveForm_1Length, 'Ramsey_Q_seg1.txt'); pause(0.5);
-%     chaseFunctionPool('createWaveform', WaveForm_2I, gSG.AWGClockRate, WaveForm_2Length, 'Ramsey_I_seg2.txt'); pause(0.5);
-%     chaseFunctionPool('createWaveform', WaveForm_2Q, gSG.AWGClockRate, WaveForm_2Length, 'Ramsey_Q_seg2.txt'); pause(0.5);
+chaseFunctionPool('stopChase',  gmSEQ.MWAWG)
 
-%     chaseFunctionPool('createSegStruct', 'Ramsey_SegStruct_I.txt', ...
-%         'Ramsey_I_seg1.txt', WaveForm_1PointNum, 1, 1, ...
-%         'Ramsey_I_seg2.txt', WaveForm_2PointNum, 1, 1);
-%     pause(0.5);
-%     chaseFunctionPool('createSegStruct', 'Ramsey_SegStruct_Q.txt', ...
-%         'Ramsey_Q_seg1.txt', WaveForm_1PointNum, 1, 1, ...
-%         'Ramsey_Q_seg2.txt', WaveForm_2PointNum, 1, 1);
-%     pause(0.5);
-%     chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, ...
-%         2, ...
-%         2047, 2047, 'Ramsey_SegStruct_I.txt', 'false');
-%     pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
-%     chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, ...
-%         2, ...
-%         2047, 2047, 'Ramsey_SegStruct_Q.txt', 'false');
-%     pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
-%     chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+if gSG.ACmodAWG % in AC modulation mode
+    WaveForm_1I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;...
+        gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+    WaveForm_1Q = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp;...
+        gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq pi-pi/2 gSG.AWGAmp];
+
+    WaveForm_1Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
+        *(16 / gSG.AWGClockRate);
+    WaveForm_1PointNum = WaveForm_1Length * gSG.AWGClockRate;
+
+    WaveForm_2I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;...
+        gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+    WaveForm_2Q = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp;...
+        gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+
+    WaveForm_2Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
+        *(16 / gSG.AWGClockRate);
+    WaveForm_2PointNum = WaveForm_2Length * gSG.AWGClockRate;
+            
+else
+
+    WaveForm_1I = [0 gmSEQ.halfpi 0 pi/2 gSG.AWGAmp;...
+           gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi 0 3*pi/2 gSG.AWGAmp];
+    WaveForm_1Q = [0 gmSEQ.halfpi 0 0 0;];
+    
+    WaveForm_1Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
+        *(16 / gSG.AWGClockRate);
+    WaveForm_1PointNum = WaveForm_1Length * gSG.AWGClockRate;
+    
+    % dark sequence
+    WaveForm_2I = [0 gmSEQ.halfpi 0 pi/2 gSG.AWGAmp;...
+           gmSEQ.halfpi+gmSEQ.m gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi 0 pi/2 gSG.AWGAmp];
+    WaveForm_2Q = [0 gmSEQ.halfpi 0 0 0;];
+    
+    WaveForm_2Length = ceil((gmSEQ.halfpi+gmSEQ.m+gmSEQ.halfpi+PulseGap+gmSEQ.pi+1000) / (16 / gSG.AWGClockRate)) ...
+        *(16 / gSG.AWGClockRate);
+    WaveForm_2PointNum = WaveForm_2Length * gSG.AWGClockRate;
+
+end
+    chaseFunctionPool('createWaveform', WaveForm_1I, gSG.AWGClockRate, WaveForm_1Length, 'Ramsey_I_seg1.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', WaveForm_1Q, gSG.AWGClockRate, WaveForm_1Length, 'Ramsey_Q_seg1.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', WaveForm_2I, gSG.AWGClockRate, WaveForm_2Length, 'Ramsey_I_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', WaveForm_2Q, gSG.AWGClockRate, WaveForm_2Length, 'Ramsey_Q_seg2.txt'); pause(0.5);
+
+    chaseFunctionPool('createSegStruct', 'Ramsey_SegStruct_I.txt', ...
+        'Ramsey_I_seg1.txt', WaveForm_1PointNum, 1, 1, ...
+        'Ramsey_I_seg2.txt', WaveForm_2PointNum, 1, 1);
+    pause(0.5);
+    chaseFunctionPool('createSegStruct', 'Ramsey_SegStruct_Q.txt', ...
+        'Ramsey_Q_seg1.txt', WaveForm_1PointNum, 1, 1, ...
+        'Ramsey_Q_seg2.txt', WaveForm_2PointNum, 1, 1);
+    pause(0.5);
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, ...
+        2, ...
+        2047, 2047, 'Ramsey_SegStruct_I.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, ...
+        2, ...
+        2047, 2047, 'Ramsey_SegStruct_Q.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
 
 ApplyDelays();
 
@@ -8000,12 +8196,12 @@ gSG.bModSrc='External';
 
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
 
-AfterPi = 2000;
-AfterLaser = 0.05e6;
-Wait_p = 0.01e6;
-Detect_Window = 5000;
+AfterPi = 500; % hBN1: 500; Zilin: 2000; WL: 100 --> 500, 4/2/25
+AfterLaser = 1000; % hBN1: 1000; Zilin: 0.05e6; WL: 100 --> 1000, 4/2/25
+Wait_p = 0.02e6; % hBN: 0.02e6; Zilin: 0.01e6; WL: 100 --> 0.02e6, 4/2/25
+Detect_Window = 5000; 
 
-Sig_D_start = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p;
+Sig_D_start = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p; %WL: hBN1: PulseGap = 30 ns, need here too? 4/2/25
 
 gmSEQ.CHN(1).PBN=PBDictionary('ctr0');
 gmSEQ.CHN(1).NRise=4;
@@ -8030,7 +8226,7 @@ gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
 gmSEQ.CHN(numel(gmSEQ.CHN)).T=[Wait_p+gmSEQ.readout+AfterLaser, ...
     Sig_D_start+gmSEQ.readout+AfterLaser];
-gmSEQ.CHN(numel(gmSEQ.CHN)).DT = repelem(gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2+gmSEQ.halfpi+200, 2);
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = repelem(gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2+gmSEQ.halfpi+200, 2); %WL: hBN1 - fixed as [7000 7000]
 
 
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
@@ -8063,10 +8259,10 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[50 50];
 % Initialization
 chaseFunctionPool('stopChase',  gmSEQ.MWAWG)
 
-if gSG.ACmodAWG % in AC modulation mode
-    WaveForm_1I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;...
-        gmSEQ.halfpi+gmSEQ.m/2 gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp; ...
-        gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2 gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+if gSG.ACmodAWG % in AC modulation mode; % phase = 0 --> +X; pi/2 --> +Y; pi --> -X, 3*pi/2 --> -Y 
+    WaveForm_1I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;... % X 
+        gmSEQ.halfpi+gmSEQ.m/2 gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp; ... % Y
+        gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2 gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; % -X
     WaveForm_1Q = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp;...
         gmSEQ.halfpi+gmSEQ.m/2 gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi gSG.AWGFreq pi/2-pi/2 gSG.AWGAmp; ...
         gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2 gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2+gmSEQ.halfpi gSG.AWGFreq pi-pi/2 gSG.AWGAmp];
@@ -8075,9 +8271,9 @@ if gSG.ACmodAWG % in AC modulation mode
         *(16 / gSG.AWGClockRate);
     WaveForm_1PointNum = WaveForm_1Length * gSG.AWGClockRate;
 
-    WaveForm_2I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;...
-        gmSEQ.halfpi+gmSEQ.m/2 gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp; ...
-        gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2 gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+    WaveForm_2I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;... % X 
+        gmSEQ.halfpi+gmSEQ.m/2 gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp; ... % Y 
+        gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2 gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; % X
     WaveForm_2Q = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp;...
         gmSEQ.halfpi+gmSEQ.m/2 gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi gSG.AWGFreq pi/2-pi/2 gSG.AWGAmp; ...
         gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2 gmSEQ.halfpi+gmSEQ.m/2+gmSEQ.pi+gmSEQ.m/2+gmSEQ.halfpi gSG.AWGFreq 0-pi/2 gSG.AWGAmp];
@@ -8107,7 +8303,7 @@ else
     WaveForm_2PointNum = WaveForm_2Length * gSG.AWGClockRate;
 
 end
-chaseFunctionPool('createWaveform', WaveForm_1I, gSG.AWGClockRate, WaveForm_1Length, 'Echo_I_seg1.txt'); pause(0.5);
+chaseFunctionPool('createWaveform', WaveForm_1I, gSG.AWGClockRate, WaveForm_1Length, 'Echo_I_seg1.txt'); pause(0.5); %WL: no need to set the AWG clock rate = 2 GHz as done in the hBN1? 4/2/25 
 chaseFunctionPool('createWaveform', WaveForm_1Q, gSG.AWGClockRate, WaveForm_1Length, 'Echo_Q_seg1.txt'); pause(0.5);
 chaseFunctionPool('createWaveform', WaveForm_2I, gSG.AWGClockRate, WaveForm_2Length, 'Echo_I_seg2.txt'); pause(0.5);
 chaseFunctionPool('createWaveform', WaveForm_2Q, gSG.AWGClockRate, WaveForm_2Length, 'Echo_Q_seg2.txt'); pause(0.5);
@@ -8131,6 +8327,393 @@ pause(1); % this pause seems to be important, otherwise the loading is not right
 
 chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
 
+ApplyDelays();
+
+function Echo_WW %disorder wind-unwind order step test
+global gmSEQ gSG
+
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
+AfterPi = 500; % hBN1: 500; Zilin: 2000; WL: 100 --> 500, 4/2/25
+AfterLaser = 1000; % hBN1: 1000; Zilin: 0.05e6; WL: 100 --> 1000, 4/2/25
+Wait_p = 0.02e6; % hBN: 0.02e6; Zilin: 0.01e6; WL: 100 --> 0.02e6, 4/2/25
+Detect_Window = 5000;
+wind_t = 10; %T2* = 10s ns
+unwind_t = gmSEQ.m;
+Sig_D_start = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p; %WL: hBN1: PulseGap = 30 ns, need here too? 4/2/25
+
+gmSEQ.CHN(1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(1).NRise=4;
+gmSEQ.CHN(1).T=[Wait_p+gmSEQ.readout-1000-gmSEQ.CtrGateDur, ...
+    Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+AfterPi, ...
+    Sig_D_start+gmSEQ.readout-1000-gmSEQ.CtrGateDur, ...
+    Sig_D_start+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+AfterPi];
+if strcmp(gmSEQ.meas,'SPCM')
+    gmSEQ.CHN(1).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+elseif strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CHN(1).DT=[1000 1000 1000 1000];
+end
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [Wait_p, Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+AfterPi, ...
+    Sig_D_start, Sig_D_start+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.readout Detect_Window gmSEQ.readout Detect_Window];
+%
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[Wait_p+gmSEQ.readout+AfterLaser, ...
+    Sig_D_start+gmSEQ.readout+AfterLaser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = repelem(gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+200, 2); %WL: hBN1 - fixed as [7000 7000]
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+if unwind_t < 200
+    gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+    gmSEQ.CHN(numel(gmSEQ.CHN)).T=[Wait_p+gmSEQ.readout+AfterLaser-20, Sig_D_start+gmSEQ.readout+AfterLaser-20];
+    gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+40, ...
+    gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+40];
+else
+    gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=6;
+    gmSEQ.CHN(numel(gmSEQ.CHN)).T=[Wait_p+gmSEQ.readout+AfterLaser-20, ...
+        Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+wind_t-20, ...
+        Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t-20, ...
+        Sig_D_start+gmSEQ.readout+AfterLaser-20, ...
+        Sig_D_start+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+wind_t-20, ...
+        Sig_D_start+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t-20];
+    gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.halfpi+40, gmSEQ.pi+40, gmSEQ.halfpi+40, ...
+    gmSEQ.halfpi+40, gmSEQ.pi+40, gmSEQ.halfpi+40];
+end
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 Sig_D_start+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+AfterPi+Detect_Window-50];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[50 50];
+% gmSEQ.MWAWG = 1;
+% disp(gmSEQ.MWAWG)
+%% AWG
+% Initialization
+chaseFunctionPool('stopChase',  gmSEQ.MWAWG)
+if gSG.ACmodAWG % in AC modulation mode; % phase = 0 --> +X; pi/2 --> +Y; pi --> -X, 3*pi/2 --> -Y
+    WaveForm_1I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;... % X
+        gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp; ... % X
+        gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; % -X
+    WaveForm_1Q = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp;...
+        gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+    WaveForm_1Length = ceil((gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
+        *(16 / gSG.AWGClockRate);
+    WaveForm_1PointNum = WaveForm_1Length * gSG.AWGClockRate;
+
+    WaveForm_2I = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp;... % X
+        gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp; ... % X
+        gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; % X
+    WaveForm_2Q = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp;...
+        gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+    WaveForm_2Length = ceil((gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
+        *(16 / gSG.AWGClockRate);
+    WaveForm_2PointNum = WaveForm_2Length * gSG.AWGClockRate;
+           
+else
+    WaveForm_1I = [0 gmSEQ.halfpi 0 pi/2 gSG.AWGAmp;...
+           gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi 0 3*pi/2 gSG.AWGAmp];
+    WaveForm_1Q = [0 gmSEQ.halfpi 0 0 0;...
+        gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.pi 0 pi/2 gSG.AWGAmp];
+   
+    WaveForm_1Length = ceil((gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+1000) / (16 / gSG.AWGClockRate)) ...
+        *(16 / gSG.AWGClockRate);
+    WaveForm_1PointNum = WaveForm_1Length * gSG.AWGClockRate;
+   
+    % dark sequence
+    WaveForm_2I = [0 gmSEQ.halfpi 0 pi/2 gSG.AWGAmp;...
+           gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi 0 pi/2 gSG.AWGAmp];
+    WaveForm_2Q = [0 gmSEQ.halfpi 0 0 0;...
+        gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.pi 0 pi/2 gSG.AWGAmp];
+   
+    WaveForm_2Length = ceil((gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi+PulseGap+gmSEQ.pi+1000) / (16 / gSG.AWGClockRate)) ...
+        *(16 / gSG.AWGClockRate);
+    WaveForm_2PointNum = WaveForm_2Length * gSG.AWGClockRate;
+end
+
+chaseFunctionPool('createWaveform', WaveForm_1I, gSG.AWGClockRate, WaveForm_1Length, 'Echo_I_seg1.txt'); pause(0.5); %WL: no need to set the AWG clock rate = 2 GHz as done in the hBN1? 4/2/25
+chaseFunctionPool('createWaveform', WaveForm_1Q, gSG.AWGClockRate, WaveForm_1Length, 'Echo_Q_seg1.txt'); pause(0.5);
+chaseFunctionPool('createWaveform', WaveForm_2I, gSG.AWGClockRate, WaveForm_2Length, 'Echo_I_seg2.txt'); pause(0.5);
+chaseFunctionPool('createWaveform', WaveForm_2Q, gSG.AWGClockRate, WaveForm_2Length, 'Echo_Q_seg2.txt'); pause(0.5);
+chaseFunctionPool('createSegStruct', 'Echo_SegStruct_I.txt', ...
+    'Echo_I_seg1.txt', WaveForm_1PointNum, 1, 1, ...
+    'Echo_I_seg2.txt', WaveForm_2PointNum, 1, 1);
+pause(0.5);
+chaseFunctionPool('createSegStruct', 'Echo_SegStruct_Q.txt', ...
+    'Echo_Q_seg1.txt', WaveForm_1PointNum, 1, 1, ...
+    'Echo_Q_seg2.txt', WaveForm_2PointNum, 1, 1);
+pause(0.5);
+chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, ...
+    2, ...
+    2047, 2047, 'Echo_SegStruct_I.txt', 'false');
+pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, ...
+    2, ...
+    2047, 2047, 'Echo_SegStruct_Q.txt', 'false');
+pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+ApplyDelays(); 
+
+
+function Echo_WW_Czx % Janis setup, 9/11/25
+%XY8 with total tau_MW is fixed  & disorder wind-unwind sequence for XX & ZZ autocorrelations  
+global gmSEQ gSG
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
+%gmSEQ.TempTau1 = gmSEQ.DEERpi; %TempTau1 is the fixed length between first and last half pi --> total MW length as fixed
+%gSG.AWGClockRate = 2; % in GHz. Yuanqi; WL: maybe not necessary for ours?
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 1000;
+end
+
+%% parameters
+Wait_p = 0.2e5; % wait time between sequences
+AfterLaser = 1000; % buffer time after laser initialization
+Detect_Window = 5000; % readout laser pulse time
+AfterPi = 500; % buffer time before laser readout; 500 ns in our Rabi case; 200 --> 500, WL 12/19/24
+XY8Length = 0; % XY8 length : buffer time between the two half pi_x -- XY8 seq. spacing if needed 
+MWbuffer = 20; % buffer time for MW switch - before and after; 20 ns for the Janis setup
+wind_t = 15; % disorder winding time
+unwind_t = gmSEQ.m; % disorder unwinding time
+XY8Length_WW = wind_t + gmSEQ.halfpi + XY8Length + gmSEQ.halfpi + unwind_t; % total XY8 sequence + WW sequence  
+gmSEQ.TempTau1 = XY8Length_WW;
+if XY8Length_WW > gmSEQ.TempTau1 % TempTau1 is the fixed length between first and last half pi
+    warning('TempTau1 is shorter than Pulse Length. Please input a longer TempTau1');
+end
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 1000;
+end
+
+gmSEQ.CHN(1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(1).NRise=4;
+gmSEQ.CHN(1).T = []; gmSEQ.CHN(1).DT =[];
+gmSEQ.CHN(1).T = [Wait_p Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.readout Detect_Window];
+Start_Sig_D = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p;
+gmSEQ.CHN(1).T = [gmSEQ.CHN(1).T Start_Sig_D Start_Sig_D+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.CHN(1).DT gmSEQ.readout Detect_Window];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(2) gmSEQ.CHN(1).T(3)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(4)];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [Wait_p+gmSEQ.readout+AfterLaser-MWbuffer, Start_Sig_D+gmSEQ.readout+AfterLaser-MWbuffer]; %switch buffer time = 25 -> 50; 100 in our Rabi case; 50 --> 100, WL 12/19/24; 100 --> 20, WL 4/4/25
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+2*MWbuffer gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+2*MWbuffer];
+%%%%%%%%%%%%%%%%%%%%
+Max_length = 2*Wait_p +  2*gmSEQ.readout + Detect_Window*2 + 2*(AfterLaser+AfterPi+gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi);% total sequence time
+Max_length2 = gmSEQ.CHN(1).T(4) + Detect_Window;
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 gmSEQ.CHN(1).T(2*(gmSEQ.PulseNum+2)+2)+Wait_p];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 Max_length2-200];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[200 200];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2; % use 8 pi/2 P1 pulse spacing 10us away to mix P1
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout+AfterLaser gmSEQ.CHN(1).T(3)+gmSEQ.readout+AfterLaser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[250 250];
+% for MW_AWG
+if gSG.ACmodAWG
+   
+    % in AC modulation mode ==> phase = 0 --> +X; pi/2 --> +Y; pi --> -X, 3*pi/2 --> -Y
+    % array info: start t (after triggered), end t, freq, phase, amplitude
+    % +X pi/2 pulse
+    C_1 = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+    C_2 = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+
+    % winding (free-evolution) +X pi/2 pulse
+    C_1 = [C_1; ...
+        gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+    C_2 = [C_2; ...
+        gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+
+    % +-X pi/2 pulse: Cxx +- Czz
+    C_1 = [C_1; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+    C_2 = [C_2; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+
+    % unwinding (free-evolution) - final +- X pi/2 pulse for differential measurement
+    D_1 = [C_1; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; % +X
+    D_2 = [C_2; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+       
+    C_1 = [C_1; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; % -X
+    C_2 = [C_2; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];       
+   
+else
+%DC modulation
+end
+       
+    Length2_2 = round(gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+1000);
+    Length2_3 = round(gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+1000);
+    clkRate2 = 2e9;
+ 
+    Total2_2 = ceil(Length2_2*clkRate2/1e9/16)*16;
+    Total2_3 = ceil(Length2_3*clkRate2/1e9/16)*16;
+   
+    chaseFunctionPool('stopChase', gmSEQ.MWAWG); pause(0.3);
+    chaseFunctionPool('setClkRate', gmSEQ.MWAWG, clkRate2); pause(0.3);
+    chaseFunctionPool('createWaveform', C_1, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch1_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', C_2, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch2_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_1, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch1_seg3.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_2, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch2_seg3.txt'); pause(0.5);
+   
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch1.txt', 'wave_AWG_ch1_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch1_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch2.txt', 'wave_AWG_ch2_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch2_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+   
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, 2, 2047, 2047, 'SegStruct_ch1.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, 2, 2047, 2047, 'SegStruct_ch2.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+ApplyDelays();
+
+function Echo_WW_Czy % Janis setup, 9/11/25
+%XY8 with total tau_MW is fixed  & disorder wind-unwind sequence for XX & ZZ autocorrelations  
+global gmSEQ gSG
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
+gmSEQ.TempTau1 = gmSEQ.DEERpi; %TempTau1 is the fixed length between first and last half pi --> total MW length as fixed 
+%gSG.AWGClockRate = 2; % in GHz. Yuanqi; WL: maybe not necessary for ours?
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 1000;
+end
+%% parameters 
+Wait_p = 0.2e5; % wait time between sequences 
+AfterLaser = 1000; % buffer time after laser initialization 
+Detect_Window = 5000; % readout laser pulse time 
+AfterPi = 500; % buffer time before laser readout; 500 ns in our Rabi case; 200 --> 500, WL 12/19/24
+XY8Length = 10; % XY8 length : buffer time between the half pi_x and pi_x before the unwinding step below 
+AfterPi2 = 10; % buffer time between the pi_x and half pi_x before the unwinding step below 
+MWbuffer = 20; % buffer time for MW switch - before and after; 20 ns for the Janis setup
+wind_t = 15; % disorder winding time 
+unwind_t = gmSEQ.m; % disorder unwinding time 
+XY8Length_WW = wind_t + gmSEQ.halfpi + XY8Length + gmSEQ.pi + AfterPi2 + gmSEQ.halfpi + unwind_t; % total XY8 sequence + WW sequence  
+if XY8Length_WW > gmSEQ.TempTau1 % TempTau1 is the fixed length between first and last half pi
+    warning('TempTau1 is shorter than Pulse Length. Please input a longer TempTau1');
+end
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 1000;
+end
+gmSEQ.CHN(1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(1).NRise=4;
+gmSEQ.CHN(1).T = []; gmSEQ.CHN(1).DT =[];
+gmSEQ.CHN(1).T = [Wait_p Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.readout Detect_Window];
+Start_Sig_D = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p;
+gmSEQ.CHN(1).T = [gmSEQ.CHN(1).T Start_Sig_D Start_Sig_D+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.CHN(1).DT gmSEQ.readout Detect_Window];
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(2) gmSEQ.CHN(1).T(3)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(4)];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [Wait_p+gmSEQ.readout+AfterLaser-MWbuffer, Start_Sig_D+gmSEQ.readout+AfterLaser-MWbuffer]; %switch buffer time = 25 -> 50; 100 in our Rabi case; 50 --> 100, WL 12/19/24; 100 --> 20, WL 4/4/25
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+2*MWbuffer gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+2*MWbuffer];
+%%%%%%%%%%%%%%%%%%%%
+Max_length = 2*Wait_p +  2*gmSEQ.readout + Detect_Window*2 + 2*(AfterLaser+AfterPi+gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi);% total sequence time 
+Max_length2 = gmSEQ.CHN(1).T(4) + Detect_Window;
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 gmSEQ.CHN(1).T(2*(gmSEQ.PulseNum+2)+2)+Wait_p];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 Max_length2-200];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[200 200];
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2; % use 8 pi/2 P1 pulse spacing 10us away to mix P1
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout+AfterLaser gmSEQ.CHN(1).T(3)+gmSEQ.readout+AfterLaser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[250 250];
+% for MW_AWG
+if gSG.ACmodAWG 
+    
+    % in AC modulation mode ==> phase = 0 --> +X; pi/2 --> +Y; pi --> -X, 3*pi/2 --> -Y
+    % array info: start t (after triggered), end t, freq, phase, amplitude 
+    % +Y pi/2 pulse 
+    C_1 = [0 gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp]; 
+    C_2 = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+    % winding (free-evolution) +Y pi/2 pulse 
+    C_1 = [C_1; ...
+        gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp]; 
+    C_2 = [C_1; ...
+        gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+    % +Y pi pulse
+    C_1 = [C_1; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp]; 
+    C_2 = [C_2; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+    % -Y pi/2 pulse
+    C_1 = [C_1; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi+AfterPi2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi+AfterPi2+gmSEQ.halfpi gSG.AWGFreq 3*pi/2 gSG.AWGAmp]; 
+    C_2 = [C_2; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi+AfterPi2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi+AfterPi2+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+    % unwinding (free-evolution) - final +- Y pi/2 pulse for differential measurement
+    C_1 = [C_1; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp]; % +Y
+    C_2 = [C_2; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+       
+    D_1 = [C_1; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 3*pi/2 gSG.AWGAmp]; % -Y
+    D_2 = [C_2; ...
+        gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Length+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+       
+   
+else
+%DC modulation
+end
+       
+    Length2_2 = round(gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+1000);
+    Length2_3 = round(gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+1000);
+    clkRate2 = 2e9;
+ 
+    Total2_2 = ceil(Length2_2*clkRate2/1e9/16)*16;
+    Total2_3 = ceil(Length2_3*clkRate2/1e9/16)*16;
+   
+    chaseFunctionPool('stopChase', gmSEQ.MWAWG); pause(0.3);
+    chaseFunctionPool('setClkRate', gmSEQ.MWAWG, clkRate2); pause(0.3);
+    chaseFunctionPool('createWaveform', C_1, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch1_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', C_2, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch2_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_1, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch1_seg3.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_2, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch2_seg3.txt'); pause(0.5);
+   
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch1.txt', 'wave_AWG_ch1_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch1_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch2.txt', 'wave_AWG_ch2_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch2_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+   
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, 2, 2047, 2047, 'SegStruct_ch1.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, 2, 2047, 2047, 'SegStruct_ch2.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
 ApplyDelays();
 
 function Echo_TuneDensity
@@ -9574,6 +10157,1489 @@ chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, ...
 pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
 %% Run waveform
 chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+ApplyDelays();
+
+function CPMG_N_fixed 
+global gmSEQ gSG 
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale((gmSEQ.pi+gmSEQ.interval)*gmSEQ.To);
+gmSEQ.TempTau0 = gmSEQ.interval; %TempTau0 is the pulse interval length;
+gmSEQ.TempTau1 = gmSEQ.DEERpi; %TempTau1 is the fixed length between first and last half pi
+%gSG.AWGClockRate = 2; % in GHz. Yuanqi; WL: maybe not necessary for ours? 
+if strcmp(gmSEQ.meas,'APD') 
+    gmSEQ.CtrGateDur = 1000;
+end
+Wait_p = 0.2e5;
+AfterLaser = 1000;
+Detect_Window = 5000;
+AfterPi = 500; %500 in our Rabi case; 200 --> 500, WL 12/19/24
+XY8Num = round(gmSEQ.m); % number of single pi pulses
+XY8Length = XY8Num*(gmSEQ.TempTau0+gmSEQ.pi); % TempTau0 is the pulse interval length
+if XY8Length > gmSEQ.TempTau1 % TempTau1 is the fixed length between first and last half pi 
+    warning('TempTau1 is shorter than Pulse Length. Please input a longer TempTau1');
+end
+if strcmp(gmSEQ.meas,'APD') 
+    gmSEQ.CtrGateDur = 1000;
+end
+gmSEQ.CHN(1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(1).NRise=4;
+gmSEQ.CHN(1).T = []; gmSEQ.CHN(1).DT =[];
+% Pulse for first T1 measurement
+gmSEQ.CHN(1).T = [Wait_p Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.readout Detect_Window];
+Start_Sig_D = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p;
+gmSEQ.CHN(1).T = [gmSEQ.CHN(1).T Start_Sig_D Start_Sig_D+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.CHN(1).DT gmSEQ.readout Detect_Window];
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(2) gmSEQ.CHN(1).T(3)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(4)];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWswitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [Wait_p+gmSEQ.readout+AfterLaser-100, Start_Sig_D+gmSEQ.readout+AfterLaser-100]; %switch buffer time = 25 -> 50; 100 in our Rabi case; 50 --> 100, WL 12/19/24
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+200 gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+200];
+%%%%%%%%%%%%%%%%%%%%%%
+Max_length = 2*Wait_p +  2*gmSEQ.readout + Detect_Window*2 + 2*(AfterLaser+AfterPi+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi);
+Max_length2 = gmSEQ.CHN(1).T(4) + Detect_Window;
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 gmSEQ.CHN(1).T(2*(gmSEQ.PulseNum+2)+2)+Wait_p];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 Max_length2-200];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[200 200];
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2; % use 8 pi/2 P1 pulse spacing 10us away to mix P1
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout+AfterLaser gmSEQ.CHN(1).T(3)+gmSEQ.readout+AfterLaser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[250 250];
+% for MW_AWG
+if gSG.ACmod % in AC modulation mode ==> WL: gSG.ACmod
+    %phase = 0 --> +X; pi/2 --> +Y; pi --> -X; 3*pi/2 --> -Y 
+    %CPMG: X (pi/2) - Y (pi) x N - +-X(pi/2) for differential seq. 
+    
+    C_1 = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; % +X pulse: 0 
+    C_2 = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+    
+    if XY8Num>0
+        for zz = 1:XY8Num % +Y pulse: pi/2 
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp]; 
+        end
+        
+        
+        % determine final pi/2 pulse's phase
+        % +X pulse: 0 (dark)
+        D_1 = [C_1;...
+            gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+        D_2 = [C_2;...
+            gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];       
+        % -X pulse: pi (bright)
+        C_1 = [C_1;...
+            gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+        C_2 = [C_2;...
+            gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];       
+    
+    else
+        D_1 = [C_1; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; %X 0 / Y pi/2
+        D_2 = [C_2; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+        
+        C_1 = [C_1; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; %-X pi / -Y 3*pi/2
+        C_2 = [C_2; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+    end
+    
+%     D_1 = [C_1; ...
+%             gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+%     D_2 = [C_2; ...
+%             gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp];   
+%     
+    
+else
+%DC modulation
+end
+        
+        
+    Length2_2 = round(gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+1000);
+    Length2_3 = round(gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+1000);
+    clkRate2 = 2e9;
+ 
+    Total2_2 = ceil(Length2_2*clkRate2/1e9/16)*16;
+    Total2_3 = ceil(Length2_3*clkRate2/1e9/16)*16;
+    
+    chaseFunctionPool('stopChase', 1); pause(0.3);
+    chaseFunctionPool('setClkRate', 1, clkRate2); pause(0.3);
+    chaseFunctionPool('createWaveform', C_1, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch1_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', C_2, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch2_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_1, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch1_seg3.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_2, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch2_seg3.txt'); pause(0.5);
+    
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch1.txt', 'wave_AWG_ch1_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch1_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch2.txt', 'wave_AWG_ch2_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch2_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    
+    chaseFunctionPool('CreateSegments', 1, 1, 2, 2047, 2047, 'SegStruct_ch1.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('CreateSegments', 1, 2, 2, 2047, 2047, 'SegStruct_ch2.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('runChase', 1, 'false');
+ApplyDelays();
+
+function eCPMG_SwpE_fixed 
+global gmSEQ gSG 
+
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+
+XY8Num = gmSEQ.DEERt; %total number of CPMG pi pulses 
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale((gmSEQ.To+gmSEQ.interval)*XY8Num);
+gmSEQ.TempTau0 = gmSEQ.interval; %TempTau0 is the pulse interval length; 
+gmSEQ.TempTau1 = gmSEQ.DEERpi; %TempTau1 is the fixed length between first and last half pi
+%gSG.AWGClockRate = 2; % in GHz. Yuanqi; WL: maybe not necessary for ours?  
+
+if strcmp(gmSEQ.meas,'APD') 
+    gmSEQ.CtrGateDur = 1000;
+end
+% pi + epsilon time = gmSEQ.pi --> gmSEQ.m 
+
+Wait_p = 0.2e5;
+AfterLaser = 1000;
+Detect_Window = 5000;
+AfterPi = 500; %500 in our Rabi case; 200 --> 500, WL 12/19/24
+XY8Length = XY8Num*(gmSEQ.TempTau0+gmSEQ.m); % TempTau0 is the pulse interval length
+
+if XY8Length > gmSEQ.TempTau1 % TempTau1 is the fixed length between first and last half pi 
+    warning('TempTau1 is shorter than Pulse Length. Please input a longer TempTau1');
+end
+if strcmp(gmSEQ.meas,'APD') 
+    gmSEQ.CtrGateDur = 1000;
+end
+
+gmSEQ.CHN(1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(1).NRise=4;
+gmSEQ.CHN(1).T = []; gmSEQ.CHN(1).DT =[];
+% Pulse for first T1 measurement
+gmSEQ.CHN(1).T = [Wait_p Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.readout Detect_Window];
+
+Start_Sig_D = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p;
+gmSEQ.CHN(1).T = [gmSEQ.CHN(1).T Start_Sig_D Start_Sig_D+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.CHN(1).DT gmSEQ.readout Detect_Window];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(2) gmSEQ.CHN(1).T(3)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(4)];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [Wait_p+gmSEQ.readout+AfterLaser-20, Start_Sig_D+gmSEQ.readout+AfterLaser-20]; %switch buffer time = 25 -> 50; 100 in our Rabi case; 50 --> 100, WL 12/19/24; 100 --> 20, WL 4/4/25
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+40 gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+40];
+%%%%%%%%%%%%%%%%%%%%%%
+
+Max_length = 2*Wait_p +  2*gmSEQ.readout + Detect_Window*2 + 2*(AfterLaser+AfterPi+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi);
+Max_length2 = gmSEQ.CHN(1).T(4) + Detect_Window;
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 gmSEQ.CHN(1).T(2*(gmSEQ.PulseNum+2)+2)+Wait_p];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 Max_length2-200];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[200 200];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2; % use 8 pi/2 P1 pulse spacing 10us away to mix P1
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout+AfterLaser gmSEQ.CHN(1).T(3)+gmSEQ.readout+AfterLaser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[250 250];
+% for MW_AWG
+if gSG.ACmodAWG % in AC modulation mode ==> WL: gSG.ACmod
+    %phase = 0 --> +X; pi/2 --> +Y; pi --> -X; 3*pi/2 --> -Y 
+    %CPMG: X (pi/2) - Y (pi) x N - +-X(pi/2) for differential seq. 
+    
+    C_1 = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; % +X pulse: 0 
+    C_2 = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+    
+    if XY8Num>0
+        for zz = 1:XY8Num % +Y pulse: pi/2 
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.m)+gmSEQ.interval/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.m)+gmSEQ.interval/2+gmSEQ.m gSG.AWGFreq pi/2 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.m)+gmSEQ.interval/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.m)+gmSEQ.interval/2+gmSEQ.m gSG.AWGFreq 0 gSG.AWGAmp]; 
+        end
+        
+        
+        % determine final pi/2 pulse's phase
+        % +X pulse: 0 (dark)
+        D_1 = [C_1;...
+            gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.m) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.m)+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+        D_2 = [C_2;...
+            gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.m) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.m)+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];       
+        % -X pulse: pi (bright)
+        C_1 = [C_1;...
+            gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.m) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.m)+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+        C_2 = [C_2;...
+            gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.m) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.m)+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];       
+    
+    else
+        D_1 = [C_1; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; %X 0 
+        D_2 = [C_2; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+        
+        C_1 = [C_1; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; %-X pi
+        C_2 = [C_2; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+    end
+    
+%     D_1 = [C_1; ...
+%             gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.m)+gmSEQ.halfpi+PulseGap gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.m)+gmSEQ.halfpi+PulseGap+gmSEQ.m gSG.AWGFreq 0 gSG.AWGAmp];
+%     D_2 = [C_2; ...
+%             gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.m)+gmSEQ.halfpi+PulseGap gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.m)+gmSEQ.halfpi+PulseGap+gmSEQ.m gSG.AWGFreq -pi/2 gSG.AWGAmp];   
+%     
+    
+else
+%DC modulation
+end
+        
+        
+    Length2_2 = round(gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+1000);
+    Length2_3 = round(gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+1000);
+    clkRate2 = 2e9;
+ 
+    Total2_2 = ceil(Length2_2*clkRate2/1e9/16)*16;
+    Total2_3 = ceil(Length2_3*clkRate2/1e9/16)*16;
+    
+    chaseFunctionPool('stopChase', gmSEQ.MWAWG); pause(0.3);
+    chaseFunctionPool('setClkRate', gmSEQ.MWAWG, clkRate2); pause(0.3);
+
+    chaseFunctionPool('createWaveform', C_1, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch1_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', C_2, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch2_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_1, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch1_seg3.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_2, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch2_seg3.txt'); pause(0.5);
+    
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch1.txt', 'wave_AWG_ch1_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch1_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch2.txt', 'wave_AWG_ch2_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch2_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, 2, 2047, 2047, 'SegStruct_ch1.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, 2, 2047, 2047, 'SegStruct_ch2.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+
+ApplyDelays();
+
+function XY8N_fixed %WL: from hBN1, 4/2/25
+%Same as XY8N except swapping variable XY8length to fixed TempTau1
+%in AOM and CTR0
+global gmSEQ gSG
+
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale((gmSEQ.pi+gmSEQ.interval)*gmSEQ.To);
+
+gmSEQ.TempTau0 = gmSEQ.interval; %TempTau0 is the pulse interval length; 
+gmSEQ.TempTau1 = gmSEQ.DEERpi; %TempTau1 is the fixed length between first and last half pi
+
+%gSG.AWGClockRate = 2; % in GHz. Yuanqi; WL: maybe not necessary for ours? 
+
+if strcmp(gmSEQ.meas,'APD') 
+    gmSEQ.CtrGateDur = 1000;
+end
+
+Wait_p = 0.2e5;
+AfterLaser = 1000;
+Detect_Window = 5000;
+AfterPi = 500; %500 in our Rabi case; 200 --> 500, WL 12/19/24
+XY8Num = round(gmSEQ.m); % number of single pi pulses
+XY8Length = XY8Num*(gmSEQ.TempTau0+gmSEQ.pi); % TempTau0 is the pulse interval length
+
+if XY8Length > gmSEQ.TempTau1 % TempTau1 is the fixed length between first and last half pi 
+    warning('TempTau1 is shorter than Pulse Length. Please input a longer TempTau1');
+end
+if strcmp(gmSEQ.meas,'APD') 
+    gmSEQ.CtrGateDur = 1000;
+end
+
+gmSEQ.CHN(1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(1).NRise=4;
+gmSEQ.CHN(1).T = []; gmSEQ.CHN(1).DT =[];
+% Pulse for first T1 measurement
+gmSEQ.CHN(1).T = [Wait_p Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.readout Detect_Window];
+
+Start_Sig_D = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p;
+gmSEQ.CHN(1).T = [gmSEQ.CHN(1).T Start_Sig_D Start_Sig_D+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.CHN(1).DT gmSEQ.readout Detect_Window];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(2) gmSEQ.CHN(1).T(3)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(4)];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [Wait_p+gmSEQ.readout+AfterLaser-20, Start_Sig_D+gmSEQ.readout+AfterLaser-20]; %switch buffer time = 25 -> 50; 100 in our Rabi case; 50 --> 100, WL 12/19/24; 100 --> 20, WL 4/4/25
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+40 gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+40];
+%%%%%%%%%%%%%%%%%%%%
+
+Max_length = 2*Wait_p +  2*gmSEQ.readout + Detect_Window*2 + 2*(AfterLaser+AfterPi+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi);
+Max_length2 = gmSEQ.CHN(1).T(4) + Detect_Window;
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 gmSEQ.CHN(1).T(2*(gmSEQ.PulseNum+2)+2)+Wait_p];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 Max_length2-200];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[200 200];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2; % use 8 pi/2 P1 pulse spacing 10us away to mix P1
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout+AfterLaser gmSEQ.CHN(1).T(3)+gmSEQ.readout+AfterLaser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[250 250];
+
+% for MW_AWG: XY-8
+if gSG.ACmodAWG % in AC modulation mode ==> phase = 0 --> +X; pi/2 --> +Y; pi --> -X, 3*pi/2 --> -Y 
+
+    C_1 = [0 gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp]; % +Y 
+    C_2 = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+    
+    if XY8Num>0
+        for zz = 1:XY8Num
+            if ( (mod(zz,8) == 1) || (mod(zz,8) == 3) || (mod(zz,8) == 6) || (mod(zz,8) == 0)) % X 
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp]; 
+            else % Y
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp]; 
+            end
+        end
+        
+        
+                % determine final pi/2 pulse's phase
+        if ( (mod(zz,8) == 2) || (mod(zz,8) == 3) || (mod(zz,8) == 5) || (mod(zz,8) == 6) ) % -Y
+            D_1 = [C_1;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq 3*pi/2 gSG.AWGAmp]; 
+            D_2 = [C_2;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; 
+        else % Y 
+            D_1 = [C_1;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+            D_2 = [C_2;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];       
+        end
+        % determine final pi/2 pulse's phase
+        if ( (mod(zz,8) == 2) || (mod(zz,8) == 3) || (mod(zz,8) == 5) || (mod(zz,8) == 6) ) % Y
+            C_1 = [C_1;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+            C_2 = [C_2;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+        else % -Y pulse 
+            C_1 = [C_1;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq 3*pi/2 gSG.AWGAmp];
+            C_2 = [C_2;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];       
+        end
+    else
+        D_1 = [C_1; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp]; % Y
+        D_2 = [C_2; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+        
+        C_1 = [C_1; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq 3*pi/2 gSG.AWGAmp]; % -Y
+        C_2 = [C_2; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+    end
+    
+%     D_1 = [C_1; ...
+%             gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap+gmSEQ.pi gSG.AWGFreq 0 gSG.IQVoltage1];
+%     D_2 = [C_2; ...
+%             gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.IQVoltage1];   
+%     
+    
+else
+%DC modulation
+end
+
+% % for MW_AWG: CPMG method, X - Y x N - X
+% if gSG.ACmodAWG % in AC modulation mode ==> phase = 0 --> +X; pi/2 --> +Y; pi --> -X, 3*pi/2 --> -Y 
+% 
+%     C_1 = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; % X 
+%     C_2 = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+%     
+%     if XY8Num>0
+%         for zz = 1:XY8Num
+%             if ( (mod(zz,8) == 1) || (mod(zz,8) == 3) || (mod(zz,8) == 6) || (mod(zz,8) == 0)) % Y 
+%                 C_1 = [C_1; ...
+%                     gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp];
+%                 C_2 = [C_2; ...
+%                     gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp]; 
+%             else % Y
+%                 C_1 = [C_1; ...
+%                     gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp];
+%                 C_2 = [C_2; ...
+%                     gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp]; 
+%             end
+%         end
+%         
+%         
+%                 % determine final pi/2 pulse's phase
+%         if ( (mod(zz,8) == 2) || (mod(zz,8) == 3) || (mod(zz,8) == 5) || (mod(zz,8) == 6) ) % X
+%             D_1 = [C_1;...
+%                 gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; 
+%             D_2 = [C_2;...
+%                 gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp]; 
+%         else % Y 
+%             D_1 = [C_1;...
+%                 gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+%             D_2 = [C_2;...
+%                 gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];       
+%         end
+%         % determine final pi/2 pulse's phase
+%         if ( (mod(zz,8) == 2) || (mod(zz,8) == 3) || (mod(zz,8) == 5) || (mod(zz,8) == 6) ) % -X
+%             C_1 = [C_1;...
+%                 gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+%             C_2 = [C_2;...
+%                 gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+%         else 
+%             C_1 = [C_1;...
+%                 gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+%             C_2 = [C_2;...
+%                 gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];       
+%         end
+%     else
+%         D_1 = [C_1; ...
+%             gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; % X
+%         D_2 = [C_2; ...
+%             gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+%         
+%         C_1 = [C_1; ...
+%             gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; % -X
+%         C_2 = [C_2; ...
+%             gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+%     end
+%     
+% %     D_1 = [C_1; ...
+% %             gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap+gmSEQ.pi gSG.AWGFreq 0 gSG.IQVoltage1];
+% %     D_2 = [C_2; ...
+% %             gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.IQVoltage1];   
+% %     
+%     
+% else
+% %DC modulation
+% end
+        
+        
+    Length2_2 = round(gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+1000);
+    Length2_3 = round(gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+1000);
+    clkRate2 = 2e9;
+ 
+    Total2_2 = ceil(Length2_2*clkRate2/1e9/16)*16;
+    Total2_3 = ceil(Length2_3*clkRate2/1e9/16)*16;
+    
+    chaseFunctionPool('stopChase', gmSEQ.MWAWG); pause(0.3);
+    chaseFunctionPool('setClkRate', gmSEQ.MWAWG, clkRate2); pause(0.3);
+
+    chaseFunctionPool('createWaveform', C_1, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch1_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', C_2, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch2_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_1, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch1_seg3.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_2, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch2_seg3.txt'); pause(0.5);
+    
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch1.txt', 'wave_AWG_ch1_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch1_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch2.txt', 'wave_AWG_ch2_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch2_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, 2, 2047, 2047, 'SegStruct_ch1.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, 2, 2047, 2047, 'SegStruct_ch2.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+
+ApplyDelays();
+
+function XY8N_fixed_WW % Janis setup, 9/11/25
+%XY8 with total tau_MW is fixed  & disorder wind-unwind sequence for XX & YY autocorrelations  
+
+global gmSEQ gSG
+
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale((gmSEQ.pi+gmSEQ.interval)*gmSEQ.To);
+
+gmSEQ.TempTau0 = gmSEQ.interval; %TempTau0 is the interval length between pi-pulses during the XY8 
+gmSEQ.TempTau1 = gmSEQ.DEERpi; %TempTau1 is the fixed length between first and last half pi --> total MW length as fixed 
+
+%gSG.AWGClockRate = 2; % in GHz. Yuanqi; WL: maybe not necessary for ours?
+
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 1000;
+end
+
+%% parameters 
+Wait_p = 0.2e5; % wait time between sequences 
+AfterLaser = 1000; % buffer time after laser initialization 
+Detect_Window = 5000; % readout laser pulse time 
+AfterPi = 500; % buffer time before laser readout; 500 ns in our Rabi case; 200 --> 500, WL 12/19/24
+MWbuffer = 20; % buffer time for MW switch - before and after; 20 ns for the Janis setup
+
+XY8Num = round(gmSEQ.m); % number of single pi pulses for XY-8
+XY8Length = XY8Num*(gmSEQ.TempTau0+gmSEQ.pi); % TempTau0 is the pulse interval length
+
+wind_t = 10; % disorder winding time 
+unwind_t = 10; % disorder unwinding time 
+
+XY8Length_WW = wind_t + XY8Length + gmSEQ.pi + unwind_t; % total XY8 sequence + WW sequence  
+
+
+if XY8Length_WW > gmSEQ.TempTau1 % TempTau1 is the fixed length between first and last half pi
+    warning('TempTau1 is shorter than Pulse Length. Please input a longer TempTau1');
+end
+
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 1000;
+end
+
+gmSEQ.CHN(1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(1).NRise=4;
+gmSEQ.CHN(1).T = []; gmSEQ.CHN(1).DT =[];
+gmSEQ.CHN(1).T = [Wait_p Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.readout Detect_Window];
+
+Start_Sig_D = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p;
+gmSEQ.CHN(1).T = [gmSEQ.CHN(1).T Start_Sig_D Start_Sig_D+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.CHN(1).DT gmSEQ.readout Detect_Window];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(2) gmSEQ.CHN(1).T(3)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(4)];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [Wait_p+gmSEQ.readout+AfterLaser-MWbuffer, Start_Sig_D+gmSEQ.readout+AfterLaser-MWbuffer]; %switch buffer time = 25 -> 50; 100 in our Rabi case; 50 --> 100, WL 12/19/24; 100 --> 20, WL 4/4/25
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+2*MWbuffer gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+2*MWbuffer];
+%%%%%%%%%%%%%%%%%%%%
+
+Max_length = 2*Wait_p +  2*gmSEQ.readout + Detect_Window*2 + 2*(AfterLaser+AfterPi+gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi);% total sequence time 
+Max_length2 = gmSEQ.CHN(1).T(4) + Detect_Window;
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 gmSEQ.CHN(1).T(2*(gmSEQ.PulseNum+2)+2)+Wait_p];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 Max_length2-200];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[200 200];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2; % use 8 pi/2 P1 pulse spacing 10us away to mix P1
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout+AfterLaser gmSEQ.CHN(1).T(3)+gmSEQ.readout+AfterLaser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[250 250];
+
+% for MW_AWG
+if gSG.ACmodAWG 
+    
+    % in AC modulation mode ==> phase = 0 --> +X; pi/2 --> +Y; pi --> -X, 3*pi/2 --> -Y
+
+    % array info: start t (after triggered), end t, freq, phase, amplitude 
+
+    % +X pi/2 pulse 
+
+    C_1 = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; 
+    C_2 = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+
+    % winding (free-evolution) - XY-8 sequence: N-pi pulses 
+   
+    if XY8Num>0
+        for zz = 1:XY8Num
+            if ( (mod(zz,8) == 1) || (mod(zz,8) == 3) || (mod(zz,8) == 6) || (mod(zz,8) == 0)) % X
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+            else % Y
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+            end
+        end
+
+        % +X pi pulse
+
+        C_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+        C_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp];    
+       
+       
+        % unwinding (free-evolution) - final +- X pi/2 pulse for differential measurement
+
+        % X: dark
+        D_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+        D_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];      
+       
+        % -X: bright
+        C_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+        C_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];      
+ 
+
+    else
+
+        % N = 0 case 
+
+        D_1 = [C_1; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; % X
+        D_2 = [C_2; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+       
+        C_1 = [C_1; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; % -X
+        C_2 = [C_2; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+    
+    end
+       
+   
+else
+%DC modulation
+end
+       
+    Length2_2 = round(gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+1000);
+    Length2_3 = round(gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+1000);
+    clkRate2 = 2e9;
+ 
+    Total2_2 = ceil(Length2_2*clkRate2/1e9/16)*16;
+    Total2_3 = ceil(Length2_3*clkRate2/1e9/16)*16;
+   
+    chaseFunctionPool('stopChase', gmSEQ.MWAWG); pause(0.3);
+    chaseFunctionPool('setClkRate', gmSEQ.MWAWG, clkRate2); pause(0.3);
+
+    chaseFunctionPool('createWaveform', C_1, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch1_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', C_2, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch2_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_1, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch1_seg3.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_2, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch2_seg3.txt'); pause(0.5);
+   
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch1.txt', 'wave_AWG_ch1_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch1_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch2.txt', 'wave_AWG_ch2_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch2_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+   
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, 2, 2047, 2047, 'SegStruct_ch1.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, 2, 2047, 2047, 'SegStruct_ch2.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+
+ApplyDelays();
+
+function XY8N_fixed_WW_Cxy % Janis setup, 9/11/25
+%XY8 with total tau_MW is fixed  & disorder wind-unwind sequence for XX & YY autocorrelations  
+
+global gmSEQ gSG
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale((gmSEQ.pi+gmSEQ.interval)*gmSEQ.To);
+gmSEQ.TempTau0 = gmSEQ.interval; %TempTau0 is the interval length between pi-pulses during the XY8
+gmSEQ.TempTau1 = gmSEQ.DEERpi; %TempTau1 is the fixed length between first and last half pi --> total MW length as fixed
+%gSG.AWGClockRate = 2; % in GHz. Yuanqi; WL: maybe not necessary for ours?
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 1000;
+end
+
+%% parameters
+Wait_p = 0.2e5; % wait time between sequences
+AfterLaser = 1000; % buffer time after laser initialization
+Detect_Window = 5000; % readout laser pulse time
+AfterPi = 500; % buffer time before laser readout; 500 ns in our Rabi case; 200 --> 500, WL 12/19/24
+MWbuffer = 20; % buffer time for MW switch - before and after; 20 ns for the Janis setup
+XY8Num = round(gmSEQ.m); % number of single pi pulses for XY-8
+XY8Length = XY8Num*(gmSEQ.TempTau0+gmSEQ.pi); % TempTau0 is the pulse interval length
+wind_t = 10; % disorder winding time
+unwind_t = 10; % disorder unwinding time
+XY8Length_WW = wind_t + XY8Length + gmSEQ.pi + unwind_t; % total XY8 sequence + WW sequence  
+if XY8Length_WW > gmSEQ.TempTau1 % TempTau1 is the fixed length between first and last half pi
+    warning('TempTau1 is shorter than Pulse Length. Please input a longer TempTau1');
+end
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 1000;
+end
+
+gmSEQ.CHN(1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(1).NRise=4;
+gmSEQ.CHN(1).T = []; gmSEQ.CHN(1).DT =[];
+gmSEQ.CHN(1).T = [Wait_p Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.readout Detect_Window];
+Start_Sig_D = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p;
+gmSEQ.CHN(1).T = [gmSEQ.CHN(1).T Start_Sig_D Start_Sig_D+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.CHN(1).DT gmSEQ.readout Detect_Window];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(2) gmSEQ.CHN(1).T(3)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(4)];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [Wait_p+gmSEQ.readout+AfterLaser-MWbuffer, Start_Sig_D+gmSEQ.readout+AfterLaser-MWbuffer]; %switch buffer time = 25 -> 50; 100 in our Rabi case; 50 --> 100, WL 12/19/24; 100 --> 20, WL 4/4/25
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+2*MWbuffer gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+2*MWbuffer];
+
+%%%%%%%%%%%%%%%%%%%%
+Max_length = 2*Wait_p +  2*gmSEQ.readout + Detect_Window*2 + 2*(AfterLaser+AfterPi+gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi);% total sequence time
+Max_length2 = gmSEQ.CHN(1).T(4) + Detect_Window;
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 gmSEQ.CHN(1).T(2*(gmSEQ.PulseNum+2)+2)+Wait_p];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 Max_length2-200];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[200 200];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2; % use 8 pi/2 P1 pulse spacing 10us away to mix P1
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout+AfterLaser gmSEQ.CHN(1).T(3)+gmSEQ.readout+AfterLaser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[250 250];
+% for MW_AWG
+if gSG.ACmodAWG
+   
+    % in AC modulation mode ==> phase = 0 --> +X; pi/2 --> +Y; pi --> -X, 3*pi/2 --> -Y
+    % array info: start t (after triggered), end t, freq, phase, amplitude
+    % +X pi/2 pulse
+    C_1 = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+    C_2 = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+    % winding (free-evolution) - XY-8 sequence: N-pi pulses
+   
+    if XY8Num>0
+        for zz = 1:XY8Num
+            if ( (mod(zz,8) == 1) || (mod(zz,8) == 3) || (mod(zz,8) == 6) || (mod(zz,8) == 0)) % X
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+            else % Y
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+            end
+        end
+        
+        % +X pi pulse
+        C_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+        C_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp];    
+       
+       
+        % unwinding (free-evolution) - final +- X pi/2 pulse for differential measurement
+        
+        % -X: bright
+        D_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+        D_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];    
+
+        % X: dark
+        C_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+        C_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];        
+ 
+    else
+        % N = 0 case
+        % winding - +X pi pulse
+        C_1 = [C_1; ...
+            gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+        C_2 = [C_2; ...
+            gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+        
+        % unwinding - final +- X pi/2 pulse for differential measurement
+        D_1 = [C_1; ...
+            gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; % -X
+        D_2 = [C_2; ...
+            gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+        
+        C_1 = [C_1; ...
+            gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; % X
+        C_2 = [C_2; ...
+            gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+   
+    end
+       
+   
+else
+%DC modulation
+end
+       
+    Length2_2 = round(gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+1000);
+    Length2_3 = round(gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+1000);
+    clkRate2 = 2e9;
+ 
+    Total2_2 = ceil(Length2_2*clkRate2/1e9/16)*16;
+    Total2_3 = ceil(Length2_3*clkRate2/1e9/16)*16;
+   
+    chaseFunctionPool('stopChase', gmSEQ.MWAWG); pause(0.3);
+    chaseFunctionPool('setClkRate', gmSEQ.MWAWG, clkRate2); pause(0.3);
+    chaseFunctionPool('createWaveform', C_1, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch1_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', C_2, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch2_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_1, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch1_seg3.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_2, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch2_seg3.txt'); pause(0.5);
+   
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch1.txt', 'wave_AWG_ch1_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch1_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch2.txt', 'wave_AWG_ch2_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch2_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+   
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, 2, 2047, 2047, 'SegStruct_ch1.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, 2, 2047, 2047, 'SegStruct_ch2.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+ApplyDelays();
+
+function XY8N_fixed_WW_Cyz % Janis setup, 9/11/25
+%XY8 with total tau_MW is fixed  & disorder wind-unwind sequence for YY & ZZ autocorrelations  
+
+global gmSEQ gSG
+
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale((gmSEQ.pi+gmSEQ.interval)*gmSEQ.To);
+
+gmSEQ.TempTau0 = gmSEQ.interval; %TempTau0 is the interval length between pi-pulses during the XY8 
+gmSEQ.TempTau1 = gmSEQ.DEERpi; %TempTau1 is the fixed length between first and last half pi --> total MW length as fixed 
+
+%gSG.AWGClockRate = 2; % in GHz. Yuanqi; WL: maybe not necessary for ours?
+
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 1000;
+end
+
+%% parameters 
+Wait_p = 0.2e5; % wait time between sequences 
+AfterLaser = 1000; % buffer time after laser initialization 
+Detect_Window = 5000; % readout laser pulse time 
+AfterPi = 500; % buffer time before laser readout; 500 ns in our Rabi case; 200 --> 500, WL 12/19/24
+AfterPi2 = gmSEQ.TempTau0; % buffer time between the pi_x and half pi_x between the unwinding step below 
+MWbuffer = 20; % buffer time for MW switch - before and after; 20 ns for the Janis setup
+
+XY8Num = round(gmSEQ.m); % number of single pi pulses for XY-8
+XY8Length = XY8Num*(gmSEQ.TempTau0+gmSEQ.pi); % TempTau0 is the pulse interval length
+
+wind_t = 15; % disorder winding time 
+unwind_t = 15; % disorder unwinding time 
+
+XY8Length_WW = wind_t + gmSEQ.halfpi + XY8Length + gmSEQ.pi + AfterPi2 + gmSEQ.halfpi + unwind_t; % total XY8 sequence + WW sequence  
+
+
+if XY8Length_WW > gmSEQ.TempTau1 % TempTau1 is the fixed length between first and last half pi
+    warning('TempTau1 is shorter than Pulse Length. Please input a longer TempTau1');
+end
+
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 1000;
+end
+
+gmSEQ.CHN(1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(1).NRise=4;
+gmSEQ.CHN(1).T = []; gmSEQ.CHN(1).DT =[];
+gmSEQ.CHN(1).T = [Wait_p Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.readout Detect_Window];
+
+Start_Sig_D = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p;
+gmSEQ.CHN(1).T = [gmSEQ.CHN(1).T Start_Sig_D Start_Sig_D+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.CHN(1).DT gmSEQ.readout Detect_Window];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(2) gmSEQ.CHN(1).T(3)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(4)];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [Wait_p+gmSEQ.readout+AfterLaser-MWbuffer, Start_Sig_D+gmSEQ.readout+AfterLaser-MWbuffer]; %switch buffer time = 25 -> 50; 100 in our Rabi case; 50 --> 100, WL 12/19/24; 100 --> 20, WL 4/4/25
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+2*MWbuffer gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+2*MWbuffer];
+%%%%%%%%%%%%%%%%%%%%
+
+Max_length = 2*Wait_p +  2*gmSEQ.readout + Detect_Window*2 + 2*(AfterLaser+AfterPi+gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi);% total sequence time 
+Max_length2 = gmSEQ.CHN(1).T(4) + Detect_Window;
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 gmSEQ.CHN(1).T(2*(gmSEQ.PulseNum+2)+2)+Wait_p];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 Max_length2-200];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[200 200];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2; % use 8 pi/2 P1 pulse spacing 10us away to mix P1
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout+AfterLaser gmSEQ.CHN(1).T(3)+gmSEQ.readout+AfterLaser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[250 250];
+
+% for MW_AWG
+if gSG.ACmodAWG 
+    
+    % in AC modulation mode ==> phase = 0 --> +X; pi/2 --> +Y; pi --> -X, 3*pi/2 --> -Y
+
+    % array info: start t (after triggered), end t, freq, phase, amplitude 
+
+    % +Y pi/2 pulse 
+
+    C_1 = [0 gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp]; 
+    C_2 = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+
+    % winding (free-evolution) +Y pi/2 pulse 
+
+    C_1 = [C_1; ...
+        gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp]; 
+    C_2 = [C_1; ...
+        gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+
+
+   
+    if XY8Num>0
+
+
+        % XY-8 sequence: N-pi pulses  
+
+
+        for zz = 1:XY8Num
+            if ( (mod(zz,8) == 1) || (mod(zz,8) == 3) || (mod(zz,8) == 6) || (mod(zz,8) == 0)) % X
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+            else % Y
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+            end
+        end
+
+
+        % +Y pi pulse
+
+        C_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp];
+        C_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+
+
+        % -Y pi/2 pulse 
+
+        C_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+AfterPi2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+AfterPi2+gmSEQ.halfpi gSG.AWGFreq 3*pi/2 gSG.AWGAmp];
+        C_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+AfterPi2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+AfterPi2+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];        
+       
+       
+        % unwinding (free-evolution) - final +- Y pi/2 pulse for differential measurement
+
+        % Y: dark
+        C_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+        C_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];      
+       
+        % -Y: bright
+        D_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 3*pi/2 gSG.AWGAmp];
+        D_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];      
+ 
+
+    else
+
+        % N = 0 case 
+
+        % +Y pi pulse
+
+        C_1 = [C_1; ...
+            gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp]; 
+        C_2 = [C_2; ...
+            gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+
+
+        % -Y pi/2 pulse
+
+        C_1 = [C_1; ...
+            gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi+AfterPi2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi+AfterPi2+gmSEQ.halfpi gSG.AWGFreq 3*pi/2 gSG.AWGAmp]; 
+        C_2 = [C_2; ...
+            gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi+AfterPi2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi+AfterPi2+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+
+
+        % unwinding (free-evolution) - final +- Y pi/2 pulse for differential measurement
+
+        C_1 = [C_1; ...
+            gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp]; % +Y
+        C_2 = [C_2; ...
+            gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+       
+        D_1 = [C_1; ...
+            gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 3*pi/2 gSG.AWGAmp]; % -Y
+        D_2 = [C_2; ...
+            gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+AfterPi2+gmSEQ.pi+AfterPi2+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+    
+    end
+       
+   
+else
+%DC modulation
+end       
+    Length2_2 = round(gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+1000);
+    Length2_3 = round(gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+1000);
+    clkRate2 = 2e9;
+ 
+    Total2_2 = ceil(Length2_2*clkRate2/1e9/16)*16;
+    Total2_3 = ceil(Length2_3*clkRate2/1e9/16)*16;
+   
+    chaseFunctionPool('stopChase', gmSEQ.MWAWG); pause(0.3);
+    chaseFunctionPool('setClkRate', gmSEQ.MWAWG, clkRate2); pause(0.3);
+
+    chaseFunctionPool('createWaveform', C_1, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch1_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', C_2, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch2_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_1, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch1_seg3.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_2, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch2_seg3.txt'); pause(0.5);
+   
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch1.txt', 'wave_AWG_ch1_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch1_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch2.txt', 'wave_AWG_ch2_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch2_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+   
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, 2, 2047, 2047, 'SegStruct_ch1.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, 2, 2047, 2047, 'SegStruct_ch2.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+
+ApplyDelays();
+
+function XY8N_fixed_WW_Czx % Janis setup, 9/11/25
+%XY8 with total tau_MW is fixed  & disorder wind-unwind sequence for XX & ZZ autocorrelations  
+global gmSEQ gSG
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale((gmSEQ.pi+gmSEQ.interval)*gmSEQ.To);
+gmSEQ.TempTau0 = gmSEQ.interval; %TempTau0 is the interval length between pi-pulses during the XY8
+%gmSEQ.TempTau1 = gmSEQ.DEERpi; %TempTau1 is the fixed length between first and last half pi --> total MW length as fixed
+%gSG.AWGClockRate = 2; % in GHz. Yuanqi; WL: maybe not necessary for ours?
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 1000;
+end
+
+%% parameters
+Wait_p = 0.2e5; % wait time between sequences
+AfterLaser = 1000; % buffer time after laser initialization
+Detect_Window = 5000; % readout laser pulse time
+AfterPi = 500; % buffer time before laser readout; 500 ns in our Rabi case; 200 --> 500, WL 12/19/24; 500 --> 100, WL 9/23/25
+MWbuffer = 20; % buffer time for MW switch - before and after; 20 ns for the Janis setup
+XY8Num = round(gmSEQ.m); % number of single pi pulses for XY-8
+XY8Length = XY8Num*(gmSEQ.TempTau0+gmSEQ.pi); % TempTau0 is the pulse interval length
+wind_t = 10; % disorder winding time
+unwind_t = 10; % disorder unwinding time 
+XY8Length_WW = wind_t + gmSEQ.halfpi + XY8Length + gmSEQ.halfpi + unwind_t; % total XY8 sequence + WW sequence  
+gmSEQ.TempTau1 = wind_t + gmSEQ.halfpi + gmSEQ.To*(gmSEQ.TempTau0+gmSEQ.pi) +gmSEQ.halfpi + unwind_t;
+if XY8Length_WW > gmSEQ.TempTau1 % TempTau1 is the fixed length between first and last half pi
+    warning('TempTau1 is shorter than Pulse Length. Please input a longer TempTau1');
+end
+if strcmp(gmSEQ.meas,'APD')
+    gmSEQ.CtrGateDur = 1000;
+end
+
+gmSEQ.CHN(1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(1).NRise=4;
+gmSEQ.CHN(1).T = []; gmSEQ.CHN(1).DT =[];
+gmSEQ.CHN(1).T = [Wait_p Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.readout Detect_Window];
+Start_Sig_D = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p;
+gmSEQ.CHN(1).T = [gmSEQ.CHN(1).T Start_Sig_D Start_Sig_D+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.CHN(1).DT gmSEQ.readout Detect_Window];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(2) gmSEQ.CHN(1).T(3)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(4)];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [Wait_p+gmSEQ.readout+AfterLaser-MWbuffer, Start_Sig_D+gmSEQ.readout+AfterLaser-MWbuffer]; %switch buffer time = 25 -> 50; 100 in our Rabi case; 50 --> 100, WL 12/19/24; 100 --> 20, WL 4/4/25
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+2*MWbuffer gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+2*MWbuffer];
+
+%%%%%%%%%%%%%%%%%%%%
+Max_length = 2*Wait_p +  2*gmSEQ.readout + Detect_Window*2 + 2*(AfterLaser+AfterPi+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi);% total sequence time
+Max_length2 = gmSEQ.CHN(1).T(4) + Detect_Window;
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 gmSEQ.CHN(1).T(2*(gmSEQ.PulseNum+2)+2)+Wait_p];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 Max_length2-200];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[200 200];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2; % use 8 pi/2 P1 pulse spacing 10us away to mix P1
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout+AfterLaser gmSEQ.CHN(1).T(3)+gmSEQ.readout+AfterLaser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[250 250];
+% for MW_AWG
+if gSG.ACmodAWG
+   
+    % in AC modulation mode ==> phase = 0 --> +X; pi/2 --> +Y; pi --> -X, 3*pi/2 --> -Y
+    % array info: start t (after triggered), end t, freq, phase, amplitude
+    % +X pi/2 pulse
+    C_1 = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+    C_2 = [0 gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+   
+    if XY8Num>0
+
+        % winding (free-evolution) +X pi/2 pulse
+        C_1 = [C_1; ...
+            gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+        C_2 = [C_2; ...
+            gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+
+        % XY-8 sequence: N-pi pulses  
+        for zz = 1:XY8Num
+            if ( (mod(zz,8) == 1) || (mod(zz,8) == 3) || (mod(zz,8) == 6) || (mod(zz,8) == 0)) % X
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+            else % Y
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2 gmSEQ.halfpi+wind_t+gmSEQ.halfpi+(zz-1)*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.interval/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+            end
+        end
+
+        % +X pi/2 pulse for Cxx + Czz (-X pi/2 pulse for Cxx - Czz)
+        C_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+        C_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi) gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];  
+       
+       
+        % unwinding (free-evolution) - final +- X pi/2 pulse for differential measurement
+        % -X: bright
+        D_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+        D_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];   
+
+        % X: dark
+        C_1 = [C_1;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+        C_2 = [C_2;...
+                gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];      
+          
+ 
+    else
+       
+        
+        %% N = 0 case
+
+        % Cxx + Czz case: +X pi pulse 
+%         C_1 = [C_1; ...
+%             gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+%         C_2 = [C_2; ...
+%             gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+% 
+%         % unwinding (free-evolution) - final +- X pi/2 pulse for differential measurement
+%         D_1 = [C_1; ...
+%             gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; % -X
+%         D_2 = [C_2; ...
+%             gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+% 
+%         C_1 = [C_1; ...
+%             gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; % +X
+%         C_2 = [C_2; ...
+%             gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.pi+unwind_t+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+       
+
+        % Cxx - Czz case: no pulse 
+
+        % unwinding (free-evolution) - final +- X pi/2 pulse for differential measurement
+        D_1 = [C_1; ...
+            gmSEQ.halfpi+wind_t+unwind_t gmSEQ.halfpi+wind_t+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; % -X
+        D_2 = [C_2; ...
+            gmSEQ.halfpi+wind_t+unwind_t gmSEQ.halfpi+wind_t+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+
+        C_1 = [C_1; ...
+            gmSEQ.halfpi+wind_t+unwind_t gmSEQ.halfpi+wind_t+unwind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; % +X
+        C_2 = [C_2; ...
+            gmSEQ.halfpi+wind_t+unwind_t gmSEQ.halfpi+wind_t+unwind_t+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+       
+        
+%         %% old ver -- winding (free-evolution) +X pi/2 pulse
+%         C_1 = [C_1; ...
+%             gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+%         C_2 = [C_1; ...
+%             gmSEQ.halfpi+wind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];       
+%         % +X pi pulse for Cxx + Czz
+%         C_1 = [C_1; ...
+%             gmSEQ.halfpi+wind_t+gmSEQ.halfpi gmSEQ.halfpi+wind_t+gmSEQ.halfpi+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+%         C_2 = [C_2; ...
+%             gmSEQ.halfpi+wind_t+gmSEQ.halfpi gmSEQ.halfpi+wind_t+gmSEQ.halfpi+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+%         % unwinding (free-evolution) - final +- X pi/2 pulse for differential measurement
+%         C_1 = [C_1; ...
+%             gmSEQ.halfpi+wind_t+gmSEQ.halfpi+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp]; % +X
+%         C_2 = [C_2; ...
+%             gmSEQ.halfpi+wind_t+gmSEQ.halfpi+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq -pi/2 gSG.AWGAmp];
+%        
+%         D_1 = [C_1; ...
+%             gmSEQ.halfpi+wind_t+gmSEQ.halfpi+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; % -X
+%         D_2 = [C_2; ...
+%             gmSEQ.halfpi+wind_t+gmSEQ.halfpi+gmSEQ.halfpi+unwind_t gmSEQ.halfpi+wind_t+gmSEQ.halfpi+gmSEQ.halfpi+unwind_t+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+   
+    end
+       
+   
+else
+%DC modulation
+end
+       
+    Length2_2 = round(gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+1000);
+    Length2_3 = round(gmSEQ.halfpi+XY8Length_WW+gmSEQ.halfpi+1000);
+    clkRate2 = 2e9;
+ 
+    Total2_2 = ceil(Length2_2*clkRate2/1e9/16)*16;
+    Total2_3 = ceil(Length2_3*clkRate2/1e9/16)*16;
+   
+    chaseFunctionPool('stopChase', gmSEQ.MWAWG); pause(0.3);
+    chaseFunctionPool('setClkRate', gmSEQ.MWAWG, clkRate2); pause(0.3);
+    chaseFunctionPool('createWaveform', C_1, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch1_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', C_2, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch2_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_1, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch1_seg3.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_2, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch2_seg3.txt'); pause(0.5);
+   
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch1.txt', 'wave_AWG_ch1_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch1_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch2.txt', 'wave_AWG_ch2_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch2_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+   
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, 2, 2047, 2047, 'SegStruct_ch1.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, 2, 2047, 2047, 'SegStruct_ch2.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+ApplyDelays();
+
+function XY8T_fixed %WL 4/21/25 
+%interval between pi-pulses = tau_p varied, total N is fixed, variable XY8length to fixed TempTau1
+%in AOM and CTR0
+global gmSEQ gSG
+
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+
+XY8Num = gmSEQ.interval; % total number of pi-pulses; multiplication of 8 for the XY-8 sequence
+gmSEQ.m = ceil(gmSEQ.m/2)*2; % gmSEQ.m is tau, XY8 is tau/2 - tau - tau - tau - tau - tau - tau - tau - tau/2
+gmSEQ.TempTau0 = gmSEQ.m; %TempTau0 is the pulse interval length; 
+gmSEQ.TempTau1 = gmSEQ.DEERpi; %TempTau1 is the fixed length between first and last half pi
+
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale((gmSEQ.pi+gmSEQ.To)*XY8Num);
+
+%gSG.AWGClockRate = 2; % in GHz. Yuanqi; WL: maybe not necessary for ours? 
+
+if strcmp(gmSEQ.meas,'APD') 
+    gmSEQ.CtrGateDur = 1000;
+end
+
+Wait_p = 0.2e5;
+AfterLaser = 1000;
+Detect_Window = 5000;
+AfterPi = 500; %500 in our Rabi case; 200 --> 500, WL 12/19/24
+XY8Length = XY8Num*(gmSEQ.TempTau0+gmSEQ.pi); % TempTau0 is the pulse interval length
+
+if XY8Length > gmSEQ.TempTau1 % TempTau1 is the fixed length between first and last half pi 
+    warning('TempTau1 is shorter than Pulse Length. Please input a longer TempTau1');
+end
+if strcmp(gmSEQ.meas,'APD') 
+    gmSEQ.CtrGateDur = 1000;
+end
+
+gmSEQ.CHN(1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(1).NRise=4;
+gmSEQ.CHN(1).T = []; gmSEQ.CHN(1).DT =[];
+% Pulse for first T1 measurement
+gmSEQ.CHN(1).T = [Wait_p Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.readout Detect_Window];
+
+Start_Sig_D = Wait_p+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi+Detect_Window+Wait_p;
+gmSEQ.CHN(1).T = [gmSEQ.CHN(1).T Start_Sig_D Start_Sig_D+gmSEQ.readout+AfterLaser+gmSEQ.halfpi+gmSEQ.TempTau1+gmSEQ.halfpi+AfterPi];
+gmSEQ.CHN(1).DT = [gmSEQ.CHN(1).DT gmSEQ.readout Detect_Window];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(2) gmSEQ.CHN(1).T(3)+gmSEQ.readout-1000-gmSEQ.CtrGateDur gmSEQ.CHN(1).T(4)];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [Wait_p+gmSEQ.readout+AfterLaser-20, Start_Sig_D+gmSEQ.readout+AfterLaser-20]; %switch buffer time = 25 -> 50; 100 in our Rabi case; 50 --> 100, WL 12/19/24; 100 --> 20, WL 4/4/25
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+40 gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+40];
+%%%%%%%%%%%%%%%%%%%%
+
+Max_length = 2*Wait_p +  2*gmSEQ.readout + Detect_Window*2 + 2*(AfterLaser+AfterPi+gmSEQ.halfpi+XY8Length+gmSEQ.halfpi);
+Max_length2 = gmSEQ.CHN(1).T(4) + Detect_Window;
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 gmSEQ.CHN(1).T(2*(gmSEQ.PulseNum+2)+2)+Wait_p];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0 Max_length2-200];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[200 200];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AWGTrig');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2; % use 8 pi/2 P1 pulse spacing 10us away to mix P1
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.CHN(1).T(1)+gmSEQ.readout+AfterLaser gmSEQ.CHN(1).T(3)+gmSEQ.readout+AfterLaser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[250 250];
+
+% for MW_AWG
+if gSG.ACmodAWG % in AC modulation mode ==> phase = 0 --> +X; pi/2 --> +Y; pi --> -X, 3*pi/2 --> -Y 
+
+    C_1 = [0 gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp]; % +Y 
+    C_2 = [0 gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+    
+    if XY8Num>0
+        for zz = 1:XY8Num
+            if ( (mod(zz,8) == 1) || (mod(zz,8) == 3) || (mod(zz,8) == 6) || (mod(zz,8) == 0)) % X 
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+(zz-1)*(gmSEQ.m+gmSEQ.pi)+gmSEQ.m/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.m+gmSEQ.pi)+gmSEQ.m/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+(zz-1)*(gmSEQ.m+gmSEQ.pi)+gmSEQ.m/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.m+gmSEQ.pi)+gmSEQ.m/2+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.AWGAmp]; 
+            else % Y
+                C_1 = [C_1; ...
+                    gmSEQ.halfpi+(zz-1)*(gmSEQ.m+gmSEQ.pi)+gmSEQ.m/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.m+gmSEQ.pi)+gmSEQ.m/2+gmSEQ.pi gSG.AWGFreq pi/2 gSG.AWGAmp];
+                C_2 = [C_2; ...
+                    gmSEQ.halfpi+(zz-1)*(gmSEQ.m+gmSEQ.pi)+gmSEQ.m/2 gmSEQ.halfpi+(zz-1)*(gmSEQ.m+gmSEQ.pi)+gmSEQ.m/2+gmSEQ.pi gSG.AWGFreq 0 gSG.AWGAmp]; 
+            end
+        end
+        
+        
+                % determine final pi/2 pulse's phase
+        if ( (mod(zz,8) == 2) || (mod(zz,8) == 3) || (mod(zz,8) == 5) || (mod(zz,8) == 6) ) % -Y
+            D_1 = [C_1;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq 3*pi/2 gSG.AWGAmp]; 
+            D_2 = [C_2;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp]; 
+        else % Y 
+            D_1 = [C_1;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+            D_2 = [C_2;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];       
+        end
+        % determine final pi/2 pulse's phase
+        if ( (mod(zz,8) == 2) || (mod(zz,8) == 3) || (mod(zz,8) == 5) || (mod(zz,8) == 6) ) % Y
+            C_1 = [C_1;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp];
+            C_2 = [C_2;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+        else % -Y pulse 
+            C_1 = [C_1;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq 3*pi/2 gSG.AWGAmp];
+            C_2 = [C_2;...
+                gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi) gmSEQ.halfpi+XY8Num*(gmSEQ.m+gmSEQ.pi)+gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];       
+        end
+    else
+        D_1 = [C_1; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq pi/2 gSG.AWGAmp]; % Y
+        D_2 = [C_2; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq 0 gSG.AWGAmp];
+        
+        C_1 = [C_1; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq 3*pi/2 gSG.AWGAmp]; % -Y
+        C_2 = [C_2; ...
+            gmSEQ.halfpi 2*gmSEQ.halfpi gSG.AWGFreq pi gSG.AWGAmp];
+    end
+    
+%     D_1 = [C_1; ...
+%             gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap+gmSEQ.pi gSG.AWGFreq 0 gSG.IQVoltage1];
+%     D_2 = [C_2; ...
+%             gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap gmSEQ.halfpi+XY8Num*(gmSEQ.interval+gmSEQ.pi)+gmSEQ.halfpi+PulseGap+gmSEQ.pi gSG.AWGFreq -pi/2 gSG.IQVoltage1];   
+%     
+    
+else
+%DC modulation
+end
+        
+        
+    Length2_2 = round(gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+1000);
+    Length2_3 = round(gmSEQ.halfpi+XY8Length+gmSEQ.halfpi+1000);
+    clkRate2 = 2e9;
+ 
+    Total2_2 = ceil(Length2_2*clkRate2/1e9/16)*16;
+    Total2_3 = ceil(Length2_3*clkRate2/1e9/16)*16;
+    
+    chaseFunctionPool('stopChase', gmSEQ.MWAWG); pause(0.3);
+    chaseFunctionPool('setClkRate', gmSEQ.MWAWG, clkRate2); pause(0.3);
+
+    chaseFunctionPool('createWaveform', C_1, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch1_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', C_2, gSG.AWGClockRate, Length2_2, 'wave_AWG_ch2_seg2.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_1, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch1_seg3.txt'); pause(0.5);
+    chaseFunctionPool('createWaveform', D_2, gSG.AWGClockRate, Length2_3, 'wave_AWG_ch2_seg3.txt'); pause(0.5);
+    
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch1.txt', 'wave_AWG_ch1_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch1_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    chaseFunctionPool('createSegStruct', 'SegStruct_ch2.txt', 'wave_AWG_ch2_seg2.txt', Total2_2, 1, 1, ...
+         'wave_AWG_ch2_seg3.txt', Total2_3, 1, 1);
+    pause(0.5);
+    
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 1, 2, 2047, 2047, 'SegStruct_ch1.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('CreateSegments', gmSEQ.MWAWG, 2, 2, 2047, 2047, 'SegStruct_ch2.txt', 'false');
+    pause(1); % this pause seems to be important, otherwise the loading is not right occassionally
+    chaseFunctionPool('runChase', gmSEQ.MWAWG, 'false');
+
 ApplyDelays();
 
 function XY8N_debug
@@ -11888,50 +13954,154 @@ gmSEQ.CHN(2).NRise=1;
 gmSEQ.CHN(2).T=0;
 gmSEQ.CHN(2).DT=1;
 
+% set by zhelun 2024/08/27
+
+
+function cool_timescan
+global gmSEQ gSG 
+% gmSEQ: seqeuence, data, parameters
+% gSG: signal generator
+gSG.bfixedPow=1;
+gSG.bfixedFreq=1;
+gSG.bMod='IQ';
+gSG.bModSrc='External';
+%gSG2.bOn = 1;
+%gSG2.bfixedPow=1; % fix microwave power
+%gSG2.bfixedFreq=1; % fix microwave ferq
+%gSG2.bMod='';
+
+AfterPi = 2000;%changed to 300 -> 2000 Sangha
+AfterLaser = 1000;
+% gmSEQ.m : variable timing value
+t_LaserEnd = gmSEQ.readout + gmSEQ.CtrGateDur * 2 + AfterPi;
+t_ReferenceGate = gmSEQ.readout + gmSEQ.CtrGateDur + 50 - 500;
+
+%%%%% Fixed sequence length %%%%%%
+gmSEQ.CHN(1).PBN=PBDictionary('ctr0');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[1500+gmSEQ.m, t_ReferenceGate+600]; %t_ReferenceGate+1500 WL 5/15/23 %gmSEQ.m -> gmSEQ.m +1500 (sangha)
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.CtrGateDur, gmSEQ.CtrGateDur];
+
+%%gmSEQ.CHN(numel(gmSEQ.CHN)).T= 1500+ 9000;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T= gmSEQ.m + 1500; %t_ReferenceGate+1500 WL 5/15/23 %gmSEQ.m -> gmSEQ.m +1500 (sangha)
+%gmSEQ.CHN(numel(gmSEQ.CHN)).DT=gmSEQ.CtrGateDur;
+
+% gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary(‘MW_AWG’);
+% gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=1;
+% gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0];
+% gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[500];
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=1;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T= 1500; %0 --> 1500 WL 5/15/23
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT= t_LaserEnd;
+
+%gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+%gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=1;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T= t_LaserEnd+50+1500; %t_LaserEnd+50 --> t_LaserEnd+50+1500 WL 5/15/23
+%gmSEQ.CHN(numel(gmSEQ.CHN)).DT= gmSEQ.DEERpi;
+
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[0, t_LaserEnd+gmSEQ.DEERpi+20000]; %600+30000 -> 50000 WL 5/12/23
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[20, 20];
+% gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary(‘Q_2’); %for monitoring ctr gate WL 5/18/23
+% gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+% gmSEQ.CHN(numel(gmSEQ.CHN)).T=[gmSEQ.m t_ReferenceGate+1500]; %t_ReferenceGate+1500 WL 5/15/23
+% gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.CtrGateDur gmSEQ.CtrGateDur];
+% if gSG.first
+%     B = [0 t_LaserEnd 0.2 0 gSG.IQVoltage1];
+%     C = [0 100 0 0 0];
+%
+%     Length2 = t_LaserEnd+1500;
+%     clkRate2 = 2e9;
+%     % delay depends on sampling rate: roughly delay ~ 56/clkrate (0.1GHz ~
+%     % 560ns)
+%     Total2 = ceil(Length2*clkRate2/1e9/16)*16;
+%     chaseFunctionPool(‘stopChase’, 1); pause(0.3); % changed from 2 AWG to 1
+%     chaseFunctionPool(‘setClkRate’, 1, clkRate2); pause(0.3);
+%     chaseFunctionPool(‘createWaveform’, B, clkRate2/10^9, Length2, ‘wave_AWG2_ch1.txt’);
+%     chaseFunctionPool(‘createWaveform’, C, clkRate2/10^9, Length2, ‘wave_AWG2_ch2.txt’);
+%     chaseFunctionPool(‘CreateSingleSegment’,1, 1, Total2, 1, 2047, 2047, ‘wave_AWG2_ch1.txt’, 1); pause(1);
+%     chaseFunctionPool(‘CreateSingleSegment’,1, 2, Total2, 1, 2047, 2047, ‘wave_AWG2_ch2.txt’, 1); pause(1);
+%     chaseFunctionPool(‘runChase’, 1, ‘false’); pause(0.2);
+%
+%     disp(‘I am Uploading!!’)
+% end
+%gmSEQ.ScaleT = 1;
+%gmSEQ.ScaleStr = 'ns';
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
+
+
+ApplyDelays();
+% set by Sangha (01/31/2025)
+
+function Test_DAQ
+global gmSEQ gSG
+gSG.bfixedPow = 1;
+gSG.bfixedFreq = 1;
+gSG.bMod = 'IQ';
+gSG.bModSrc = 'External';
+T_AfterLaser = 1000;
+T_AfterPulse = 2000;
+[gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
+i = gmSEQ.readout;
+r = gmSEQ.CtrGateDur;
+p = gmSEQ.pi;
+m = gmSEQ.m;
+To = gmSEQ.To;
+l = 50;
+b = 100;
+% Pulse Blaster
+gmSEQ.CHN(1).PBN = PBDictionary('ctr0');
+ gmSEQ.CHN(1).NRise = 2;
+ gmSEQ.CHN(numel(gmSEQ.CHN)).T  = [i-2000, i];
+ gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [r,r];
+
+% gmSEQ.CHN(1).NRise = 1;
+% gmSEQ.CHN(numel(gmSEQ.CHN)).T  = i;
+% gmSEQ.CHN(numel(gmSEQ.CHN)).DT = r;
+ 
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = 10;
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
+%gmSEQ.CHN(numel(gmSEQ.CHN)).T = m;
+% gmSEQ.CHN(numel(gmSEQ.CHN)).DT = l;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = 500;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 400;
+% gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 6;
+% gmSEQ.CHN(numel(gmSEQ.CHN)).T = [m,r-l,b,i-2*l-b,b,b];
+% gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [l,l,l,l,l,l];
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('dummy1');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = [0,2*i+2*r];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [100, 100];
+ApplyNoDelays();
+
+
+
 function pbn = PBDictionary(type)
 switch type
     case 'ctr0'
-        pbn=0;
-    case 'AWGTrig2'
-        pbn=5;
-    case 'AWGTrig' 
-        pbn=6;
-    case 'dummy1'
-        pbn=8;
-    case 'AOM'
         pbn=1;
-    case 'AWGTrig3' 
-        pbn=4;
-    case 'MWSwitch'
-        pbn=2;
-    case 'MWSwitch2'
+    case 'AWGTrig2'
+        pbn=6;
+    case 'AWGTrig'
         pbn=3;
+    case 'dummy1'
+        pbn=5;
+    case 'AOM'
+        pbn=2;
+    case 'AWGTrig3' 
+        pbn=8;
+    case 'MWSwitch'
+        pbn=4;
+    case 'MWSwitch2'
+        pbn=0;
     case 'MWSwitch3'
         pbn=7;
 end
-
-% Original config of PB channels 
-% function pbn = PBDictionary(type)
-% switch type
-%     case 'ctr0'
-%         pbn=6;
-%     case 'AWGTrig2'
-%         pbn=1;
-%     case 'AWGTrig' 
-%         pbn=0;
-%     case 'dummy1'
-%         pbn=8;
-%     case 'AOM'
-%         pbn=5;
-%     case 'AWGTrig3' 
-%         pbn=4;
-%     case 'MWSwitch'
-%         pbn=2;
-%     case 'MWSwitch2'
-%         pbn=3;
-%     case 'MWSwitch3'
-%         pbn=7;
-% end
 
 function T1
 global gmSEQ gSG
@@ -11944,10 +14114,10 @@ if strcmp(gmSEQ.meas,'APD')
     gmSEQ.CtrGateDur = 1000;
 end
 
-WaitTime = 0.1e6; % charge equilibrium
-AfterLaser = 1000;
-AfterPi = 2000;
-Laser_Readout = 5000;
+WaitTime = 1000; % charge equilibrium; hBN1: 1000; WL: 0.1e6 --> 1000, 4/2/25
+AfterLaser = 1000; % hBN1: 0
+AfterPi = 500; % hBN1: 500; WL: 2000 --> 500, 4/2/25
+Laser_Readout = 2000; % hBN1: 2000; WL: 5000 --> 2000, 4/2/25 
 
 SigD_start = WaitTime+gmSEQ.readout+AfterLaser+gmSEQ.m+gmSEQ.pi+AfterPi+Laser_Readout;
 Total_Length = 2*(WaitTime+gmSEQ.readout+AfterLaser+gmSEQ.m+gmSEQ.pi+AfterPi+Laser_Readout);
@@ -11967,7 +14137,7 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.readout Laser_Readout gmSEQ.readout Laser_
 
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=1;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T=[SigD_start+WaitTime+gmSEQ.readout+AfterLaser+gmSEQ.m-20];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T=[SigD_start+WaitTime+gmSEQ.readout+AfterLaser+gmSEQ.m-gmSEQ.pi-20]; %WL: -20 --> -gmSEQ.pi - 20, 4/2/25
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[gmSEQ.pi+40];
 
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
@@ -11977,11 +14147,11 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).DT=[20 20];
 
 gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('AWGTrig');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T = SigD_start+WaitTime+gmSEQ.readout+AfterLaser+gmSEQ.m;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = SigD_start+WaitTime+gmSEQ.readout+AfterLaser+gmSEQ.m-gmSEQ.pi; %WL: added -gmSEQ.pi, 4/2/25
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 200;
 
 % AWG
-chaseFunctionPool('stopChase', gmSEQ.MWAWG)
+chaseFunctionPool('stopChase', gmSEQ.MWAWG) % WL: hBN1 - clkRate = 2 GHz command separately included. need to add? 
 
 WaveForm_1 = [0, gmSEQ.pi, gSG.AWGFreq, 0, gSG.AWGAmp];
 WaveForm_2 = [0, gmSEQ.pi, gSG.AWGFreq, -pi/2, gSG.AWGAmp];
@@ -14024,9 +16194,9 @@ ApplyDelays();
 function ApplyDelays
 global gmSEQ gSG gSG2
 % aom_delay = 610; % changed to 610 03/24/2022 RT4 Weijie.
-aom_delay = 500; %ejd 1/4/22 changed from 900 to 500 % changed to 820 10/19/2022 RT4 Weijie.
-
-if strcmp(gmSEQ.meas,'APD')
+%aom_delay = 1040; %ejd 1/4/22 changed from 900 to 500 % changed to 820 10/19/2022 RT4 Weijie. % changed to 1040 9/27/2024 sangha
+aom_delay = 200; % 01/31/25 Sangha; hBN1: 500, Zilin: 200 ns; WL: 700 --> 200 ns, 4/3/25
+if strcmp(gmSEQ.meas,'APD') 
     detector_delay=-1100+610;
 else
     detector_delay=0;

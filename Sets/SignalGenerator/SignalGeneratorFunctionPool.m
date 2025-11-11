@@ -146,10 +146,12 @@ function WriteFreq()
 global gSG
 fopen(gSG.serial);
 
-if or(gSG.Freq<950000,gSG.Freq>4050000000) % hardware limit of the N-type output
-    fclose(gSG.serial);
-    error('Microwave frequency is out of bounds');
-end
+% if or(gSG.Freq<950000,gSG.Freq>4050000000) % hardware limit of the N-type output % change to 
+%     fclose(gSG.serial);
+%     error('Microwave frequency is out of bounds');
+% end
+
+
 try
     fprintf(gSG.serial,strcat('FREQ ',num2str(gSG.Freq)));
     % disp(gSG.Freq)
@@ -217,19 +219,19 @@ to = gSG.Freq + gSG.sweepDev;
 disp(from)
 disp(to)
 bValid = false;
-%For SRS384
-if from >= 0.950e9 && to <= 2.050e9
-    bValid = true;
-elseif from >= 1.900e9 && to <= 4.100e9
-    bValid = true;
-end
-
-% FOR SRS386
-% if from >= 1.425e9 && to <= 3.075e9
+% %For SRS384
+% if from >= 0.950e9 && to <= 2.050e9
 %     bValid = true;
-% elseif from >= 2.85e9 && to <= 6.15e9
+% elseif from >= 1.900e9 && to <= 4.100e9
 %     bValid = true;
 % end
+
+%FOR SRS386
+if from >= 1.425e9 && to <= 3.075e9
+    bValid = true;
+elseif from >= 2.85e9 && to <= 6.15e9
+    bValid = true;
+end
 
 
 function RFOnOff()

@@ -1,6 +1,6 @@
 function EODriveTest
 % loadlibary(dll name, header file name) : Load a DLL into memory so that MATLAB can call it.
-loadlibrary('EO-Drive', 'eo-drive'); 
+loadlibrary('EO-Drive.dll', 'eo-drive.h'); 
 
 if (~libisloaded('EO0x2DDrive'))
 	disp('Error: Library did not load correctly');

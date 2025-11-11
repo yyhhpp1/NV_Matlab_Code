@@ -108,26 +108,26 @@ SignalGeneratorFunctionPool('Init',PortMap('SG com'));
 
 gmSEQ.meas='SPCM';
 
-% % AWG Initialize of AWG
+% AWG Initialize of AWG
 % % This part should be checked after the connection
 % gmSEQ.P1AWG = 2; % cardNum
-% gmSEQ.MWAWG = 1; % cardNum
+gmSEQ.MWAWG = 1; % cardNum
 % gmSEQ.MWAWG2 = 3; % cardNum
 % 
-% chaseFunctionPool('loadChase')
-% pause(0.5)
+chaseFunctionPool('loadChase')
+pause(0.5)
 % 
-% % 1st AWG is for MW control
-% chaseFunctionPool('Initialize', gmSEQ.MWAWG)
-% pause(0.5)
-% % chaseFunctionPool('ExtClk10MHzChase', gmSEQ.MWAWG, 0) 
-% %%%
-% % Temporarily disable external clock.
-% chaseFunctionPool('ExtClk10MHzChase', gmSEQ.MWAWG, 1)
-% pause(0.5)
-% gSG.AWGClockRate = 2; % in GHz. Yuanqi
-% chaseFunctionPool('setClkRate', gmSEQ.MWAWG, gSG.AWGClockRate * 1e9)
-% pause(0.5)
+% 1st AWG is for MW control
+chaseFunctionPool('Initialize', gmSEQ.MWAWG)
+pause(0.5)
+% chaseFunctionPool('ExtClk10MHzChase', gmSEQ.MWAWG, 0) 
+%%%
+% Temporarily disable external clock.
+chaseFunctionPool('ExtClk10MHzChase', gmSEQ.MWAWG, 1)
+pause(0.5)
+gSG.AWGClockRate = 2; % in GHz. Yuanqi
+chaseFunctionPool('setClkRate', gmSEQ.MWAWG, gSG.AWGClockRate * 1e9)
+pause(0.5)
 % 
 % % 2nd AWG is for P1 MW control
 % chaseFunctionPool('Initialize', gmSEQ.P1AWG)

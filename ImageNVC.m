@@ -156,7 +156,7 @@ if bSwitch
     
 else
     s = daq.createSession('ni');
-    addDigitalChannel(s,'Dev1', 'Port0/Line0:7', 'OutputOnly');
+    addDigitalChannel(s,'Dev3', 'Port0/Line0:7', 'OutputOnly');
     switch what
         case 'blue'
             outputSingleScan(s,[0 0 1 0 0 0 0 0]);
@@ -1083,7 +1083,7 @@ function Track_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 %ImageFunctionPool('Track',hObject, eventdata, handles);
 
-
+i
 numTrack = 0;
 while numTrack < eval(get(handles.TrackTimes,'String'))
 ImageFunctionPool('TrackImageCorr',hObject, eventdata, handles);
@@ -2681,7 +2681,7 @@ APDx = NV_Pos(1);
 APDy = NV_Pos(2);
 APDz = NV_Pos(3);
 
-% input coordinate in APD
+% input coordinate in APDwritevoltage
 Pos_APD = [APDx; APDy];
 Ang = Ang/180*pi;
 R = [cos(Ang) -sin(Ang); sin(Ang) cos(Ang)]*Scale;
@@ -2696,8 +2696,8 @@ gScan2.FixVx = Pos_PD(1);
 gScan2.FixVy = Pos_PD(2);
 gScan2.FixVz = APDz;
 
-WriteVoltageTelecom('Dev1/ao2',gScan2.FixVx + gConfocal2.XOffSet);
-WriteVoltageTelecom('Dev1/ao3',gScan2.FixVy + gConfocal2.YOffSet);
+WriteVoltageTelecom('Dev3/ao2',gScan2.FixVx + gConfocal2.XOffSet); %ao2 --> ao0, WL 4/11/25
+WriteVoltageTelecom('Dev3/ao3',gScan2.FixVy + gConfocal2.YOffSet); %ao3 --> ao1, WL 4/11/25
 WriteVoltageTelecom('Obj_Piezo',gScan2.FixVz);
 disp(['Galvo 2 Position (X, Y, Z) = (' num2str(gScan2.FixVx +gConfocal2.XOffSet) ', ' num2str(gScan2.FixVy + gConfocal2.YOffSet) ', ' num2str(gScan2.FixVz) ')'])
 
@@ -2705,12 +2705,12 @@ function task = WriteVoltageTelecom(what,Voltage)
     DAQmx_Val_Volts= 10348; % measure volts
 
     switch what
-        case {1,'Dev1/ao2'}
-            Device = 'Dev1/ao2';
-        case {2,'Dev1/ao3'}
-            Device = 'Dev1/ao3';
+        case {1,'Dev3/ao2'} %ao2 --> ao0, WL 4/11/25
+            Device = 'Dev3/ao2';
+        case {2,'Dev3/ao3'} %ao3 --> ao1, WL 4/11/25
+            Device = 'Dev3/ao3';
         case {3,'Obj_Piezo'}
-            % Device = 'Dev1/ao2'; #PI
+            % Device = 'Dev3/ao2'; #PI
             % #EO
             global EO_handle;
             if Voltage > 100
@@ -2723,10 +2723,10 @@ function task = WriteVoltageTelecom(what,Voltage)
             return;
         case 4
             return;
-%         case {5,'Dev1/ao2'} 
-%             Device = 'Dev1/ao2';
-%         case {6,'Dev1/ao3'} 
-%             Device = 'Dev1/ao3';
+%         case {5,'Dev3/ao2'} 
+%             Device = 'Dev3/ao2';
+%         case {6,'Dev3/ao3'} 
+%             Device = 'Dev3/ao3';
         otherwise
             disp('Error in Write Voltage: I dont get it!');
     end

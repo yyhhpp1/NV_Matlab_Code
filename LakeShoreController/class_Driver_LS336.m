@@ -404,7 +404,11 @@ classdef class_Driver_LS336 < handle
         %% Get the Serial Number of the Heater Controller
                 
         function [Out_ErrCode, Out_SerialNumber] = get_SerialNumber(obj)
+            % Debugging
             [~, response] = obj.send_Query("*IDN?");
+            pause(2);
+            [~, response] = obj.send_Query("*IDN?");
+
             Out_SerialNumber = extractBetween(response, 15, 21);
             %%%
             % Get part of the return that is the serial number (ref:
@@ -440,11 +444,11 @@ classdef class_Driver_LS336 < handle
                 % applies for the rest of the code. The "%#ok<*ST2NM>" is
                 % to supress this warning.
                 
-                Out_Heater_Conf.Type(n) = response(1);
-                Out_Heater_Conf.Resistance(n) = response(2);
-                Out_Heater_Conf.MaxCurrent(n) = response(3);
-                Out_Heater_Conf.MaxUserCurrent(n) = response(4);
-                Out_Heater_Conf.Display(n) = response(5);
+                % Out_Heater_Conf.Type(n) = response(1);
+                Out_Heater_Conf.Resistance(n) = response(1);
+                Out_Heater_Conf.MaxCurrent(n) = response(2);
+                Out_Heater_Conf.MaxUserCurrent(n) = response(3);
+                Out_Heater_Conf.Display(n) = response(4);
             end
             Out_ErrCode = obj.ErrCode(end);
             obj.Heater_Conf = Out_Heater_Conf;

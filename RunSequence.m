@@ -1,7 +1,7 @@
 function RunSequence(hObject, eventdata, handles)
 [y,Fs] = audioread('WindowsNotify.wav');
 BackupFile = 'C:\MATLAB_Code\Data\TempDataBackup\Temp.mat';
-global gmSEQ gSG tmax hCPS gSG2 gSG3
+global gmSEQ gSG tmax hCPS 
 
 % Stop the previous sequence if it is running
 % if gmSEQ.bExp
@@ -17,7 +17,7 @@ SequencePool(string(gmSEQ.name));
 InitializeData(handles);
 
 disp(strcat('Commencing ',{' '},string(gmSEQ.name), ' sequence...'))
-drawnow;
+drawnow; 
  
 gmSEQ.bRandom = false;  % Shuffle the input, added by Weijie 04/20/2022
 
@@ -36,10 +36,12 @@ if gSG.bfixedPow && gSG.bfixedFreq
     
     
     gmSEQ.refCounts=Track('Init');
+    % zhelun un-comment 2024/08/28
     SignalGeneratorFunctionPool('SetMod');
     SignalGeneratorFunctionPool('WritePow');
     SignalGeneratorFunctionPool('WriteFreq');
-    gSG.bOn=1;  SignalGeneratorFunctionPool('RFOnOff');      
+    gSG.bOn=1;  SignalGeneratorFunctionPool('RFOnOff');
+    %%%
 
     CreateCaliLog(hObject, eventdata, handles);
     
@@ -49,9 +51,9 @@ if gSG.bfixedPow && gSG.bfixedFreq
 
     try
         [~, hCounter] = SetNCounters(gmSEQ.ctrN*gmSEQ.Repeat,PortMap('Ctr Gate'),500000);
-        disp('CTRN and REPEAT')
-        disp(gmSEQ.ctrN)
-        disp(gmSEQ.Repeat)
+        %disp('CTRN and REPEAT')
+        %disp(gmSEQ.ctrN)
+        %disp(gmSEQ.Repeat)
         for i=1:gmSEQ.Average
             gmSEQ.iAverage=i;
             handles.biAverage.String=num2str(gmSEQ.iAverage);
@@ -112,7 +114,7 @@ if gSG.bfixedPow && gSG.bfixedFreq
                     StartCounters(hCounter);                    
                     Run_PB_Sequence();
                     [~, vec] = ReadCountersN(hCounter,(gmSEQ.ctrN*gmSEQ.Repeat),gmSEQ.Repeat*tmax/1e9*1.5);
-                    disp(vec)
+                    % disp(vec)
                     DAQmxStopTask(hCounter);
                     sigDatum = ProcessData(vec);           
                     for k = 1:gmSEQ.ctrN
@@ -120,7 +122,7 @@ if gSG.bfixedPow && gSG.bfixedFreq
                         if i == 1 % ejd i is number of averages
                             gmSEQ.signal(k, j) = sigDatum(k);
                         else
-                            disp(['k, ', num2str(k), ' ', num2str(sigDatum(k))])
+                            %disp(['k, ', num2str(k), ' ', num2str(sigDatum(k))])
                             gmSEQ.signal(k, j) = (gmSEQ.signal(k, j)*(i-1)+sigDatum(k))/i; %ejd j is sweep parameter gmSEQ.signal(k, j)+sigDatum(k);%
                         end
                     end
@@ -159,17 +161,21 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
     gmSEQ.dataN = gmSEQ.ctrN;
     gmSEQ.refCounts=Track('Init');
     SequencePool(string(gmSEQ.name));
+    %CreateCaliLog(hObject, eventdata, handles);
+    %Calibration(hObject, eventdata, handles); 
     gmSEQ.SweepParam=gmSEQ.SweepParam*1e9;
     gSG.sweepDev=(gmSEQ.SweepParam(gmSEQ.NSweepParam)-gmSEQ.SweepParam(1))/2;
     gSG.Freq=(gmSEQ.SweepParam(gmSEQ.NSweepParam)+gmSEQ.SweepParam(1))/2; 
     SignalGeneratorFunctionPool('WriteFreq');
-    disp(gmSEQ.NSweepParam)
-    if gSG.Pow > -15
-       error("Too large MW power. ") 
-    end    
+    % disp(gmSEQ.NSweepParam)
+    
+%     if gSG.Pow > -15
+%        error("Too large MW power. ") 
+%     end    
     SignalGeneratorFunctionPool('WritePow');
     SignalGeneratorFunctionPool('SetMod');
     PBFunctionPool('PBON',2^SequencePool('PBDictionary','AOM')+2^SequencePool('PBDictionary','MWSwitch'));
+
 
     %     if gmSEQ.bWarmUpAOM %%% probably not necessary for this method of ESR
     %         gSG.bOn=1; SignalGeneratorFunctionPool('RFOnOff');
@@ -190,7 +196,7 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
             [ ~, hScan ] = DAQmxFunctionPool('WriteAnalogVoltage',PortMap('SG ext mod'),vec, NN,gmSEQ.NSweepParam*gSG.sweepRate);
             hCPS.hScan=hScan;
             %%%%% Create counting channel %%%%
-            [~, hCounter] = SetNCounters(NN,'/Dev2/PFI13',gmSEQ.NSweepParam*gSG.sweepRate);
+            [~, hCounter] = SetNCounters(NN,'/Dev3/PFI13',gmSEQ.NSweepParam*gSG.sweepRate);
             hCPS.hCounter=hCounter;
             gmSEQ.iAverage=i;
             handles.biAverage.String=num2str(gmSEQ.iAverage);
@@ -344,6 +350,7 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
     end
 end
 
+fclose(gSG.serial); %Zhelun added 2024/8/27
 gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
 % gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff');
 % gSG3.bOn=0; SignalGeneratorFunctionPool3('RFOnOff');
@@ -446,8 +453,8 @@ DAQmxErr(status);
 [ status, ~, reference(1) ] = DAQmxCreateTask([]);
 DAQmxErr(status);
 
-DAQmxFunctionPool('SetGatedCounter',signal,'Dev2/ctr0','/Dev2/PFI8','/Dev2/PFI9');
-DAQmxFunctionPool('SetGatedCounter',reference(1),'Dev2/ctr1','/Dev2/PFI8','/Dev2/PFI4');
+DAQmxFunctionPool('SetGatedCounter',signal,'Dev3/ctr0','/Dev3/PFI8','/Dev3/PFI9');
+DAQmxFunctionPool('SetGatedCounter',reference(1),'Dev3/ctr1','/Dev3/PFI8','/Dev3/PFI4');
 
 % gmSEQ.bCtr2=0;
 % ctr2=SequencePool('PBDictionary','ctr2');
@@ -456,7 +463,7 @@ DAQmxFunctionPool('SetGatedCounter',reference(1),'Dev2/ctr1','/Dev2/PFI8','/Dev2
 %         [ status, ~, reference(2) ] = DAQmxCreateTask([]);
 %         DAQmxErr(status);
 %         gmSEQ.bCtr2=1;
-%         DAQmxFunctionPool('SetGatedCounter',reference(2),'Dev2/ctr2','/Dev2/PFI8','/Dev2/PFI6');
+%         DAQmxFunctionPool('SetGatedCounter',reference(2),'Dev3/ctr2','/Dev3/PFI8','/Dev3/PFI6');
 %         break
 %     end
 % end
@@ -472,7 +479,7 @@ if strcmp(gmSEQ.meas,'SPCM')
         [status, task ] = DAQmxFunctionPool('SetCounter',varargin{1});
     else
         [status, task ] = DAQmxFunctionPool('SetGatedNCounter',varargin{1});
-        disp(['N ', num2str(varargin{1})])
+        %disp(['N ', num2str(varargin{1})])
     end
     
 elseif strcmp(gmSEQ.meas,'APD')
@@ -532,7 +539,7 @@ if ~isfield(gmSEQ,'bLiO')&&gmSEQ.ctrN~=1 % Do not plot ESR
             if strcmp(gmSEQ.name,'T1JC')
                 data=signal(1,:)-signal(2,:)./signal(3,:);
             else
-                data=signal(1,:)-signal(3,:)./(signal(2,:)-signal(4,:));
+                data=signal(1,:)-signal(3,:)./(signal(2,:)-signal(4,:)); 
             end
         elseif gmSEQ.ctrN==2
             sig = signal(2,:);
@@ -565,7 +572,7 @@ if ~isfield(gmSEQ,'bLiO')&&gmSEQ.ctrN~=1 % Do not plot ESR
                 rel_err2 = sqrt(ref_err2.^2 + sig_err2.^2);
                 data_err2 = rel_err2 .* data2;                
             else
-                % data = (gmSEQ.reference(~isnan(gmSEQ.reference))-gmSEQ.reference3(~isnan(gmSEQ.reference3)))./(gmSEQ.signal(~isnan(gmSEQ.signal))+gmSEQ.reference2(~isnan(gmSEQ.reference2)))*2;
+                %data = (gmSEQ.reference(~isnan(gmSEQ.reference))-gmSEQ.reference3(~isnan(gmSEQ.reference3)))./(gmSEQ.signal(~isnan(gmSEQ.signal))+gmSEQ.reference2(~isnan(gmSEQ.reference2)))*2;
                 ref_B = signal(1,:);
                 ref_D = signal(3,:);
                 sig_B = signal(2,:);
@@ -573,14 +580,14 @@ if ~isfield(gmSEQ,'bLiO')&&gmSEQ.ctrN~=1 % Do not plot ESR
                 [data, data_err] = ContrastDiff(ref_B, ref_D,sig_B, sig_D, gmSEQ.iAverage);
             end
         end
-        % plot(handles.axes3, gmSEQ.SweepParam(1:length(data)).*ScaleT,data,'-g')
+        %plot(handles.axes3, gmSEQ.SweepParam(1:length(data)).*ScaleT,data,'-g')
         if strcmp(gmSEQ.name,'Elec_Pol_Extract')
             errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data1)).*gmSEQ.ScaleT, data1, data_err1,'-r') 
             hold(handles.axes3,'on')
             errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data2)).*gmSEQ.ScaleT, data2, data_err2,'-b') 
             hold(handles.axes3,'off')
         else
-            errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT, data, data_err,'-g')       
+            errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT, data, data_err,'-g')      
         end
     end
     grid on;
@@ -767,12 +774,12 @@ if strcmp(gmSEQ.meas,'SPCM')
 end
 NN=length(vec);
 
-% Upgrading this function... 
+%Upgrading this function... 
 function sigDatum = ProcessData(RawData)
 global gmSEQ gSG
 if strcmp(gmSEQ.meas,'SPCM')
     if isfield(gmSEQ,'bLiO')
-        disp('ProcessData bLiO')
+        %disp('ProcessData bLiO')
         AA=diff(RawData);
         sigDatum=zeros(1,gmSEQ.NSweepParam);
         samps=gmSEQ.misc*gSG.sweepRate;
@@ -784,7 +791,6 @@ if strcmp(gmSEQ.meas,'SPCM')
     else
         RawData1=diff(RawData);
 %         disp(RawData)
-%         disp(RawData1)
         sigDatum = NaN(1, gmSEQ.ctrN);
         for i = 1:gmSEQ.ctrN
             sigDatum(i)=sum(RawData1(i:gmSEQ.ctrN:end));
@@ -810,6 +816,95 @@ elseif strcmp(gmSEQ.meas,'APD')
     end
     
 end
+
+% function [sigDatum, refDatum] = ProcessData(RawData)
+% global gmSEQ gSG
+% if strcmp(gmSEQ.meas,'SPCM')
+%     if isfield(gmSEQ,'bLiO')
+%         AA=diff(RawData);
+%         sigDatum=zeros(1,gmSEQ.NSweepParam);
+%         samps=gmSEQ.misc*gSG.sweepRate;
+%         AA=reshape(AA,[gmSEQ.NSweepParam samps]);
+%         AA(:,2:2:(samps))=flipud(AA(:,2:2:(samps)));
+%         for i=1:gmSEQ.NSweepParam
+%             sigDatum(i)=sum(AA(i,:))/(samps);
+%         end
+%     else
+%         RawData1=[diff(RawData)];
+%         sigDatum=sum(RawData1(1:gmSEQ.ctrN:end));
+%         if gmSEQ.ctrN>1
+%             refDatum(1,:)=sum(RawData1(2:gmSEQ.ctrN:end));
+%             if gmSEQ.ctrN>2
+%                 refDatum(2,:)=sum(RawData1(3:gmSEQ.ctrN:end));
+%                 if gmSEQ.ctrN>3
+%                     refDatum(3,:)=sum(RawData1(4:gmSEQ.ctrN:end));
+%                     if gmSEQ.ctrN>4
+%                         refDatum(4,:)=sum(RawData1(5:gmSEQ.ctrN:end));
+%                         if gmSEQ.ctrN>5
+%                             refDatum(5,:)=sum(RawData1(6:gmSEQ.ctrN:end));
+%                         else
+%                             refDatum(5)=NaN;
+%                         end
+%                     else
+%                         refDatum(4)=NaN;
+%                     end
+%                 else
+%                     refDatum(3)=NaN;
+%                 end
+%             else
+%                 refDatum(2)=NaN;
+%             end
+%         else
+%             refDatum(1)=NaN;
+%             refDatum(2)=NaN;
+%             refDatum(3)=NaN;
+%             refDatum(4)=NaN;
+%             refDatum(5)=NaN;
+%         end
+%     end
+% elseif strcmp(gmSEQ.meas,'APD')
+%     if isfield(gmSEQ,'bLiO')
+%         sigDatum=zeros(1,gmSEQ.NSweepParam);
+%         samps=gmSEQ.misc*gSG.sweepRate;
+%         RawData=reshape(RawData,[gmSEQ.NSweepParam samps]);
+%         RawData(:,2:2:(samps))=flipud(RawData(:,2:2:(samps)));
+%         for i=1:gmSEQ.NSweepParam
+%             sigDatum(i)=sum(RawData(i,:))/(samps);
+%         end
+%     else
+%         sigDatum=sum(RawData(1:gmSEQ.ctrN:end));
+%         if gmSEQ.ctrN>1
+%             refDatum(1,:)=sum(RawData1(2:gmSEQ.ctrN:end));
+%             if gmSEQ.ctrN>2
+%                 refDatum(2,:)=sum(RawData1(3:gmSEQ.ctrN:end));
+%                 if gmSEQ.ctrN>3
+%                     refDatum(3,:)=sum(RawData1(4:gmSEQ.ctrN:end));
+%                     if gmSEQ.ctrN>4
+%                         refDatum(4,:)=sum(RawData1(5:gmSEQ.ctrN:end));
+%                         if gmSEQ.ctrN>5
+%                             refDatum(5,:)=sum(RawData1(6:gmSEQ.ctrN:end));
+%                         else
+%                             refDatum(5)=NaN;
+%                         end
+%                     else
+%                         refDatum(4)=NaN;
+%                     end
+%                 else
+%                     refDatum(3)=NaN;
+%                 end
+%             else
+%                 refDatum(2)=NaN;
+%             end
+%         else
+%             refDatum(1)=NaN;
+%             refDatum(2)=NaN;
+%             refDatum(3)=NaN;
+%             refDatum(4)=NaN;
+%             refDatum(5)=NaN;
+%         end
+%     end
+%     
+% end
 
 function CreateCaliLog(hObject, eventdata, handles)
 global gCaliLog gTrackLog gmSEQ gCaliCounter

@@ -1,4 +1,4 @@
-function path=PortMap(what)
+  function path=PortMap(what)
 
 switch what
     case 'BackupFile'
@@ -6,35 +6,35 @@ switch what
     case 'BackupImageFile'
         path='C:\MATLAB_Code\Data\TempDataBackup\TempImage.mat';
     case 'Ctr Gate'
-        path='/Dev1/PFI1';
+        path='/Dev3/PFI1';  
     case 'SG ext mod'
-        path='Dev1/ao2';
+        path='Dev3/ao2';
     case 'Ctr Trig'
-        path='/Dev1/PFI13';
+        path='/Dev3/PFI13'; 
     case 'SG com'
-        path='com3';
+        path='com32'; 
     case 'SG com 2'
-        path='com8';
+        path='com9';
     case 'SG com 3'
-        path='com10';
+        path='com14';
     case 'meas'
-        path='SPCM'; 
+        path='APD'; 
     case 'SPCM' 
-        path='/Dev1/PFI0';
+        path='/Dev3/PFI0';
     case 'gConfocal path'
         path='C:\MATLAB_Code\Sets\';
     case 'APD in'
-        path='Dev1/ai0';
+        path='Dev3/ai0';
     case 'Ctr in'
-        path='Dev1/ctr3'; %ejd 1/4/2022 crt3 --> ctr2
+        path='Dev3/ctr3'; %ejd 1/4/2022 crt3 --> ctr2; 4/5/2023 WJ ctr3 --> ctr0 // --> ctr3
     case 'Ctr out'
-        path='Dev1/ctr1'; %ejd 1/4/2022 crt1 --> ctr2
+        path='Dev3/ctr1'; %ejd 1/4/2022 crt1 --> ctr2 
     case 'Galvo x'
-        path='Dev1/ao0';
+        path='Dev3/ao0';
     case 'Galvo y'
-        path='Dev1/ao1';
+        path='Dev3/ao1';
     case 'Piezo' % added by Weijie 09/21/2021 single-NV
-        path='1103'; % serial number
+        path='0121026985'; % serial number
     case 'spinapi'
         path='C:\SpinCore\SpinAPI\include\spinapi.h';
     case 'pulseblaster'
@@ -44,17 +44,17 @@ switch what
     case 'Data'
         path='C:\Data\';
     case 'Ctr src'
-        path='/Dev1/PFI0';
+        path='/Dev3/PFI0'; 
     case 'Ctr gate'
-        path='/Dev1/PFI1';
+        path='/Dev3/PFI1'; 
     case 'LF save'
         path='C:\Users\rt2\Documents\LightField\';
     case 'Scope'
         path='USB0::0x0957::0x9005::MY51260103::0::INSTR';
     case 'keithleyX'
-        path='USB0::0x05E6::0x2200::9208214::INSTR';
+        path='USB0::0x05E6::0x2200::9210717::INSTR';
     case 'keithleyY'
-        path='USB0::0x05E6::0x2200::9201316::INSTR';
+        path='USB0::0x05E6::0x2200::9210730::INSTR';
     case 'keithleyZ'
-        path='USB0::0x05E6::0x2200::9201315::INSTR';
+        path='USB0::0x05E6::0x2200::9210599::INSTR';
 end
