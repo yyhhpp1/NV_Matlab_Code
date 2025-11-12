@@ -9,8 +9,9 @@ gmSEQ.bLiO=1;
 gmSEQ.ctrN=1;
 gmSEQ.ScaleT = 1;
 gmSEQ.ScaleStr = 'GHz';
+
 % dummy sequence for DrawSequence
-gmSEQ.CHN(1).PBN=PBDictionary('AOM');
+gmSEQ.CHN(1).PBN=PBDictionary('GreenAOM');
 gmSEQ.CHN(1).NRise=1;
 gmSEQ.CHN(1).T=0;
 gmSEQ.CHN(1).DT=1;

@@ -11,12 +11,14 @@ switch what
     case 'PBOFF'
         PBOFF(hObject, eventdata, handles);
     case 'Initialize'
+        %Initialize_fake(hObject, eventdata, handles);
         Initialize(hObject, eventdata, handles);
     case 'LoadSEQ'
         LoadSEQ(hObject, eventdata, handles, varargin{1});
     case 'Run'
         LoadUserInputs(hObject,eventdata,handles);
         RunSequence(hObject, eventdata, handles);
+        %RunSequenceTimeTagger(hObject, eventdata, handles);
         % SaveIgorText(handles); % move to RunSequence
     case 'PlotExtRaw'
         PlotExtRaw(hObject,eventdata,handles);
@@ -32,6 +34,37 @@ switch what
         AutoCalibration(hObject, eventdata, handles, varargin{1});
     case 'RabiTrack'
         RabiTrack(hObject, eventdata, handles);
+    case 'AutoRun'
+        gmSEQ.bAutoRun = 1;
+        seq = getAutoPara;
+        
+        num_seq = numel(seq);
+        for i_seq = 1:num_seq
+            fld = fieldnames(seq{i_seq});
+            num_para = numel(fld);
+            for i_para = 1: num_para
+                if strcmp(fld{i_para},'name')
+                    handles.sequence.Value = 1; 
+                    handles.sequence.String = {seq{i_seq}.(fld{i_para})};
+                    gmSEQ.name = {seq{i_seq}.(fld{i_para})};
+                elseif ~isnumeric(seq{i_seq}.(fld{i_para}))
+                    set(handles.(fld{i_para}),'String',seq{i_seq}.(fld{i_para}))
+                else
+                    set(handles.(fld{i_para}),'Value',seq{i_seq}.(fld{i_para}))
+                end
+            end
+            Auto_LoadUserInputs(hObject,eventdata,handles);
+            RunSequence(hObject, eventdata, handles);
+            
+            filename = strcat("C:\Users\MoleculeExp\Desktop\autoruns\",string(datetime('now','Format', 'yyyy-MM-dd_HH-mm-ss')),".png");
+            imwrite(getframe(handles.figure1).cdata, filename)
+            if ~gmSEQ.bAutoRun
+                disp('AutoRun is stopped.')
+                return
+            end
+            disp('AutoRun is completed.')
+        end
+        
     otherwise
         disp('No Matches found in Pool Function');
 end
@@ -62,9 +95,21 @@ LioPB.OnOff(7) = (get(handles.LioPB6,'Value'));
 LioPB.PBN(8) = 7;
 LioPB.OnOff(8) = (get(handles.LioPB7,'Value'));
 
+LioPB.PBN(9) = 8;
+LioPB.OnOff(9) = 0;
+
+LioPB.PBN(10) = 9;
+LioPB.OnOff(10) = 0;
+
+LioPB.PBN(11) = 10;
+LioPB.OnOff(11) = (get(handles.LioPB7,'Value'));
+
+LioPB.PBN(12) = 11;
+LioPB.OnOff(12) = (get(handles.LioPB7,'Value'));
+
 %Binary number
 OutPuts = 0;
-for ipbn = 1:8
+for ipbn = 1:12
     OutPuts = OutPuts + LioPB.OnOff(ipbn)*2^(LioPB.PBN(ipbn));
 end
 
@@ -77,6 +122,7 @@ PBFunctionPool('PBON',OutPuts);
 
 function Initialize(hObject, eventdata, handles)
 global gmSEQ gSG gSG2 gSG3 fpga
+
 StrL = SequencePool('PopulateSeq');
 set(handles.sequence,'String',StrL);
 clear StrL;
@@ -89,103 +135,28 @@ gmSEQ.bGo=0;
 gmSEQ.bExp = 0;
 gmSEQ.bTomo = false;
 
+% load PulseBlaster DLL
 LoadPBESR;
+% load NI-DAQ MX DLL
+% LoadNIDAQmx;
 
+% load SRS SG386 DLL
 SignalGeneratorFunctionPool('Init');
 gSG.bMod='IQ';
 gSG.bModSrc='External';
 SignalGeneratorFunctionPool('SetMod');
 
 fpga = FPGA_AWG_Client();
-gmSEQ.meas='APD';
-
-
-
-function LoadSEQ(hObject, eventdata, handles,ax)
-global gmSEQ
-
-StrL = SequencePool('PopulateSeq');
-set(handles.sequence,'String',StrL);
-clear StrL;
-
-% SignalGeneratorFunctionPool('Init',PortMap('SG com'));
-
-LoadUserInputs(hObject,eventdata,handles);
-SequencePool(string(gmSEQ.name));
-DrawSequence(gmSEQ, hObject, eventdata, ax);
-
-debug = false;
-if debug
-    disp("Debugging...")
-    for k=1:numel(gmSEQ.CHN)
-        gmSEQ.CHN(k).T=gmSEQ.CHN(k).T/1e9;
-        gmSEQ.CHN(k).DT=gmSEQ.CHN(k).DT/1e9;
-        gmSEQ.CHN(k).Delays=gmSEQ.CHN(k).Delays/1e9;
-    end
-    PBFunctionPool('PreprocessPBSequence',gmSEQ); % todo: account for ns
-    disp("Debugging ending...")
-end
-
-
-% Customized input option
-% added by Weijie 06/11/2021
-
-switch gmSEQ.name{1}
-    case 'Rabi'
-%         set(handles.FROM1,'string',num2str(20));
-%         set(handles.TO1,'string',num2str(30));
-%         set(handles.SweepNPoints,'string',num2str(21));        
-%         % set(handles.fixPow,'string',num2str(7));
-%         set(handles.Repeat,'string',num2str(60000));
-%         set(handles.bSweep2,'Value',0);
-%         set(handles.bTrack,'Value',0);
-%         set(handles.Alternate,'Value',0);
-%         set(handles.Ref,'Value',0);        
-    case 'ODMR'
-%         set(handles.FROM1,'string',num2str(2.36));
-%         set(handles.TO1,'string',num2str(2.38));
-%         set(handles.SweepNPoints,'string',num2str(21));        
-%         set(handles.fixPow,'string',num2str(-30)); 
-%         set(handles.pi,'string',num2str(1000));
-%         set(handles.Repeat,'string',num2str(60000));
-%         set(handles.bSweep2,'Value',0);       
-%         set(handles.bTrack,'Value',0);
-%         set(handles.Alternate,'Value',0);
-%         set(handles.Ref,'Value',0);
-    case 'Special Cooling'
-        set(handles.pi,'string',num2str(24));        
-        set(handles.FROM1,'string',num2str(0));
-        set(handles.TO1,'string',num2str(400));
-        set(handles.SweepNPoints,'string',num2str(3));        
-        set(handles.FROM2,'string',num2str(2000));
-        set(handles.TO2,'string',num2str(30000));
-        set(handles.SweepNPoints2,'string',num2str(8));        
-        set(handles.FROM3,'string',num2str(40000));
-        set(handles.TO3,'string',num2str(90000));
-        set(handles.SweepNPoints3,'string',num2str(6));
-        set(handles.bSweep2,'Value',1);
-        set(handles.bTrack,'Value',1);
-        set(handles.Repeat,'string',num2str(500));
-        set(handles.Alternate,'Value',1);
-        set(handles.Ref,'Value',1);
-        % Set power
-        amp = str2double(get(handles.AWGAmp, 'String'));
-        if amp ~= 1
-            set(handles.SAmp1,'string',num2str(amp));
-            set(handles.SAmp2,'string',num2str(amp));
-            set(handles.SAmp1_M,'string',num2str(amp));
-            set(handles.SAmp2_M,'string',num2str(amp));
-            set(handles.AWGAmp,'string',num2str(1));      
-        end
-end
-
 
 function LoadUserInputs(hObject,eventdata,handles)
-global gmSEQ gSG gSG2
+global gmSEQ gSG fpga
+% gmSEQ.MWAWG = 1; % cardNum
+% gmSEQ.P1AWG = 2; % cardNum
 
 str=get(handles.sequence, 'String');
 val=get(handles.sequence, 'Value');
 gmSEQ.name= str(val);
+
 gmSEQ.From= str2double(get(handles.FROM1, 'String'));
 gmSEQ.To= str2double(get(handles.TO1, 'String'));
 gmSEQ.bSweep1log = get(handles.bSweep1log,'Value');
@@ -203,7 +174,6 @@ gmSEQ.bSweep3=get(handles.bSweep3,'Value');
 gmSEQ.To3= str2double(get(handles.TO3, 'String'));
 gmSEQ.N3=str2double(get(handles.SweepNPoints3,'String'));
 
-
 gmSEQ.pi= str2double(get(handles.pi, 'String'));
 gmSEQ.halfpi= str2double(get(handles.halfpi, 'String'));
 gmSEQ.interval= str2double(get(handles.interval, 'String'));
@@ -212,17 +182,28 @@ gmSEQ.misc= str2double(get(handles.misc, 'String'));
 gmSEQ.CtrGateDur=str2double(get(handles.CtrGateDur,'String'));
 gmSEQ.bWarmUpAOM=get(handles.bWarmUpAOM,'Value');
 gmSEQ.bTrack=get(handles.bTrack,'Value');
+gmSEQ.saveRaw = get(handles.saveRaw,'Value');
+gmSEQ.post_init_wait = str2double(get(handles.post_init_wait,'String'));
+gmSEQ.post_MW_wait = str2double(get(handles.post_MW_wait,'String'));
+
 gSG.Pow = str2double(get(handles.fixPow, 'String'));
 gSG.Freq = str2double(get(handles.fixFreq, 'String'))*1e9;
 
 gmSEQ.P1Pulse = str2double(get(handles.P1Pulse, 'String'));
 
+gSG.FPGAFreq7 = str2double(get(handles.FPGAFreq7, 'String'));
+gSG.FPGAGain7 = round(str2double(get(handles.FPGAGain7, 'String'))/100*(2^15-1)); %convert to gain in the fpga awg
+gSG.FPGAFreq6 = str2double(get(handles.FPGAFreq6, 'String'));
+gSG.FPGAGain6 = round(str2double(get(handles.FPGAGain6, 'String'))/100*(2^15-1)); %convert to gain in the fpga awg
+gSG.FPGAFreq5 = str2double(get(handles.FPGAFreq5, 'String'));
+gSG.FPGAGain5 = round(str2double(get(handles.FPGAGain5, 'String'))/100*(2^15-1)); %convert to gain in the fpga awg
+gSG.FPGAFreq4 = str2double(get(handles.FPGAFreq4, 'String'));
+gSG.FPGAGain4 = round(str2double(get(handles.FPGAGain4, 'String'))/100*(2^15-1)); %convert to gain in the fpga awg
+
+gmSEQ.fpga_is_in_use = startsWith(gmSEQ.name, 'f_') & not(handles.notUsingFPGA.Value);
+
 % Point number for next tracking
 gmSEQ.TrackPointN = str2double(get(handles.TrackPointN, 'String'));
-
-% Second SG (for DEER etc)
-gSG2.Freq = str2double(get(handles.fixFreq2, 'String'))*1e9;
-gSG2.Pow = str2double(get(handles.fixPow2, 'String'));
 
 gmSEQ.DEERpi = str2double(get(handles.DEERpi, 'String'));
 gmSEQ.DEERt = str2double(get(handles.DEERt, 'String'));
@@ -236,8 +217,36 @@ else
     gmSEQ.Average=1;
 end
 
+if (gmSEQ.bSweep1log)
+    gmSEQ.SweepParam=logspace(log10(gmSEQ.From),log10(gmSEQ.To),gmSEQ.N);
+else
+    gmSEQ.SweepParam=linspace(gmSEQ.From,gmSEQ.To,gmSEQ.N);
+end
 
+if (gmSEQ.bSweep2)
+    if (gmSEQ.bSweep2log)
+        gmSEQ.SweepParam=[gmSEQ.SweepParam logspace(log10(gmSEQ.From2),log10(gmSEQ.To2),gmSEQ.N2)];
+    else
+        gmSEQ.SweepParam=[gmSEQ.SweepParam linspace(gmSEQ.From2,gmSEQ.To2,gmSEQ.N2)];
+    end
+end
 
+if (gmSEQ.bSweep3)
+    if (gmSEQ.bSweep3log)
+        gmSEQ.SweepParam=[gmSEQ.SweepParam logspace(log10(gmSEQ.From3),log10(gmSEQ.To3),gmSEQ.N3)];
+    else
+        gmSEQ.SweepParam=[gmSEQ.SweepParam linspace(gmSEQ.From3,gmSEQ.To3,gmSEQ.N3)];
+    end
+end
+
+gmSEQ.bCust = get(handles.useCustPoints,'Value');
+gmSEQ.measPD = get(handles.bSavePDVoltage,'Value');
+
+function LoadSEQ(hObject, eventdata, handles,ax)
+global gmSEQ
+LoadUserInputs(hObject,eventdata,handles);
+SequencePool(string(gmSEQ.name));
+DrawSequence(gmSEQ, hObject, eventdata, ax);
 
 function PlotExtRaw(hObject,eventdata,handles)
 global gmSEQ ScaleT ScaleStr
@@ -257,8 +266,6 @@ end
 ylabel('Fluorescence counts');
 xlabel(ScaleStr);
 hold('off')
-
-
 
 function PlotExt(hObject,eventdata,handles)
 global gmSEQ ScaleT ScaleStr
@@ -348,98 +355,6 @@ ref_err = sqrt((ref_B_err .* ref_B).^2 + (ref_D_err .* ref_D).^2)./(ref_B + ref_
 sig_err = sqrt((sig_B_err .* sig_B).^2 + (sig_D_err .* sig_D).^2)./(sig_B - sig_D);
 rel_err = sqrt(ref_err.^2 + sig_err.^2);
 data_err = rel_err .* data;
-
-
-function SaveData(handles)
-global gSaveData gmSEQ  gSG
-%global gScan
-now = clock;
-date = [num2str(now(1)),'-',num2str(now(2)),'-',num2str(round(now(3)))];
-fullPath=fullfile('D:\Data\',date,'\');
-if ~exist(fullPath,'dir')
-    mkdir(fullPath);
-end
-gSaveData.path = fullPath;
-
-
-gSaveData.file = ['_' date '.txt'];
-name=regexprep(gmSEQ.name,'\W',''); % rewrite the sequence name without spaces/weird characters
-%File name and prompt
-B=fullfile(gSaveData.path, strcat(name, gSaveData.file));
-file = strcat(name, gSaveData.file);
-
-%Prevent overwriting
-mfile = strrep(B,'.txt','*');
-mfilename = strrep(gSaveData.file,'.txt','');
-
-A = ls(char(mfile));
-ImgN = 0;
-for f = 1:size(A,1)
-    sImgN = sscanf(A(f,:),strcat(name, string(mfilename), '_%d.txt'));
-    if ~isempty(sImgN)
-        if sImgN > ImgN
-            ImgN = sImgN;
-        end
-    end
-end
-ImgN = ImgN + 1;
-file = strrep(file,'.txt',sprintf('_%03d.txt',ImgN));
-final= fullfile(gSaveData.path, file);
-%Save File as Data
-fnSEQ=fieldnames(gmSEQ);
-fnSG=fieldnames(gSG);
-
-fid = fopen(string(final),'wt');
-fprintf(fid,'Sweep vector\n');
-fprintf(fid,'%d\t',gmSEQ.SweepParam);
-fprintf(fid, '\n');
-fprintf(fid, '\n');
-
-fprintf(fid,'Signal vector\n');
-fprintf(fid,'%d\t',gmSEQ.signal);
-fprintf(fid, '\n');
-fprintf(fid, '\n');
-
-fprintf(fid,'Reference vector\n');
-fprintf(fid,'%d\t',gmSEQ.reference);
-fprintf(fid, '\n');
-fprintf(fid, '\n');
-
-%fprintf(fid, 'Galvo Position: Vx = %.4f Vy = %.4f Vz = %.4f\n',[gScan.FixVx gScan.FixVy gScan.FixVz]);
-
-fprintf(fid,'SEQUENCE PARAMETERS');
-fprintf(fid, '\n'); 
-fprintf(fid, '\n'); 
-
-for i=1:length(fnSEQ)
-    st=fnSEQ(i);
-    if ~strcmp(st,'CHN') &&~strcmp(st,'SweepParam')&&~strcmp(st,'reference')&&~strcmp(st,'signal')
-        fprintf(fid,string(st));
-        fprintf(fid, '\n');      
-        fprintf(fid,string(gmSEQ.(char(st))));
-        fprintf(fid, '\n');        
-        fprintf(fid, '\n'); 
-    end
-end
-
-fprintf(fid,'SIGNAL GENERATOR PARAMETERS');
-fprintf(fid, '\n'); 
-fprintf(fid, '\n'); 
-
-for i=1:length(fnSG)
-    st=fnSG(i);
-    if ~strcmp(st,'serial')&&~strcmp(st,'qErr')
-        fprintf(fid,string(st));
-        fprintf(fid, '\n');      
-        fprintf(fid,string(gSG.(char(st))));
-        fprintf(fid, '\n');        
-        fprintf(fid, '\n'); 
-    end
-end
-
-fclose(fid);
-
-handles.textFileName.String = file;
 
 function RunFirstPoint(hObject, eventdata, handles)
 global gSG gmSEQ
@@ -542,10 +457,10 @@ gSG.Freq = Freq*1e9-str2double(get(handles.AWGFreq, 'String'))*1e9;
 %% Rabi Calibration
 gmSEQ.name= 'Rabi';
 
-% % For single cycle
-% gmSEQ.From= 0;
-% gmSEQ.To= 100;
-% gmSEQ.N= 21;
+% For single cycle
+gmSEQ.From= 0;
+gmSEQ.To= 100;
+gmSEQ.N= 21;
 
 % For multiple cycles
 % gmSEQ.From= 0;
@@ -555,7 +470,7 @@ gmSEQ.name= 'Rabi';
 gmSEQ.pi= str2double(get(handles.pi, 'String'));
 
 if bButton
-    gSG.Pow = -20; %6.3;  
+    gSG.Pow = 6.3;  
 else
     gSG.Pow = Pow;
 end
@@ -711,10 +626,10 @@ end
 %% Rabi
 gmSEQ.name= 'Rabi';
 
-%For single cycle
-%gmSEQ.From= 10;
-%gmSEQ.To= 40;
-%gmSEQ.N= 21;
+% For single cycle
+% gmSEQ.From= 10;
+% gmSEQ.To= 40;
+% gmSEQ.N= 21;
 
 % For multiple cycles
 % gmSEQ.From= 0;
@@ -724,7 +639,7 @@ gmSEQ.name= 'Rabi';
 gmSEQ.bSweep1log = 0;
 gmSEQ.bSweep2=0;
 gmSEQ.bSweep3=0;
-%gmSEQ.readout= 10000;
+gmSEQ.readout= 10000;
 gmSEQ.bTrack = 0;
 gmSEQ.bCali = 0;
 gmSEQ.Average = 1;

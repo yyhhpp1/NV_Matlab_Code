@@ -22,7 +22,7 @@ function varargout = Experiment_PB_DAQ(varargin)
 
 % Edit the above text to modify the response to help Experiment_PB_DAQ
 
-% Last Modified by GUIDE v2.5 11-Nov-2025 10:38:50
+% Last Modified by GUIDE v2.5 11-Nov-2025 15:47:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2688,3 +2688,12 @@ TO1 = max(2.87*2-f1, 2.87*2-f2);
 
 handles.FROM1.String = num2str(FROM1);
 handles.TO1.String = num2str(TO1);
+
+
+% --- Executes on button press in notUsingFPGA.
+function notUsingFPGA_Callback(hObject, eventdata, handles)
+% hObject    handle to notUsingFPGA (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of notUsingFPGA

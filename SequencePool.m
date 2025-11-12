@@ -27,6 +27,8 @@ switch varargin{1}
         CtrDelay();
     case 'Pulsed ESR'
         PESR();
+    case 'f_Rabi'
+        f_Rabi();
     case 'Select Sequence'
         return
         

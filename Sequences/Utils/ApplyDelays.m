@@ -9,26 +9,15 @@ else
     detector_delay=0;
 end
 
-AWG_Delay = 46; % 2GHz sampling rate
-% AWG_Delay = 53/gSG.AWGClockRate+14; % Need further testing
-
-% LaserAWG_Delay = 53/gSG2.LaserAWGClockRate+14; % for 0.1GHz , delay = [(53*(1/SamplingRate)) + 14] ns
-
-MW2_Delay = 26;
+FPGA_Delay = 700; 
 
 for i=1:numel(gmSEQ.CHN)
-    if gmSEQ.CHN(i).PBN==PBDictionary('AOM')
+    if gmSEQ.CHN(i).PBN==PBDictionary('GreenAOM')
         gmSEQ.CHN(i).Delays=ones(1,2)*aom_delay;
     elseif gmSEQ.CHN(i).PBN==PBDictionary('ctr0')
         gmSEQ.CHN(i).Delays=ones(1,2)*detector_delay;
-    elseif gmSEQ.CHN(i).PBN == PBDictionary('AWGTrig') % Yuanqi Lyu, for AWG.
-        gmSEQ.CHN(i).Delays = ones(1, 2) * AWG_Delay;
-    elseif gmSEQ.CHN(i).PBN == PBDictionary('AWGTrig2') 
-        gmSEQ.CHN(i).Delays = ones(1, 2) * AWG_Delay;
-    elseif gmSEQ.CHN(i).PBN == PBDictionary('AWGTrig3') 
-        gmSEQ.CHN(i).Delays = ones(1, 2) * (AWG_Delay+MW2_Delay);
-    elseif gmSEQ.CHN(i).PBN == PBDictionary('MWSwitch3') 
-        gmSEQ.CHN(i).Delays = ones(1, 2) * MW2_Delay;
+    elseif gmSEQ.CHN(i).PBN == PBDictionary('FPGATrig')
+        gmSEQ.CHN(i).Delays = ones(1, 2) * FPGA_Delay;
     else
         gmSEQ.CHN(i).Delays=zeros(1,2);
     end
