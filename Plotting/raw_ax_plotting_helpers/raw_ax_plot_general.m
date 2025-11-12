@@ -8,16 +8,16 @@ cmpsN = viridis(gmSEQ.dataN);
 for i = 1:gmSEQ.dataN
     if gmSEQ.dataN == 1
         plot(handles.axes2, single(gmSEQ.SweepParam)*gmSEQ.ScaleT,single(gmSEQ.signal(i, :)),'-', ...
-            'color', cmps10(1,:),'LineWidth', 0.5, 'DisplayName', sprintf('signal %d', i))
+            'color', cmps10(i,:),'LineWidth', 0.5, 'DisplayName', sprintf('signal %d', i))
     elseif gmSEQ.dataN<=10
         plot(handles.axes2, single(gmSEQ.SweepParam)*gmSEQ.ScaleT,single(gmSEQ.signal(i, :)),'-', ...
-            'color',  cmps10(1,:), 'LineWidth', 0.5, 'DisplayName', sprintf('signal %d', i))
+            'color',  cmps10(i,:), 'LineWidth', 0.5, 'DisplayName', sprintf('signal %d', i))
     elseif gmSEQ.dataN<=20
         plot(handles.axes2, single(gmSEQ.SweepParam)*gmSEQ.ScaleT,single(gmSEQ.signal(i, :)),'-', ...
-            'color',  cmps20(1,:), 'LineWidth', 0.5, 'DisplayName', sprintf('signal %d', i))
+            'color',  cmps20(i,:), 'LineWidth', 0.5, 'DisplayName', sprintf('signal %d', i))
     else
         plot(handles.axes2, single(gmSEQ.SweepParam)*gmSEQ.ScaleT,single(gmSEQ.signal(i, :)),'-', ...
-            'color',  cmpsN(1,:), 'LineWidth', 0.5, 'DisplayName', sprintf('signal %d', i))
+            'color',  cmpsN(i,:), 'LineWidth', 0.5, 'DisplayName', sprintf('signal %d', i))
     end
     if i == 1
         hold(handles.axes2, 'on')
