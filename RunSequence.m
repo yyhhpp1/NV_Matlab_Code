@@ -72,25 +72,6 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
         %         [~, hCounter2] = SetNCounters(2,1*gmSEQ.ctrN*gmSEQ.Repeat,PortMap('Ctr Gate'),500000);
         %         [~, hCounter3] = SetNCounters(3,1*gmSEQ.ctrN*gmSEQ.Repeat,PortMap('Ctr Gate'),500000);
 
-        % set up axes before looping
-        grid(handles.axes3, 'on');
-        set(handles.axes3,'FontSize',8);
-        ylabel(handles.axes3, 'Fluorescence contrast');
-        xlabel(handles.axes3, gmSEQ.ScaleStr);
-        % don't rescale x axis of the plots if num of sweep param is set to 1
-        if length(gmSEQ.SweepParam) ~= 1
-            xlim(handles.axes3, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
-        end
-
-        grid(handles.axes2, 'on');
-        set(handles.axes2,'FontSize',8);
-        ylabel(handles.axes2, 'Fluorescence counts');
-        xlabel(handles.axes2, gmSEQ.ScaleStr);
-        % don't rescale x axis of the plots if num of sweep param is set to 1
-        if length(gmSEQ.SweepParam) ~= 1
-            xlim(handles.axes2, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
-        end
-        
         for i=1:gmSEQ.Average
             gmSEQ.iAverage=i;
             handles.biAverage.String=num2str(gmSEQ.iAverage);
@@ -266,25 +247,6 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
         [vec, NN]=MakeSweepVector();
         
         gSG.bOn=1; SignalGeneratorFunctionPool('RFOnOff');
-
-        % set up axes before looping
-        grid(handles.axes3, 'on');
-        set(handles.axes3,'FontSize',8);
-        ylabel(handles.axes3, 'Fluorescence contrast');
-        xlabel(handles.axes3, gmSEQ.ScaleStr);
-        % don't rescale x axis of the plots if num of sweep param is set to 1
-        if length(gmSEQ.SweepParam) ~= 1
-            xlim(handles.axes3, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
-        end
-
-        grid(handles.axes2, 'on');
-        set(handles.axes2,'FontSize',8);
-        ylabel(handles.axes2, 'Fluorescence counts');
-        xlabel(handles.axes2, gmSEQ.ScaleStr);
-        % don't rescale x axis of the plots if num of sweep param is set to 1
-        if length(gmSEQ.SweepParam) ~= 1
-            xlim(handles.axes2, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
-        end
 
         for i=1:gmSEQ.Average
             
