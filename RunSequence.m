@@ -71,6 +71,25 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
         %         [~, hCounter1] = SetNCounters(1,1*gmSEQ.ctrN*gmSEQ.Repeat,PortMap('Ctr Gate'),500000);
         %         [~, hCounter2] = SetNCounters(2,1*gmSEQ.ctrN*gmSEQ.Repeat,PortMap('Ctr Gate'),500000);
         %         [~, hCounter3] = SetNCounters(3,1*gmSEQ.ctrN*gmSEQ.Repeat,PortMap('Ctr Gate'),500000);
+
+        % set up axes before looping
+        grid(handles.axes3, 'on');
+        set(handles.axes3,'FontSize',8);
+        ylabel(handles.axes3, 'Fluorescence contrast');
+        xlabel(handles.axes3, gmSEQ.ScaleStr);
+        % don't rescale x axis of the plots if num of sweep param is set to 1
+        if length(gmSEQ.SweepParam) ~= 1
+            xlim(handles.axes3, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
+        end
+
+        grid(handles.axes2, 'on');
+        set(handles.axes2,'FontSize',8);
+        ylabel(handles.axes2, 'Fluorescence counts');
+        xlabel(handles.axes2, gmSEQ.ScaleStr);
+        % don't rescale x axis of the plots if num of sweep param is set to 1
+        if length(gmSEQ.SweepParam) ~= 1
+            xlim(handles.axes2, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
+        end
         
         for i=1:gmSEQ.Average
             gmSEQ.iAverage=i;
@@ -184,7 +203,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                 TemporarySave(BackupFile);
 
                 PlotDispatcher(gmSEQ.plotting, handles,raw_j)
-
+                
                 drawnow;
                 if ~gmSEQ.bGo
                     break
@@ -247,6 +266,13 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
         [vec, NN]=MakeSweepVector();
         
         gSG.bOn=1; SignalGeneratorFunctionPool('RFOnOff');
+
+        grid(handles.axes2,'on');
+        set(handles.axes2,'FontSize',8);
+        ylabel(handles.axes2, 'Fluorescence counts');
+        xlabel(handles.axes2, gmSEQ.ScaleStr);
+        xlim(handles.axes2, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
+
         for i=1:gmSEQ.Average
             
             % tracking disable
@@ -282,9 +308,15 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
                 gmSEQ.signal(1,:) = ProcessData(A);
                 gmSEQ.signal_Ave(1,:) = ProcessData(A);
             end
-            plot(handles.axes3, gmSEQ.SweepParam.*gmSEQ.ScaleT, ProcessData(A))
+
+            plot(handles.axes2, gmSEQ.SweepParam.*gmSEQ.ScaleT, ProcessData(A))
+            drawnow
+            if get(handles.bShowLegend,'Value')
+                legend(handles.axes2)
+            end
+
             TemporarySave(BackupFile);
-            PlotData(handles,0);
+            PlotDispatcher(gmSEQ.plotting, handles,0);
             drawnow;
             DAQmxClearTask(hCounter);
             DAQmxClearTask(hPulse);
