@@ -37,16 +37,8 @@ gmSEQ.bRandom = 0;  % Shuffle the input, added by Weijie 04/20/2022
 
 if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
     CreateSavePath_Ave()
-    
-    %gmSEQ.bTomo = gmSEQ.Alternate;
-    gmSEQ.bTomo = 0;
-    if gmSEQ.bTomo
-        gmSEQ.dataN = gmSEQ.Ntomo*gmSEQ.ctrN;
-        disp("Tomographical measurement ongoing...")
-    else
-        gmSEQ.dataN = gmSEQ.ctrN;
-    end
-    
+
+    gmSEQ.dataN = gmSEQ.ctrN; 
     numPDChan=0;
     
     %append the voltage data to the counts data. Hence we need to expand
@@ -67,8 +59,6 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
     if ~startsWith(gmSEQ.name, 'f_') %do not turn on SRS if use FPGA sequences
         SignalGeneratorFunctionPool('RFOnOff');
     end
-
-    %CreateCaliLog(hObject, eventdata, handles);
     
     if gmSEQ.bRandom
         disp("Random measurement ongoing...")
