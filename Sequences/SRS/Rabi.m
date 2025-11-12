@@ -5,6 +5,9 @@ gSG.bfixedFreq = 1;
 gSG.bMod = 'LOL';%set to no modulation
 gSG.bModSrc = 'External';
 
+gmSEQ.plotting = 'Rabi';
+gmSEQ.fitting = 'none';
+
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
 
 T_AfterLaser = 10000;

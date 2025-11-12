@@ -1,4 +1,4 @@
-function ave_plot_Rabi(handles,raw_j)
+function ave_ax_plot_Rabi(handles,raw_j)
 global gmSEQ
 
 % Remove NaN (empty data)
