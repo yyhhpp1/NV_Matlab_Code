@@ -10,6 +10,9 @@ gmSEQ.ctrN=1;
 gmSEQ.ScaleT = 1;
 gmSEQ.ScaleStr = 'GHz';
 
+gmSEQ.plotting = 'ESR';
+gmSEQ.fitting = 'none';
+
 % dummy sequence for DrawSequence
 gmSEQ.CHN(1).PBN=PBDictionary('GreenAOM');
 gmSEQ.CHN(1).NRise=1;
