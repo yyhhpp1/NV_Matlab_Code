@@ -182,16 +182,9 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                 
                 % save a backup of the data here in case matlab crashes
                 TemporarySave(BackupFile);
-                if gmSEQ.ctrN<=20 %do not plot if too many counter gates
-                    if strcmp(gmSEQ.name, 'f_T1_S00_S01_S10')||strcmp(gmSEQ.name, 'T1_S00_S01_S10')
-                        PlotT1Data_method4(handles,raw_j);
-                    elseif strcmp(gmSEQ.name, 'f_T1_S11_S1m1')||strcmp(gmSEQ.name, 'T1_S11_S1m1')
-                        PlotT1Data_method3(handles,raw_j);
-                    else
-                        PlotData(handles,raw_j);
-                    end
-                    
-                end
+
+                PlotDispatcher(gmSEQ.plotting, handles,raw_j)
+
                 drawnow;
                 if ~gmSEQ.bGo
                     break

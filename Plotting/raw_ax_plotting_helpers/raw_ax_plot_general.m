@@ -1,4 +1,4 @@
-function raw_plot_general(handles,raw_j)
+function raw_ax_plot_general(handles,raw_j)
 global gmSEQ
 
 cmps10 = tab10(10);
