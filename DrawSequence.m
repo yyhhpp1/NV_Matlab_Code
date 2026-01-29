@@ -4,7 +4,7 @@ function DrawSequence(SEQ, hObject, eventdata, ax)
 %%%%%%%%%% Harvard University, Cambridge, USA  %%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-global tmin tmax ScaleT bShowTimes bShowTypes ScaleStr Color;
+global tmin tmax ScaleT bShowTimes bShowTypes ScaleStr Color gmSEQ;
 
 if isempty(bShowTypes)
     bShowTypes = false;
@@ -12,7 +12,6 @@ end
 if isempty(bShowTimes)
     bShowTimes = false;
 end
-
 
 Color = {'g','r','b','k','m','c','y','g','r','b','k','m','c','y'};
 

@@ -1,4 +1,4 @@
-function f_Spin_Locking
+function f_Spin_Locking_tomo
 global gmSEQ gSG
 gSG.bfixedPow = 1;
 gSG.bfixedFreq = 1;
@@ -55,11 +55,11 @@ gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('FPGATrig');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
 gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_green_1_start + gmSEQ.readout + gmSEQ.post_init_wait;
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 100;
-
-% gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = 11;
+% 
+% gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = 7;
 % gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
-% gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_green_1_start + gmSEQ.readout + gmSEQ.post_init_wait - FPGA_delay;
-% gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 100;
+% gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_green_1_start + gmSEQ.readout + gmSEQ.post_init_wait;
+% gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 1000;
 
 
 
@@ -72,6 +72,8 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [100, 100];
 uploadSimplePulse('+X', gSG.FPGAFreq7, gSG.FPGAGain7, gmSEQ.pi, 0)
 uploadSimplePulse('+Xhalf', gSG.FPGAFreq7, gSG.FPGAGain7, gmSEQ.halfpi, 0)
 uploadSimplePulse('-Xhalf', gSG.FPGAFreq7, gSG.FPGAGain7, gmSEQ.halfpi, 180)
+uploadSimplePulse('+Yhalf', gSG.FPGAFreq7, gSG.FPGAGain7, gmSEQ.halfpi, 90)
+uploadSimplePulse('-Yhalf', gSG.FPGAFreq7, gSG.FPGAGain7, gmSEQ.halfpi, 270)
 wait1 = round((gmSEQ.post_init_wait + gmSEQ.post_MW_wait + gmSEQ.readout)*ns2cc);
 
 if gmSEQ.m == 0
@@ -98,7 +100,7 @@ else
 %         long_Ys, short_Y, ...
 %         {dt, '-Xhalf'}];
 
-    max_pulse_length = 50000;
+    max_pulse_length = 20000;
     N_max_length = fix(gmSEQ.m/max_pulse_length);
     remain_pulse_length = mod(gmSEQ.m, max_pulse_length);
 
@@ -116,10 +118,10 @@ else
         long_Ys, short_Y, ...
         {dt, '+Xhalf', wait1, gmSEQ.pi, wait1, '+Xhalf', dt}, ...
         long_Ys, short_Y, ...
-        {dt, '-Xhalf'}];
+        {dt, '+Yhalf'}];
 end
 ch = complieCHN({seq1});
-uploadSimpleProg('f_Spin_Locking', ch);
+uploadSimpleProg('f_Spin_Locking_tomo', ch);
 
 
 ApplyDelays();

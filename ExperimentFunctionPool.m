@@ -35,35 +35,7 @@ switch what
     case 'RabiTrack'
         RabiTrack(hObject, eventdata, handles);
     case 'AutoRun'
-        gmSEQ.bAutoRun = 1;
-        seq = getAutoPara;
-        
-        num_seq = numel(seq);
-        for i_seq = 1:num_seq
-            fld = fieldnames(seq{i_seq});
-            num_para = numel(fld);
-            for i_para = 1: num_para
-                if strcmp(fld{i_para},'name')
-                    handles.sequence.Value = 1; 
-                    handles.sequence.String = {seq{i_seq}.(fld{i_para})};
-                    gmSEQ.name = {seq{i_seq}.(fld{i_para})};
-                elseif ~isnumeric(seq{i_seq}.(fld{i_para}))
-                    set(handles.(fld{i_para}),'String',seq{i_seq}.(fld{i_para}))
-                else
-                    set(handles.(fld{i_para}),'Value',seq{i_seq}.(fld{i_para}))
-                end
-            end
-            Auto_LoadUserInputs(hObject,eventdata,handles);
-            RunSequence(hObject, eventdata, handles);
-            
-            filename = strcat("C:\Users\MoleculeExp\Desktop\autoruns\",string(datetime('now','Format', 'yyyy-MM-dd_HH-mm-ss')),".png");
-            imwrite(getframe(handles.figure1).cdata, filename)
-            if ~gmSEQ.bAutoRun
-                disp('AutoRun is stopped.')
-                return
-            end
-            disp('AutoRun is completed.')
-        end
+        Auto_Run_B_Sweep_v2(hObject, eventdata, handles);
         
     otherwise
         disp('No Matches found in Pool Function');
@@ -244,6 +216,7 @@ gmSEQ.measPD = get(handles.bSavePDVoltage,'Value');
 
 function LoadSEQ(hObject, eventdata, handles,ax)
 global gmSEQ
+handles.sequence.String = SequencePool('PopulateSeq');
 LoadUserInputs(hObject,eventdata,handles);
 SequencePool(string(gmSEQ.name));
 DrawSequence(gmSEQ, hObject, eventdata, ax);

@@ -1,4 +1,4 @@
-function f_T1_S00_S01_S10
+function T1_S00_S01_S10
 global gmSEQ gSG
 gSG.bfixedPow=1;
 gSG.bfixedFreq=1;
@@ -13,24 +13,16 @@ end
 
 gmSEQ.plotting = 'T1_S00_S01_S10';
 
-cc2ns = 1000/384;
-ns2cc = 384/1000;
-
-cc2ns = 1;
-ns2cc = 1;
-
 m = gmSEQ.m;
 d = gmSEQ.post_init_wait; %AfterLaser
 u = gmSEQ.post_MW_wait; %AfterPulse
 % w = 1e6; %initial wait
 i = gmSEQ.readout; 
 r = gmSEQ.CtrGateDur;
-p = round(gmSEQ.pi * cc2ns);
+p = gmSEQ.pi;
 
 t_T1 = d+p+u+m+p+u; %time betweeen two laser pulse for measurements
 t_R = d+p+u; %time betweeen two laser pulse for references
-
-
 
 %%%%% Variable sequence length%%%%%%
 
@@ -57,51 +49,22 @@ DT = repmat(DT, 1, 9);
 ConstructSeq(T,DT)
 
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
-gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=1;
-T=[100];
-DT=[t_R*6+t_T1*3+i*9-200];
-ConstructSeq(T,DT)
-
-% gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
-% gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=5;
-% T=[...
-%    t_R+i+t_T1+i+d-1000,                    ...     S00
-%    u+i+t_R+i+d+p+u+m-2000, u+i+d-2000,          ...     S01
-%    u+i+t_R+i+d-2000, u+m+p+u+i+d-2000          ...     S10
-%    ];       
-% DT = [p+2000];
-% DT = repmat(DT, 1, 5);
-% ConstructSeq(T,DT)
-
-
-
-gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('FPGATrig');
-gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=1;
-T=[t_R + i + t_T1 + i + d];
-DT=[200];
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=5;
+T=[...
+   t_R+i+t_T1+i+d,                    ...     S00
+   u+i+t_R+i+d+p+u+m, u+i+d,          ...     S01
+   u+i+t_R+i+d, u+m+p+u+i+d          ...     S10
+   ];       
+DT = [p];
+DT = repmat(DT, 1, 5);
 ConstructSeq(T,DT)
 
 
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
 T=[0, t_R*5+t_T1*3+i*9-20];
-DT=[20, 20];
+DT=[20 20];
 ConstructSeq(T,DT)
-
-uploadSimplePulse('+X', gSG.FPGAFreq7, gSG.FPGAGain7, gmSEQ.pi, 0)
-%uploadSimplePulse('+X', gSG.FPGAFreq7, 1, gmSEQ.pi, 0)
-
-wait1 = round((u + i + t_R + i + t_T1 - u - p) * ns2cc);
-wait2 = round((u + i + d) * ns2cc);
-wait3 = round((u + i + t_R + i + d) * ns2cc);
-wait4 = round((t_T1 - d - p + i + d) * ns2cc);
-
-seq1 = {'+X', wait1, '+X', wait2, '+X', wait3 ,'+X', wait4, '+X'};
-
-ch = complieCHN({seq1});
-uploadSimpleProg(char(gmSEQ.name), ch);
-
-
 
 ApplyDelays();
 

@@ -5,10 +5,11 @@ gSG.bfixedFreq = 1;
 gSG.bMod = 'LOL';%set to no modulation
 gSG.bModSrc = 'External';
 
+gmSEQ.plotting = 'ctr2_dvd_ctr1';
+
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
 
-fpga_delay = 700;
-MW_length = round(gmSEQ.pi*2.6);
+MW_length = round(gmSEQ.pi);
 Init_dur = gmSEQ.m;
 T_green_1_start = gmSEQ.post_init_wait + gmSEQ.post_MW_wait; 
 T_green_2_start = T_green_1_start + Init_dur + gmSEQ.post_init_wait + MW_length + gmSEQ.post_MW_wait;
@@ -32,7 +33,7 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).DT = T_green_2_start - T_green_1_start;
 %fpga trigger
 gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('FPGATrig');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_green_1_start + Init_dur + gmSEQ.post_init_wait - fpga_delay;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_green_1_start + Init_dur + gmSEQ.post_init_wait;
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 100;
 
 % gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = 11;

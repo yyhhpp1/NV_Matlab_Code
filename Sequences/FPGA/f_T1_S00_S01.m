@@ -1,4 +1,4 @@
-function f_T1_S00_S01_S10
+function f_T1_S00_S01
 global gmSEQ gSG
 gSG.bfixedPow=1;
 gSG.bfixedFreq=1;
@@ -12,9 +12,6 @@ if strcmp(gmSEQ.meas,'APD')
 end
 
 gmSEQ.plotting = 'T1_S00_S01_S10';
-
-cc2ns = 1000/384;
-ns2cc = 384/1000;
 
 cc2ns = 1;
 ns2cc = 1;
@@ -35,25 +32,23 @@ t_R = d+p+u; %time betweeen two laser pulse for references
 %%%%% Variable sequence length%%%%%%
 
 gmSEQ.CHN(1).PBN=PBDictionary('ctr0');
-gmSEQ.CHN(1).NRise=9;
+gmSEQ.CHN(1).NRise=6;
 T=[...
    t_R,     t_T1+i-r, t_R+i-r,          ...     S00
    t_R+i-r, t_T1+i-r, t_R+i-r,          ...     S01
-   t_R+i-r, t_T1+i-r, t_R+i-r          ...     S10
    ];       
 DT = [r];
-DT = repmat(DT, 1, 9);
+DT = repmat(DT, 1, 6);
 ConstructSeq(T,DT)
 
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('GreenAOM');
-gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=9;
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=6;
 T=[...
    t_R, t_T1, t_R,          ...     S00
    t_R, t_T1, t_R,          ...     S01
-   t_R, t_T1, t_R          ...     S10
    ];       
 DT = [i];
-DT = repmat(DT, 1, 9);
+DT = repmat(DT, 1, 6);
 ConstructSeq(T,DT)
 
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
@@ -65,12 +60,11 @@ ConstructSeq(T,DT)
 % gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
 % gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=5;
 % T=[...
-%    t_R+i+t_T1+i+d-1000,                    ...     S00
-%    u+i+t_R+i+d+p+u+m-2000, u+i+d-2000,          ...     S01
-%    u+i+t_R+i+d-2000, u+m+p+u+i+d-2000          ...     S10
+%    t_R+i+t_T1+i+d,                    ...     S00
+%    u+i+t_R+i+d+p+u+m, u+i+d,          ...     S01
 %    ];       
-% DT = [p+2000];
-% DT = repmat(DT, 1, 5);
+% DT = [p];
+% DT = repmat(DT, 1, 3);
 % ConstructSeq(T,DT)
 
 
@@ -89,7 +83,6 @@ DT=[20, 20];
 ConstructSeq(T,DT)
 
 uploadSimplePulse('+X', gSG.FPGAFreq7, gSG.FPGAGain7, gmSEQ.pi, 0)
-%uploadSimplePulse('+X', gSG.FPGAFreq7, 1, gmSEQ.pi, 0)
 
 wait1 = round((u + i + t_R + i + t_T1 - u - p) * ns2cc);
 wait2 = round((u + i + d) * ns2cc);

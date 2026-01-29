@@ -1,4 +1,4 @@
-function ave_ax_plot_rabi(handles,raw_j)
+function ave_ax_plot_ctr2_dvd_ctr1(handles,raw_j)
 global gmSEQ
 
 for i = 1:gmSEQ.dataN

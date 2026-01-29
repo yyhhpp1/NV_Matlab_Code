@@ -169,6 +169,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                             gmSEQ.signal(k, j) = sigDatum(k);
                         else
                             gmSEQ.signal(k, j) = (gmSEQ.signal(k, j)*(i-1)+sigDatum(k))/i;
+                            %gmSEQ.signal(k, j) = sigDatum(k);
                         end
                     end
                     
@@ -263,7 +264,8 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
             hCPS.hCounter=hCounter;
             gmSEQ.iAverage=i;
             handles.biAverage.String=num2str(gmSEQ.iAverage);
-            status = DAQmxStartTask(hScan);  DAQmxErr(status);            status = DAQmxStartTask(hCounter);  DAQmxErr(status);
+            status = DAQmxStartTask(hScan);  DAQmxErr(status);            
+            status = DAQmxStartTask(hCounter);  DAQmxErr(status);
             status = DAQmxStartTask(hPulse);    DAQmxErr(status);
             
             [~, A] = ReadCountersN(hCounter,NN, gmSEQ.misc*1.1);
@@ -283,8 +285,20 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
                 gmSEQ.signal(1,:) = ProcessData(A);
                 gmSEQ.signal_Ave(1,:) = ProcessData(A);
             end
-
+    
             plot(handles.axes2, gmSEQ.SweepParam.*gmSEQ.ScaleT, ProcessData(A))
+            if get(handles.bShowLegend,'Value')
+                legend(handles.axes2)
+            end
+            grid(handles.axes2, 'on');
+            set(handles.axes2,'FontSize',8);
+            ylabel(handles.axes2, 'Fluorescence counts');
+            xlabel(handles.axes2, gmSEQ.ScaleStr);
+            % don't rescale x axis of the plots if num of sweep param is set to 1
+            if length(gmSEQ.SweepParam) ~= 1
+                xlim(handles.axes2, [gmSEQ.SweepParam(1)*gmSEQ.ScaleT gmSEQ.SweepParam(gmSEQ.NSweepParam)*gmSEQ.ScaleT]);
+            end
+
             if get(handles.bShowLegend,'Value')
                 legend(handles.axes2)
             end
@@ -357,11 +371,7 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
                 Calibration(hObject, eventdata, handles)
                 SequencePool(string(gmSEQ.name));
                 
-                if gSG.ACmodAWG
-                    gSG.Freq = gmSEQ.SweepParam(j)-str2double(get(handles.AWGFreq, 'String'))*1e9;
-                else
-                    gSG.Freq = gmSEQ.SweepParam(j);
-                end
+                gSG.Freq = gmSEQ.SweepParam(j);
                 %
                 SignalGeneratorFunctionPool('WriteFreq');
                 % SignalGeneratorFunctionPool('WritePow');
@@ -395,7 +405,7 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
                 
                 % save a backup of the data here in case matlab crashes
                 TemporarySave(BackupFile);
-                PlotData(handles,raw_j);
+                PlotDispatcher(gmSEQ.plotting, handles,raw_j)
                 drawnow;
                 if ~gmSEQ.bGo
                     break
@@ -452,6 +462,7 @@ global gmSEQ
 if get(handles.bSweep1log,'Value')
     gmSEQ.SweepParam=round(logspace(log10(gmSEQ.From),log10(gmSEQ.To),gmSEQ.N));
     gmSEQ.SweepParam = unique(gmSEQ.SweepParam,'first'); %remove repeating elements
+    
 else
     gmSEQ.SweepParam=linspace(gmSEQ.From,gmSEQ.To,gmSEQ.N);
 end

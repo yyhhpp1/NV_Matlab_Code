@@ -9,7 +9,7 @@ else
     detector_delay=0;
 end
 
-FPGA_Delay = 700; 
+FPGA_Delay =880; 
 
 for i=1:numel(gmSEQ.CHN)
     if gmSEQ.CHN(i).PBN==PBDictionary('GreenAOM')

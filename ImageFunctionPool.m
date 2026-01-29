@@ -82,6 +82,8 @@ switch what
         WriteVoltage(varargin{1},varargin{2});
     case 'UpdateVoltage'
         UpdateVoltage1(hObject, eventdata, handles);
+    case 'SquareScan'
+        SquareScan(hObject, eventdata, handles);
     otherwise
 end
 
@@ -3173,3 +3175,14 @@ if strcmp(gmSEQ.meas,'SPCM')
 elseif strcmp(gmSEQ.meas,'APD')
     data=RawData(2:length(RawData));
 end
+
+function SquareScan(hObject, eventdata, handles)
+sz = str2double(get(handles.squareScanSize, 'String'));
+X = str2double(get(handles.FixVx,'String'));
+Y = str2double(get(handles.FixVy,'String'));
+
+
+handles.minVx.String = num2str( X - sz/2 );
+handles.maxVx.String = num2str( X + sz/2 );
+handles.minVy.String = num2str( Y - sz/2 );
+handles.maxVy.String = num2str( Y + sz/2 );

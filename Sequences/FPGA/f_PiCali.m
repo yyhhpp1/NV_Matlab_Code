@@ -5,11 +5,16 @@ gSG.bfixedFreq = 1;
 gSG.bMod = 'LOL';%set to no modulation
 gSG.bModSrc = 'External';
 
+gmSEQ.plotting = 'ctr2_dvd_ctr1';
+
+cc2ns = 1000/(384);
+ns2cc = 1/cc2ns;
+
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
 
 T_AfterLaser = gmSEQ.post_init_wait;
 T_AfterPulse = gmSEQ.post_MW_wait;
-T_initial_wait = T_AfterLaser + gmSEQ.pi*gmSEQ.misc + T_AfterPulse;
+T_initial_wait = T_AfterLaser + round(gmSEQ.pi*gmSEQ.misc*cc2ns) + T_AfterPulse;
 
 
 % Pulse Blaster

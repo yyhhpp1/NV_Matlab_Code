@@ -1,13 +1,15 @@
-function ave_ax_plot_rabi(handles,raw_j)
+function ave_ax_plot_T1_S00_S01(handles,raw_j)
 global gmSEQ
 
 for i = 1:gmSEQ.dataN
     signal(i,:) = gmSEQ.signal(i, ~isnan(gmSEQ.signal(i,:)));
 end
 
-sig = signal(2,:);
-ref = signal(1,:);
-data = sig./ref;
+ref1 = signal(1,:);
+sig1 = signal(2,:);
+ref2 = signal(3,:);
+sig2 = signal(4,:);
+data = 2*(sig2-sig1)./(ref1+ref2);
 
 plot(handles.axes3, gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT, data)
 
