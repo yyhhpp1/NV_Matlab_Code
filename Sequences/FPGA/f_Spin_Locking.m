@@ -8,9 +8,10 @@ gSG.bModSrc = 'External';
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
 
 
-cc2ns = 1000/(384);
+%cc2ns = 1000/(384);
+cc2ns = 1;
 ns2cc = 1/cc2ns;
-%cc2ns = 1;
+
 
 
 dt= 0;
@@ -111,7 +112,6 @@ else
         short_Y = {'+Y_short'};
     end
    
-    dt = 0;
     seq1 = [{'+Xhalf', dt,}, ...
         long_Ys, short_Y, ...
         {dt, '+Xhalf', wait1, gmSEQ.pi, wait1, '+Xhalf', dt}, ...

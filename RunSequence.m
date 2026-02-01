@@ -1120,7 +1120,7 @@ handles.fpga_get_disconnect.Enable = is_enable;
 function stop = FPGA_output_power_check(handles)
 FPGAGain6 = str2double(handles.FPGAGain6.String);
 FPGAGain7 = str2double(handles.FPGAGain7.String);
-if FPGAGain6 > 20 || FPGAGain7 > 20
+if FPGAGain6 > 100 || FPGAGain7 > 100
     answer = questdlg('Do you still want to proceed with current FPGA Gains?', ...
         'FPGA Gain Check', ...
         'Yes','No', 'No');

@@ -35,7 +35,7 @@ switch what
     case 'RabiTrack'
         RabiTrack(hObject, eventdata, handles);
     case 'AutoRun'
-        Auto_Run_B_Sweep_v2(hObject, eventdata, handles);
+        Auto_T1(hObject, eventdata, handles);
         
     otherwise
         disp('No Matches found in Pool Function');

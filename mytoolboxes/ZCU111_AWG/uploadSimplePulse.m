@@ -1,7 +1,8 @@
 function uploadSimplePulse(name, freq, amp, dur, phase)
 global fpga
 
-fpga_time_correction = 1e6/(1e6 + 224);
+%fpga_time_correction = 1e6/(1e6 + 235.5);
+fpga_time_correction = 1;
 
 s.name = name;
 s.style = "const";
