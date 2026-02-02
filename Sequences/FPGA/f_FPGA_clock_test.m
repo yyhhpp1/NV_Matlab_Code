@@ -13,33 +13,33 @@ gmSEQ.fitting = 'none';
 cc2ns = 1000/(384);
 ns2cc = 1/cc2ns;
 
-cc2ns = 1; %using cc as unit
-
 t0 = 5000;
 T_AfterLaser = gmSEQ.post_init_wait;
 T_AfterPulse = gmSEQ.post_MW_wait;
-T_initial_wait = T_AfterLaser + gmSEQ.pi + T_AfterPulse;
-wait = gmSEQ.m;
-correction = 235.5;
+T_initial_wait = T_AfterLaser + gmSEQ.pi*cc2ns + T_AfterPulse;
+wait_cc = gmSEQ.m;
+loop_n = 3e6;
+%wait = loop_n * cc2ns * 400;
+wait = wait_cc * cc2ns;
 
 
 % Pulse Blaster
 gmSEQ.CHN(1).PBN = PBDictionary('ctr0');
 gmSEQ.CHN(1).NRise = 2;
 gmSEQ.CHN(1).T = [T_initial_wait, ...
-    T_initial_wait + gmSEQ.readout+ T_AfterLaser + wait + gmSEQ.pi + T_AfterPulse];
+    T_initial_wait + gmSEQ.readout+ T_AfterLaser + wait + gmSEQ.pi*cc2ns + T_AfterPulse];
 gmSEQ.CHN(1).DT = [gmSEQ.CtrGateDur, gmSEQ.CtrGateDur];
 
 gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('GreenAOM');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
 gmSEQ.CHN(numel(gmSEQ.CHN)).T = [T_initial_wait, ...
-    T_initial_wait + gmSEQ.readout+ T_AfterLaser + wait + gmSEQ.pi + T_AfterPulse];
+    T_initial_wait + gmSEQ.readout+ T_AfterLaser + wait + gmSEQ.pi*cc2ns + T_AfterPulse];
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [gmSEQ.readout + wait , gmSEQ.readout];
 
 gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('MWSwitch');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
 gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_initial_wait + gmSEQ.readout/2;
-gmSEQ.CHN(numel(gmSEQ.CHN)).DT = gmSEQ.readout + T_AfterLaser + wait + gmSEQ.pi + T_AfterPulse;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = gmSEQ.readout + T_AfterLaser + wait + gmSEQ.pi*cc2ns + T_AfterPulse;
 
 %fpga trigger
 gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('FPGATrig');
@@ -69,21 +69,18 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).DT = 100;
 gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('dummy1');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
 gmSEQ.CHN(numel(gmSEQ.CHN)).T = [0, ...
-    T_initial_wait + gmSEQ.readout + T_AfterLaser + wait + gmSEQ.pi + T_AfterPulse];
+    T_initial_wait + gmSEQ.readout + T_AfterLaser + wait + gmSEQ.pi*cc2ns + T_AfterPulse];
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [1000, 1000];
 
-fpga_time_correction = 1e6/(1e6 + correction);
-%cf = 1e6/(1e6 + 235.5);
 uploadSimplePulse('+X', gSG.FPGAFreq7, gSG.FPGAGain7, gmSEQ.pi, 0)
-%uploadSimplePulse('+X_fake', 1000, 1,  500*cf, 0)
+uploadSimplePulse('+X_fake', 100, 1,  200, 0)
 
-cf = 1e6/(1e6 + 235.5);
-ttt = 499.882277724*cf;
 
-seq1 = {wait * fpga_time_correction,'+X'};
-%seq1 = {['loop(' num2str(gmSEQ.m) ',' '[' num2str(ttt) ', +X_fake])'],'+X'};
+seq1 = {wait_cc,'+X'};
+%seq1 = {['loop(' num2str(loop_n) ',' '[' num2str(200) ', +X_fake])'],'+X'};
 ch = complieCHN({seq1});
 uploadSimpleProg('f_FPGA_clock_test', ch);
 
 
 ApplyDelays();
+gmSEQ.CHN = ApplyFPGATimeCorrection(gmSEQ.CHN);
