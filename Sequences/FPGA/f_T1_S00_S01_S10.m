@@ -16,9 +16,6 @@ gmSEQ.plotting = 'T1_S00_S01_S10';
 cc2ns = 1000/384;
 ns2cc = 384/1000;
 
-cc2ns = 1;
-ns2cc = 1;
-
 m = gmSEQ.m;
 d = gmSEQ.post_init_wait; %AfterLaser
 u = gmSEQ.post_MW_wait; %AfterPulse
@@ -104,4 +101,6 @@ uploadSimpleProg(char(gmSEQ.name), ch);
 
 
 ApplyDelays();
+gmSEQ.CHN = ApplyFPGATimeCorrection(gmSEQ.CHN);
+
 

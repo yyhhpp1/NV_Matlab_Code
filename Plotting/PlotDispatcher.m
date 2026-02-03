@@ -15,6 +15,9 @@ switch plotting_method
     case 'T1_S00_S01_S10'
         raw_ax_plot_T1_S00_S01_S10(handles, raw_j)
         ave_ax_plot_T1_S00_S01_S10(handles, raw_j);
+    case 'f_PiCali_for_decay'
+        raw_ax_plot_general(handles, raw_j)
+        ave_ax_plot_PiCali(handles, raw_j)
     otherwise
         raw_ax_plot_general(handles, raw_j)
         ave_ax_plot_general(handles, raw_j);

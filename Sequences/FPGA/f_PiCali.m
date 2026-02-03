@@ -56,9 +56,10 @@ end
 max_gain = 2^15-1;
 gain = round(max_gain*gain_percent/100);
 uploadSimplePulse('+X', gSG.FPGAFreq7, gain, gmSEQ.pi, 0)
-seq1 = {['loop(' num2str(gmSEQ.misc) ', [+X])']};
+seq1 = {['loop(' num2str(gmSEQ.misc) ', [+X,5])']};
 ch = complieCHN({seq1});
 uploadSimpleProg('f_PiCali', ch);
 
 
 ApplyDelays();
+gmSEQ.CHN = ApplyFPGATimeCorrection(gmSEQ.CHN);

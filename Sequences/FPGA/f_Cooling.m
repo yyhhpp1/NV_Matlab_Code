@@ -1,4 +1,4 @@
-function f_Spin_Locking
+function f_Cooling
 global gmSEQ gSG
 gSG.bfixedPow = 1;
 gSG.bfixedFreq = 1;
@@ -11,30 +11,48 @@ gSG.bModSrc = 'External';
 cc2ns = 1000/(384);
 ns2cc = 1/cc2ns;
 
-
-
-dt= 0;
-
-
 gmSEQ.plotting = 'T1_S00_S01';
 gmSEQ.fitting = 'A_Exp_t';
 
-pre_init_wait = gmSEQ.post_init_wait + gmSEQ.post_MW_wait;
+
+N_0 = 20;
+N_c = 1000;
+N_p = 100; 
+a.cc = 0;
+d.cc = 1000; 
+u.cc = 1000;
+tw.cc = 0;
+l1.cc = 10000;
+l2.cc = 10000;
+l3.cc = 10000;
+h.cc = gmSEQ.halfpi;
+p.cc = gmSEQ.pi;
+g1.percent = 512;
+g2.percent = 512;
+t1.cc = 8;
+t2.cc = 6;
+
+%Time for each cooling cycle
+Tc.cc = l.cc + d.cc + 2 * h.cc + 2 * a.cc + u.cc + N_c * (t1.cc + t2.cc);
+
+%Time at the start of readout cycle of init laser
+Tr_start.cc = N0 * Tc.cc + tw_cc;
+
+%Time at the start of readout cycle of readout laser
+Tr.cc = Ti.cc + l.cc + d.cc + 2 * h.cc + 2*a.cc + u.cc + N_t * (t1.cc + t2.cc);
+
+%Time for the readout cycle
+Tr
 
 
-seq_len = round((gmSEQ.halfpi * 2 + gmSEQ.m + dt * 2) * cc2ns);
 
-
-T_green_1_start = pre_init_wait;
-T_green_2_start = T_green_1_start + gmSEQ.readout + pre_init_wait + seq_len;
-T_green_3_start = T_green_2_start + gmSEQ.readout + pre_init_wait + round(gmSEQ.pi * cc2ns);
-T_green_4_start = T_green_3_start + gmSEQ.readout + pre_init_wait + seq_len;
+pre_init_wait = gmSEQ.post_init_wait; %ns
 
 
 
 % Pulse Blaster
 gmSEQ.CHN(1).PBN = PBDictionary('ctr0');
-gmSEQ.CHN(1).NRise = 4;
+gmSEQ.CHN(1).NRise = ;
 
 gmSEQ.CHN(1).T = [T_green_1_start, T_green_2_start, T_green_3_start, T_green_4_start];
 gmSEQ.CHN(1).DT = [gmSEQ.CtrGateDur, gmSEQ.CtrGateDur, gmSEQ.CtrGateDur, gmSEQ.CtrGateDur];

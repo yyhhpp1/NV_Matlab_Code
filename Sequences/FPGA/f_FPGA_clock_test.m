@@ -75,7 +75,6 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [1000, 1000];
 uploadSimplePulse('+X', gSG.FPGAFreq7, gSG.FPGAGain7, gmSEQ.pi, 0)
 uploadSimplePulse('+X_fake', 100, 1,  200, 0)
 
-
 seq1 = {wait_cc,'+X'};
 %seq1 = {['loop(' num2str(loop_n) ',' '[' num2str(200) ', +X_fake])'],'+X'};
 ch = complieCHN({seq1});

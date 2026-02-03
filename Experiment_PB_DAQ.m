@@ -2683,8 +2683,9 @@ function symESR_Callback(hObject, eventdata, handles)
 f1  = str2num(handles.FROM1.String);
 f2  = str2num(handles.TO1.String);
 
-FROM1 = min(2.87*2-f1, 2.87*2-f2);
-TO1 = max(2.87*2-f1, 2.87*2-f2);
+center = 2.877; 
+FROM1 = min(center*2-f1, center*2-f2);
+TO1 = max(center*2-f1, center*2-f2);
 
 handles.FROM1.String = num2str(FROM1);
 handles.TO1.String = num2str(TO1);

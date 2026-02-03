@@ -35,6 +35,8 @@ switch varargin{1}
         f_Rabi();
     case 'f_PiCali'
         f_PiCali();
+    case 'f_PiCali_for_decay'
+        f_PiCali_for_decay();
     case 'f_PulsedESR'
         f_PulsedESR();
     case 'f_T1_S00_S01_S10'
@@ -69,6 +71,7 @@ StrL{numel(StrL)+1}='T1_S00_S01_S10';
 StrL{numel(StrL)+1}='--------------FPGA--------------';
 StrL{numel(StrL)+1}='f_Rabi';
 StrL{numel(StrL)+1}='f_PiCali';
+StrL{numel(StrL)+1}='f_PiCali_for_decay';
 StrL{numel(StrL)+1}='f_PulsedESR';
 StrL{numel(StrL)+1}='f_Ramsey';
 StrL{numel(StrL)+1}='f_Echo';
