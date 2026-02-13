@@ -1,2 +1,0 @@
-Port	ai1
-Log_Path	Data
