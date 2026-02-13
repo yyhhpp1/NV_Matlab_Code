@@ -2,16 +2,17 @@ function [popt, perr, x_plot, y_plot] = fit_T1_func(x,y)
 %%% Input
 % x: time in ms
 % y: normalzied data
-%%% Return
+%%% Return 
 % popt: optimized parameter
 % perr: fit error
 % x_plot, y_plot: data for plottinhg the fit
 
-func = @(p,x) exp(-p(1)*x);
 
-p0 = [2/max(x)];
-lb = [0];
-ub = [inf];
+func = @(p,x) p(2)*exp(-p(1)*x);
+
+p0 = [2/max(x), max(y)];
+lb = [0, 0];
+ub = [inf, 1];
 
 opts = optimoptions('lsqcurvefit', 'Display', 'off');
 [popt, ~, ~, ~, ~, ~, jacob] = lsqcurvefit(func, p0, x, y, lb, ub, opts);

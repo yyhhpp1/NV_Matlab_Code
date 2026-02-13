@@ -25,6 +25,8 @@ switch varargin{1}
         Rabi_Raman();
     case 'Rabi_SG2'
         Rabi_SG2();
+    case 'Rabi_composite'
+        Rabi_composite();
     case 'f_PiCali'
         f_PiCali();
     case 'f_InitDurCali'
@@ -51,6 +53,10 @@ switch varargin{1}
         f_Echo();
     case 'f_Rabi'
         f_Rabi();
+    case 'f_knill_rabi'
+        f_knill_rabi();
+    case 'f_CORPSE_rabi'
+        f_CORPSE_rabi();
     case 'f_PulsedESR'
         f_PulsedESR();        
     case 'f_T1'
@@ -114,7 +120,13 @@ switch varargin{1}
     case 'T1_S00_S01_S10_S11_S1m1'
         T1_S00_S01_S10_S11_S1m1();
     case 'T1_Test_Charge'
-        T1_Test_Charge();        
+        T1_Test_Charge(); 
+    case 'T1_charge_calib'    % prepares spin in equal superposition of 0, -1, 1
+        T1_charge_calib();
+    case 'T1_S00_S10_Sm10'    % average the three curves to get charge dynamics
+        T1_S00_S10_Sm10(); 
+    case 'T1_S00_S10_Sm10_fdc'    % six curves fixed duty cycle
+        T1_S00_S10_Sm10_fdc();
     case 'T1_Rb_S00_S01_Rd_newRef'
         T1_Rb_S00_S01_Rd_newRef();
     case 'T1_S00_R0_S01_R1_fixDutyCycle'
@@ -161,6 +173,8 @@ StrL{1} = 'Select Sequence';
 StrL{numel(StrL)+1}='--------------------FPGA--------------------';
 StrL{numel(StrL)+1}='f_PulsedESR';
 StrL{numel(StrL)+1}='f_Rabi';
+StrL{numel(StrL)+1}='f_knill_rabi';
+StrL{numel(StrL)+1}='f_CORPSE_rabi';
 StrL{numel(StrL)+1}='f_Echo';
 StrL{numel(StrL)+1}='f_T1';
 StrL{numel(StrL)+1}='f_FPGA_delay';
@@ -185,6 +199,7 @@ StrL{numel(StrL)+1}='ODMR_sweep';
 
 StrL{numel(StrL)+1}='Rabi';
 StrL{numel(StrL)+1}='Rabi_SG2';
+StrL{numel(StrL)+1}='Rabi_composite';
 StrL{numel(StrL)+1}='Rabi_IQ';
 StrL{numel(StrL)+1}='Rabi_fix_MWDutyCycle';
 
@@ -204,6 +219,9 @@ StrL{numel(StrL)+1}='T1_S00_S01_fdc';
 StrL{numel(StrL)+1}='T1_S00_S01_S10';
 StrL{numel(StrL)+1}='T1_S11_S1m1';
 StrL{numel(StrL)+1}='T1_Test_Charge';
+StrL{numel(StrL)+1}='T1_charge_calib';
+StrL{numel(StrL)+1}='T1_S00_S10_Sm10';
+StrL{numel(StrL)+1}='T1_S00_S10_Sm10_fdc';
 StrL{numel(StrL)+1}='T1_Rb_S00_S01_Rd_newRef';
 StrL{numel(StrL)+1}='T1_S00_R0_S01_R1_fixDutyCycle';
 StrL{numel(StrL)+1}='T1_S00_S01_S10_S11';

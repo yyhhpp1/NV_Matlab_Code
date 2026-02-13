@@ -28,7 +28,7 @@ for i_seq = 1:length(seqs_to_run)
         filename = strcat('C:\Users\dilution_fridge_2\Desktop\T1_SemiAuto_Saves\',name);
         filename = replace(filename, '.txt', '.png');
         filename_char = filename{1};
-        imwrite(getframe(handles.figure1).cdata, filename_char)
+        imwrite(getframe(handles.figure1).cdata, filename_char);
         
         % upload saved GUI figure to slack
         if handles2.slackUploadFlag.Value
@@ -38,7 +38,7 @@ for i_seq = 1:length(seqs_to_run)
 
             % Add it to Python's module search path if not already there
             if count(py.sys.path, scriptFolder) == 0
-                insert(py.sys.path, int32(0), scriptFolder)
+                insert(py.sys.path, int32(0), scriptFolder);
             end
             
             py.slack_upload_v2.upload_and_cleanup(filename_char, message, default_keep);
@@ -118,8 +118,8 @@ elseif strcmp(which, 'Rabi2')
 elseif strcmp(which, 'T11')
     
     %Split the sweep range to two parts: 1/4, 3/4 of total sweep range
-    t0 = str2double(h.startT1.String);
-    t1 =str2double(h.stopT1.String);
+    t0 = str2double(h.startT12.String);
+    t1 =str2double(h.stopT12.String);
     tr = t1 - t0;
     FROM1 = t0;
     TO1 = t0 + round(tr/4, -3);
@@ -129,17 +129,18 @@ elseif strcmp(which, 'T11')
     seq.name = 'T1_S11_S1m1'; %T1_S00_S01_S10_S11_S1m1, T1_S11_S1m1
     seq.FROM1 = num2str(FROM1);
     seq.TO1 = num2str(TO1);
-    seq.SweepNPoints= h.nPtsT1.String;
+    seq.SweepNPoints= h.nPtsT12.String;
     seq.fixPow = h.MWPowerRabi.String;
     seq.fixPow2 = h.MWPowerRabi2.String;
-    seq.Repeat = h.RepeatT1.String;
-    seq.Average =  h.maxAveT1.String;
+    seq.Repeat = h.RepeatT12.String;
+    seq.Average =  h.maxAveT12.String;
     seq.useSG2 = 1;
     
     seq.bSweep2 = 1;
     seq.FROM2 = num2str(FROM2);
     seq.TO2 = num2str(TO2);
-    seq.SweepNPoints2 = h.nPtsT1.String;
+    %seq.SweepNPoints2 = h.nPtsT12.String;
+    seq.SweepNPoints2 = 5;
     
     seq.DEERpi = sprintf('%.0f', gmSEQ.RabiFitPi);
 elseif strcmp(which, 'T00')
@@ -166,8 +167,8 @@ elseif strcmp(which, 'T00')
     seq.bSweep2 = 1;
     seq.FROM2 = num2str(FROM2);
     seq.TO2 = num2str(TO2);
-    seq.SweepNPoints2 = h.nPtsT1.String;
-    
+    %seq.SweepNPoints2 = h.nPtsT1.String;
+    seq.SweepNPoints2 = 5;
 else
     disp('you should not be here')
 end

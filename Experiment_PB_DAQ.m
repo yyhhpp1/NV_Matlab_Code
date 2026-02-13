@@ -22,7 +22,7 @@ function varargout = Experiment_PB_DAQ(varargin)
 
 % Edit the above text to modify the response to help Experiment_PB_DAQ
 
-% Last Modified by GUIDE v2.5 20-Jun-2025 14:57:39
+% Last Modified by GUIDE v2.5 02-Jul-2025 18:41:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2711,3 +2711,12 @@ function useSG2_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of useSG2
+
+
+% --- Executes on button press in bSlackUpload.
+function bSlackUpload_Callback(hObject, eventdata, handles)
+% hObject    handle to bSlackUpload (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of bSlackUpload

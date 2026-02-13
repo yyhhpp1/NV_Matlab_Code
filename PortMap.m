@@ -24,18 +24,21 @@ switch what
     case 'SG com 3'
         path='com10';
     case 'meas'
-        path='SPCM';
-        %path='APD';
+        %path='SPCM';
+        path='APD';
     case 'meas2'
-        path='PD0 not connected';      
+        %path='PD0';
+        path = 'none';
     case 'meas3'
-        path='PD1 not connected';
+        %path='PD1';
+        path = 'none';
     case 'SPCM'
-        path='/Dev1/PFI0';
+        path='/Dev1/PFI0'; %DF
+        %path='/Dev1/PFI6'; %RT
     case 'gConfocal path'
         path='C:\MATLAB_Code\Sets\';
     case 'APD in'
-        path='Dev1/ai2';
+        path='Dev1/ai3';
     case 'PD0 in'
         path='Dev1/ai0';
     case 'PD1 in'
@@ -65,7 +68,8 @@ switch what
     case 'Data'
         path='D:\Data\';
     case 'Ctr src'  % SPCM0
-        path='/Dev1/PFI0';
+        path='/Dev1/PFI0'; %DF
+        % path='/Dev1/PFI6'; %RT
     case 'Ctr src 1'  % SPCM1
         path='/Dev1/PFI4';
     case 'Ctr src 2'  % SPCM2
@@ -85,7 +89,7 @@ switch what
     case 'FPGA Host'
         path = '192.168.0.234';
     case 'FPGA Port'
-        path = 2345;
+        path = 1234;
     case 'attocube_motor_host'      % attocube motor controller
         path = '192.168.0.200';
     case 'magnet_611_x'             % dilfridge superconducting magnet

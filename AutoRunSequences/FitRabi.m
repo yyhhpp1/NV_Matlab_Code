@@ -59,8 +59,8 @@ piTime = (pi - phi)/(2*pi*popt(2));
 piTime_err = 1/(2*pi*popt(2))*sqrt(perr(3)^2 + (pi - phi)^2/(popt(2)^2)*perr(2)^2);
 piHalfTime = (pi/2 - phi)/(2*pi*popt(2));
 piHalfTime_err =  1/(2*pi*popt(2))*sqrt(perr(3)^2 + (pi/2 - phi)^2/(popt(2)^2)*perr(2)^2);
-fit_text = sprintf('Pi Time = %.1f ± %.1f ns\nPi/2 Time = %.1f ± %.1f ns\nFreq = %.2f ± %.2f MHz\nC = %.1f ± %.1f%%',...
-    piTime, piTime_err, piHalfTime, piHalfTime_err, freq, freq_err, contrast, contrast_err);
+fit_text = sprintf('Pi Time = %.1f ± %.1f ns\nPi/2 Time = %.1f ± %.1f ns\nFreq = %.2f ± %.2f MHz\nPhase = %.2f ± %.2f\nC = %.1f ± %.1f%%',...
+    piTime, piTime_err, piHalfTime, piHalfTime_err, freq, freq_err, phi, phi_err, contrast, contrast_err);
 
 hold(handles.axes3, 'on');
 

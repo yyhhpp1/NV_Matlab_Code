@@ -38,8 +38,11 @@ data = sig./ref;
 ref_err = 1./sqrt(gmSEQ.iAverage * ref); % Relative error of reference
 sig_err = 1./sqrt(gmSEQ.iAverage * sig); % Relative error of signal
 rel_err = sqrt(ref_err.^2 + sig_err.^2);
-data_err = rel_err .* data;
-
+if strcmp(gmSEQ.meas, 'APD')
+    data_err = rel_err * 0;
+else
+    data_err = rel_err .* data;
+end
 errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT, data, data_err,...
     'LineStyle', '-', ...
     'Marker', 'o',...

@@ -1,1 +1,1 @@
-{"name":"f_XY4","prog_structure":{"ch7":"[+Xhalf,loop(11,[176,+X,352,+Y,352,+Y,352,+X,176]),+Xhalf,22308,+X,22308,+Xhalf,loop(11,[176,+X,352,+Y,352,+Y,352,+X,176]),-Xhalf]"}}
+{"name":"f_XY4","prog_structure":{"ch7":"[+Xhalf,loop(1,[100,+X,200,+Y,200,+Y,200,+X,100]),+Xhalf,4615,+X,4615,+Xhalf,loop(1,[100,+X,200,+Y,200,+Y,200,+X,100]),-Xhalf]"}}

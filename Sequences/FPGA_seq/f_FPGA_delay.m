@@ -39,8 +39,8 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).T = [0, ...
     T_initial_wait+gmSEQ.readout-20];
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [20, 20];
 
-uploadSimplePulse('+X', gSG.FPGAFreq, gSG.FPGAGain, gmSEQ.pi, 0)
-uploadPeriodicPulse('pX', gSG.FPGAFreq, 0, 0)
+uploadSimplePulse('+X', gSG.FPGAFreq7, gSG.FPGAGain7, gmSEQ.pi, 0)
+uploadPeriodicPulse('pX', gSG.FPGAFreq7, 0, 0)
 seq1 = {'+Xhalf'};
 seq2 = {'pX'};
 ch = complieCHN({seq1,seq2});

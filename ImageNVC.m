@@ -22,7 +22,7 @@ function varargout = ImageNVC(varargin)
 
 % Edit the above text to modify the response to help ImageNVC
 
-% Last Modified by GUIDE v2.5 06-Jun-2025 17:20:03
+% Last Modified by GUIDE v2.5 06-Nov-2025 10:38:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2923,3 +2923,49 @@ function user_attocube_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of user_attocube
+
+
+% --- Executes on button press in multiScanStart.
+function multiScanStart_Callback(hObject, eventdata, handles)
+% hObject    handle to multiScanStart (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.multiScanStop.UserData = 0;
+ImageFunctionPool('multiScan',hObject, eventdata, handles);
+
+
+% --- Executes on button press in multiScanStop.
+function multiScanStop_Callback(hObject, eventdata, handles)
+% hObject    handle to multiScanStop (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.multiScanStop.UserData = 1;
+
+% --- Executes on button press in squareScan.
+function squareScan_Callback(hObject, eventdata, handles)
+% hObject    handle to squareScan (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+ ImageFunctionPool('SquareScan',hObject, eventdata, handles);
+
+
+function squareScanSize_Callback(hObject, eventdata, handles)
+% hObject    handle to squareScanSize (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of squareScanSize as text
+%        str2double(get(hObject,'String')) returns contents of squareScanSize as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function squareScanSize_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to squareScanSize (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

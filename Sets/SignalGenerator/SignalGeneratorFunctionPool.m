@@ -106,7 +106,7 @@ global gSG
 
 function WritePow()
 global gSG
-if gSG.Pow>0
+if gSG.Pow>10    % changed from 0 to 5 (9/26/25 cliu)
     error('Microwave amplitude is probably too large')
 end  
 writeline(gSG.device, strcat('AMPR ', num2str(gSG.Pow)));
@@ -187,7 +187,7 @@ end
 function RFOnOff()
 global gSG
 
-if (gSG.Pow>0 && ~strcmp(gSG.bMod,'IQ')) % || (strcmp(gSG.bMod,'IQ') && strcmp(gSG.bModSrc,'Noise'))
+if (gSG.Pow>10 && ~strcmp(gSG.bMod,'IQ')) || isnan(gSG.Pow)% || (strcmp(gSG.bMod,'IQ') && strcmp(gSG.bModSrc,'Noise'))
     fclose(gSG.device);
     error('NO ONE MAN SHOULD HAVE ALL THAT POWER')
 end

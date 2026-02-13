@@ -8,8 +8,8 @@ cmp = tab10(10);
 colors = {cmp(1,:),cmp(2,:),cmp(3,:),cmp(4,:),cmp(5,:),cmp(6,:),cmp(7,:)};
 labels = ["S_{0,0}","S_{0,-1}","S_{-1,0}", "Ref_B","Ref_D"];
 ctrShow = [2,5,8];%S11, S1m1
-refB_mean = (gmSEQ.signal(1, :)+gmSEQ.signal(4, :)+gmSEQ.signal(7, :))/2;
-refD_mean = (gmSEQ.signal(3, :)+gmSEQ.signal(6, :)+gmSEQ.signal(9, :))/2;
+refB_mean = (gmSEQ.signal(1, :)+gmSEQ.signal(4, :)+gmSEQ.signal(7, :))/3;
+refD_mean = (gmSEQ.signal(3, :)+gmSEQ.signal(6, :)+gmSEQ.signal(9, :))/3;
 ct = 1;
 for i = ctrShow
     plot(handles.axes2,...
@@ -52,21 +52,27 @@ for jj = 1:length(gmSEQ.signal(:,1))
     signal(jj,:) = gmSEQ.signal(jj, ~isnan(gmSEQ.signal(jj,:)));
 end
 
-refB11 = signal(1,:);
-sig11 = signal(2,:);
-refD11 = signal(3,:);
-refB1m1 = signal(4,:);
-sig1m1 = signal(5,:);
-refD1m1 = signal(6,:);
+refB00 = signal(1,:);
+sig00 = signal(2,:);
+refD00 = signal(3,:);
+refB01 = signal(4,:);
+sig01 = signal(5,:);
+refD01 = signal(6,:);
+refB10 = signal(7,:);
+sig10 = signal(8,:);
+refD10 = signal(9,:);
 
 %S11-S1m1
-sig = sig11 - sig1m1;
-ref = (refB11+refB1m1)/2 - (refD11+refD1m1)/2;
+sig = sig00 - sig01;
+ref = (refB00+refB01)/2;
 data = sig./ref;
 ref_err = 1./sqrt(gmSEQ.iAverage * abs(ref)); % Relative error of reference
 sig_err = 1./sqrt(gmSEQ.iAverage * abs(sig)); % Relative error of signal
 rel_err = sqrt(ref_err.^2 + sig_err.^2);
 data_err = rel_err .* data;
+if strcmp(gmSEQ.meas,'APD')
+    data_err = rel_err .* 0;
+end
 
 
 cmp2 = tab20(20);

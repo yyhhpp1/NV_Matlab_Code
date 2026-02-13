@@ -9,7 +9,8 @@ switch type
     case 'dummy1'
         pbn=8;
     case 'GreenAOM'    % Green AOM
-        pbn=1;
+        pbn=7;
+        %pbn=1;
     case 'RedAOM' 
         pbn=4;
     case 'MWSwitch'

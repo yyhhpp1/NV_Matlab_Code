@@ -734,7 +734,7 @@ end
 filename = strcat('C:\Users\dilution_fridge_2\Desktop\T1_SemiAuto_Saves\',name);
 filename = replace(filename, '.txt', '.png');
 filename_char = filename{1};
-imwrite(getframe(handles.figure1).cdata, filename_char)
+imwrite(getframe(handles.figure1).cdata, filename_char);
 
 % upload saved GUI figure to slack
 message = [char(handlesT1.slackUploadText.String) '. Current sequence is still running.'];
@@ -743,7 +743,7 @@ scriptFolder = 'C:\Matlab_Code\AutoRunSequences';
 
 % Add it to Python's module search path if not already there
 if count(py.sys.path, scriptFolder) == 0
-    insert(py.sys.path, int32(0), scriptFolder)
+    insert(py.sys.path, int32(0), scriptFolder);
 end
 
 py.slack_upload_v2.upload_and_cleanup(filename_char, message, default_keep);

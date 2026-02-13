@@ -177,7 +177,8 @@ end
 % gSG3.bModSrc='External';
 % SignalGeneratorFunctionPool3('SetMod');
 
-% gmSEQ.meas='APD';
+gmSEQ.meas2=PortMap('meas2');
+gmSEQ.meas3=PortMap('meas3');
 
 function LoadSEQ(hObject, eventdata, handles,ax)
 global gmSEQ

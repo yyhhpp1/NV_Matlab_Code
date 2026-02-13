@@ -1,12 +1,13 @@
 function ApplyDelays
 global gmSEQ 
-green_aom_delay = 640; % 520 nm AOM
+%green_aom_delay = 640; % 520 nm AOM
+green_aom_delay = 200; % 520 nm Laser 
 orange_aom_delay = 1200;  % 594 nm AOM
 red_aom_delay = 100; % 637 nm AOM
 
 if strcmp(gmSEQ.meas,'APD')
-    % detector_delay=-1100+610;
-    detector_delay=10000;
+    detector_delay=-1100+610;
+    %detector_delay=10000;
 else
     detector_delay=0;
 end

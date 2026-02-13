@@ -529,7 +529,7 @@ eventdataA = handles.eventdataA;
 handlesB = handles;
 
 % Save current inputs
-savestate(handles)
+%savestate(handles)
 
 % Call T1_SemiAuto_Program
 T1_SemiAuto_Program(hObjectA, eventdataA, handlesA, handlesB);
@@ -1174,7 +1174,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 function T1_SemiAuto_ParamInput_CloseRequestFcn(hObject, eventdata, handles)
-    savestate(handles)
+    %savestate(handles)
     delete(hObject);
 
 function savestate(handles)

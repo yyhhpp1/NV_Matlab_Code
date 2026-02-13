@@ -71,13 +71,23 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
     SignalGeneratorFunctionPool('SetMod');
     SignalGeneratorFunctionPool('WritePow');
     SignalGeneratorFunctionPool('WriteFreq');
-    gSG.bOn=1;  SignalGeneratorFunctionPool('RFOnOff');
+    if startsWith(gmSEQ.name, 'f_')
+       gSG.bOn = 0;
+    else
+       gSG.bOn = 1;
+    end
+    SignalGeneratorFunctionPool('RFOnOff');
     
     if handles.useSG2.Value
         SignalGeneratorFunctionPool2('SetMod');
         SignalGeneratorFunctionPool2('WritePow');
         SignalGeneratorFunctionPool2('WriteFreq');
-        gSG2.bOn=1;  SignalGeneratorFunctionPool2('RFOnOff');
+        if startsWith(gmSEQ.name, 'f_')
+            gSG2.bOn = 0;
+        else
+            gSG2.bOn = 1;
+        end
+        SignalGeneratorFunctionPool2('RFOnOff');
     end
     
     CreateCaliLog(hObject, eventdata, handles);
@@ -243,7 +253,13 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                         PlotT1Data_method3(handles,raw_j)
                     elseif strcmp(gmSEQ.name, 'T1_S00_S01_S10')
                         PlotT1Data_method4(handles,raw_j)
-                    elseif strcmp(gmSEQ.name, 'Rabi')||strcmp(gmSEQ.name, 'Rabi_SG2')
+                    elseif strcmp(gmSEQ.name, 'T1_S00_S10_Sm10')   % average the three curves to get charge decay
+                        PlotT1DataAveCharge(handles,raw_j)  
+%                     elseif strcmp(gmSEQ.name, 'T1_S00_S10_Sm10_fdc')   % average the three curves to get charge decay
+%                         PlotT1DataAveChargeFDC(handles,raw_j)
+                    elseif strcmp(gmSEQ.name, 'T1_charge_calib')
+                        PlotT1DataOnlyCharge(handles,raw_j)
+                    elseif strcmp(gmSEQ.name, 'Rabi')||strcmp(gmSEQ.name, 'Rabi_SG2')||strcmp(gmSEQ.name, 'Rabi_composite')
                         PlotRabiData(handles,raw_j)
                         if get(handles.bShowLegend,'Value')
                             FitRabi(handles);
@@ -265,6 +281,10 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
             end
             SaveIgorText_Average(handles);
             SaveIgorText(handles);
+            
+            if handles.bSlackUpload.Value
+                save_and_upload_GUI_figure(handles, 'Current sequence is still running.')
+            end
             
             if ~gmSEQ.bGo || ~gmSEQ.bGoAfterAvg
                 break
@@ -288,6 +308,9 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
     end
     if gmSEQ.bTrack
         PBFunctionPool('PBON',2^SequencePool('PBDictionary','AOM'));
+    end
+    if handles.bSlackUpload.Value
+        save_and_upload_GUI_figure(handles, 'Current sequence is finished.')
     end
     
     
@@ -324,11 +347,12 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
             [ ~, hScan ] = DAQmxFunctionPool('WriteAnalogVoltage',PortMap('SG ext mod'),vec, NN,gmSEQ.NSweepParam*gSG.sweepRate);
             hCPS.hScan=hScan;
             %%%%% Create counting channel %%%%
-            [~, hCounter] = SetNCounters(0,NN,'/Dev2/PFI13',gmSEQ.NSweepParam*gSG.sweepRate);
+            [~, hCounter] = SetNCounters(0,NN,'/Dev1/PFI13',gmSEQ.NSweepParam*gSG.sweepRate);
             hCPS.hCounter=hCounter;
             gmSEQ.iAverage=i;
             handles.biAverage.String=num2str(gmSEQ.iAverage);
-            status = DAQmxStartTask(hScan);  DAQmxErr(status);            status = DAQmxStartTask(hCounter);  DAQmxErr(status);
+            status = DAQmxStartTask(hScan);  DAQmxErr(status);            
+            status = DAQmxStartTask(hCounter);  DAQmxErr(status);
             status = DAQmxStartTask(hPulse);    DAQmxErr(status);
             
             [~, A] = ReadCountersN(hCounter,NN, gmSEQ.misc*1.1);
@@ -386,11 +410,17 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
     gmSEQ.refCounts=Track('Init');
     SignalGeneratorFunctionPool('SetMod');
     SignalGeneratorFunctionPool('WritePow');
-    gSG.bOn=1; SignalGeneratorFunctionPool('RFOnOff');
+    if startsWith(gmSEQ.name, 'f_')
+       gSG.bOn = 0;
+    else
+       gSG.bOn = 1;
+    end
+    SignalGeneratorFunctionPool('RFOnOff');
     gmSEQ.SweepParam=gmSEQ.SweepParam*1e9;
     CreateCaliLog(hObject, eventdata, handles);
     
-    gmSEQ.bTomo = gmSEQ.Alternate;
+    %gmSEQ.bTomo = gmSEQ.Alternate;
+    gmSEQ.bTomo = 0; %tomograph measurement is depreicated on this setup
     if gmSEQ.bTomo
         gmSEQ.dataN = 3*gmSEQ.ctrN;
         disp("Tomographical measurement ongoing...")
@@ -475,8 +505,11 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
                 end
                 
             end
+            
+            
             SaveIgorText(handles);
             SaveIgorText_Average(handles);
+           
             
             if ~gmSEQ.bGo || ~gmSEQ.bGoAfterAvg
                 break
@@ -821,7 +854,8 @@ if ~isfield(gmSEQ,'bLiO')&&gmSEQ.ctrN~=1 % Do not plot ESR
             errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data2)).*gmSEQ.ScaleT, data2, data_err2,'-b')
             hold(handles.axes3,'off')             
         else
-            errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT, data, data_err,'-g')
+            %errorbar(handles.axes3, gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT, data, data_err,'-g')
+            plot(handles.axes3, gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT, data,'-g')
         end
     end
     grid on;
@@ -1307,6 +1341,28 @@ if get(handles.bShowLegend,'Value')
     legend(handles.axes2, 'Location', 'best')
     legend(handles.axes3, 'Location', 'best')
 end
+
+
+function save_and_upload_GUI_figure(handles, message)
+global gSaveDataAve
+% save the main exp GUI figure
+
+name = gSaveDataAve.file;
+filename = strcat('C:\Users\dilution_fridge_2\Desktop\T1_SemiAuto_Saves\',name);
+filename = replace(filename, '.txt', '.png');
+filename_char = filename{1};
+imwrite(getframe(handles.figure1).cdata, filename_char)
+
+% upload saved GUI figure to slack
+default_keep = int32(100); %keep only 100 uploads
+scriptFolder = 'C:\Matlab_Code\AutoRunSequences';
+
+% Add it to Python's module search path if not already there
+if count(py.sys.path, scriptFolder) == 0
+    insert(py.sys.path, int32(0), scriptFolder)
+end
+
+py.slack_upload_v2.upload_and_cleanup(filename_char, message, default_keep);
 
 
 

@@ -50,11 +50,13 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).T = [0, ...
     T_initial_wait + gmSEQ.readout + T_AfterLaser + gmSEQ.To + T_AfterPulse];
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = [1000, 1000];
 
-uploadSimplePulse('+X', gSG.FPGAFreq7, gSG.FPGAGain7, gmSEQ.m, 0)
-uploadPeriodicPulse('pX', gSG.FPGAFreq7, 0, 0)
+uploadSimplePulse('+X', gSG.FPGAFreq7, gSG.FPGAGain7, gmSEQ.m, 0);
+uploadSimplePulse('+X2', gSG.FPGAFreq6, gSG.FPGAGain6, gmSEQ.m, 15);
+% uploadPeriodicPulse('pX', gSG.FPGAFreq7, 0, 0)
 seq1 = {'+X'};
+seq2 = {'+X2'};
 %seq2 = {'pX'};
-ch = complieCHN({seq1});
+ch = complieCHN({seq1,seq2});
 uploadSimpleProg('f_Rabi', ch);
 
 

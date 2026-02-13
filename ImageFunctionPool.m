@@ -82,10 +82,281 @@ switch what
         WriteVoltage(varargin{1},varargin{2});
     case 'UpdateVoltage'
         UpdateVoltage1(hObject, eventdata, handles);
-    case 'attoAutoScan'
-        attoAutoScan(hObject, eventdata, handles);
+    case 'multiScan'
+        multi_scan_closedloop(hObject, eventdata, handles);
+    case 'SquareScan'
+        SquareScan(hObject, eventdata, handles)
     otherwise
 end
+
+function multi_scan_openloop(hObject, eventdata, handles)
+% Serpentine raster with (0,0)=no movement, single nested loop, flip Y each column.
+% Log CSV goes to a user-chosen folder.
+
+global gPiezo gSaveImg
+
+amc = gPiezo.amc;  x = 0;  y = 1;
+
+% ==== USER SETTINGS ====
+Nsteps = 50;   % motor steps per grid step
+Nx     = 8;   % ix = 0..Nx-1
+Ny     = 8;   % iy = 0..Ny-1
+logDir = 'MultiImageScanLog\';  % set a fixed path string to skip dialog, e.g. 'D:\NV\logs'
+
+% ==== Hardware prep ====
+control_setControlAmplitude(amc, x, 60000);
+control_setControlAmplitude(amc, y, 60000);
+control_setControlOutput(amc, x, true);
+control_setControlOutput(amc, y, true);
+
+% ==== Choose / open log (independent of data save path) ====
+if isempty(logDir) || ~isfolder(logDir)
+    p = uigetdir(pwd,'Choose folder to save multi_scan log');
+    if isequal(p,0), p = pwd; end
+    logDir = p;
+end
+if ~isfolder(logDir), mkdir(logDir); end
+ts = datestr(now,'yyyymmdd_HHMMSS');
+logFile = fullfile(logDir, sprintf('multi_scan_log_%s.csv', ts));
+
+[fid,msg] = fopen(logFile,'a');
+if fid == -1, error('Could not open log file: %s', msg); end
+cleanupObj = onCleanup(@() fclose(fid));
+fprintf(fid,'timestamp,ix,iy,file\n');
+
+% ======== Raster Scan ========
+% Start at (0,0) grid
+y_dir_plus = true;  % scan 0->Ny-1 on first column
+i_scan = 1;
+for ix = 0:(Nx-1)
+    for k = 0:(Ny-1)
+        % Move Y one step in the current direction, except for the first pixel of the column.
+        if k > 0
+            move_setNSteps(amc, y, y_dir_plus, Nsteps);
+        end
+
+        % Compute the logical iy index being imaged (for the log).
+        if y_dir_plus
+            iy = k;               % 0,1,2,... upward
+        else
+            iy = (Ny-1) - k;      % Ny-1,...,1,0 downward
+        end
+
+        % Scan and log this pixel
+        fprintf('\n----- Starting scan %.d / %.d------\n', i_scan, Nx*Ny)
+        
+        TrackZ(hObject, eventdata, handles);
+        ImageScan('Scan',hObject, eventdata, handles);
+        ImageSaveImage('Save',hObject, eventdata, handles);
+        savedPath = gSaveImg.CurrentFullPath;  % full path to the saved data file
+        fprintf(fid, '%s,%d,%d,%s\n', datestr(now,'yyyy-mm-ddTHH:MM:SS.FFF'), ix, iy, savedPath);
+        if handles.multiScanStop.UserData == 1, return; end
+        
+        i_scan = i_scan + 1;
+    end
+
+    % Move to the next column in +X and flip Y direction (except after the last column).
+    if ix < (Nx-1)
+        move_setNSteps(amc, x, true, Nsteps);  % +X
+        y_dir_plus = ~y_dir_plus;               % flip Y direction for next column
+    end
+end
+% ======== Ask user whether to return to (0,0) motor origin ========
+choice = questdlg('Return to starting motor position?', ...
+                  'Return to Origin', ...
+                  'Yes','No','Yes');
+
+switch choice
+    case 'Yes'
+        % Move back down Y to 0
+        % Determine how many Y steps needed based on last iy
+        if y_dir_plus
+            % last scan direction was upward → iy ends at Ny-1
+            stepsY = Ny-1;
+            for s = 1:stepsY
+                move_setNSteps(amc, y, false, Nsteps);  % -Y
+                pause(0.3)
+            end
+        else
+            % last scan direction was downward → iy ends at 0
+            % No Y movement needed
+        end
+
+        % Move back X to 0
+        stepsX = Nx-1;
+        for s = 1:stepsX
+            move_setNSteps(amc, x, false, Nsteps);  % -X
+            pause(0.3)
+        end
+
+        msgbox('Returned to starting position.','Done');
+    otherwise
+        % do nothing
+        msgbox('Motor position not reset.','Done');
+end
+
+function multi_scan_closedloop(hObject, eventdata, handles)
+% Closed-loop serpentine raster scan.
+% User specifies (x_start,x_stop,Nx) and (y_start,y_stop,Ny).
+% Log stores absolute physical motor coordinates (in microns).
+
+global gPiezo gSaveImg
+amc = gPiezo.amc;  X = 0;  Y = 1; Z = 2;
+
+% ==============================================================
+% ---------------------- USER SETTINGS -------------------------
+% ==============================================================
+% x_start = 5250.8;      % microns
+% x_stop  = 2270;    % microns
+% Nx      = 20;      % number of x scan positions
+% 
+% y_start = 2697.0;      % microns
+% y_stop  = 5535.4;    % microns
+% Ny      = 20;      % number of y scan positions
+
+
+% 1/4-size image scan range (same number of tiles)
+x_start = 4505.6;
+x_stop  = 3015.2;
+
+y_start = 3406.6;
+y_stop  = 4825.8;
+
+Nx = 15;
+Ny = 15;
+
+
+z_idle = 3900; % safe position for z so it doesn't bump into diamond
+
+logDir = 'MultiImageScanLog\';
+
+% Build grid
+x_list = linspace(x_start, x_stop, Nx);
+y_list = linspace(y_start, y_stop, Ny);
+
+% ==============================================================    
+% ------ Prepare closed-loop mode (user-specific commands) -----
+% ==============================================================
+control_setControlAmplitude(amc, X, 60000);
+control_setControlAmplitude(amc, Y, 60000);
+control_setControlOutput(amc, X, true);
+control_setControlOutput(amc, Y, true);
+control_setControlOutput(amc, Z, true);
+
+% ==============================================================
+% ------------------ Prepare log file --------------------------
+% ==============================================================
+if isempty(logDir) || ~isfolder(logDir)
+    p = uigetdir(pwd, 'Choose folder to save multi_scan log');
+    if isequal(p,0), p = pwd; end
+    logDir = p;
+end
+if ~isfolder(logDir), mkdir(logDir); end
+
+ts = datestr(now,'yyyymmdd_HHMMSS');
+logFile = fullfile(logDir, sprintf('closedloop_scan_log_%s.csv', ts));
+
+[fid,msg] = fopen(logFile,'a');
+if fid == -1, error('Could not open log file: %s', msg); end
+cleanupObj = onCleanup(@() fclose(fid));
+
+fprintf(fid,'timestamp,ix, iy, x_um,y_um,file\n');
+
+% ==============================================================
+% --------------------- RASTER SCAN ----------------------------
+% ==============================================================
+y_dir_plus = true;         % serpentine flag
+scan_count = 1;
+total_scans = Nx * Ny;
+
+fprintf("\n===== CLOSED LOOP MULTI-SCAN START =====\n");
+
+atto_Move(amc,X,x_start)
+atto_Move(amc,Y,y_start)
+
+first_time_flag = true;
+for ix = 1:Nx
+    % Choose y order depending on serpentine direction
+    if y_dir_plus
+        y_scan_list = y_list;
+    else
+        y_scan_list = fliplr(y_list);
+    end
+    
+    if ~first_time_flag
+        x_target = x_list(ix);
+        atto_Move(amc,Z,z_idle);
+        atto_Move(amc,X,x_target);
+        
+    else
+        x_target = x_start;
+        first_time_flag = false;
+
+    end
+
+    for iy_local = 1:Ny
+        y_target = y_scan_list(iy_local);
+
+        fprintf('\n----- Starting scan %d / %d at (%.1f, %.1f um) -----\n',...
+                scan_count, total_scans, x_target, y_target);
+
+        % ======================================================
+        % Move using closed-loop absolute positioning
+        % ======================================================
+        atto_Move(amc,Z,z_idle);    % keep safe distance
+
+        atto_Move(amc,Y,y_target);
+
+        % ======================================================
+        % Scan sequence
+        % ======================================================
+        TrackZ(hObject, eventdata, handles);
+        ImageScan('Scan', hObject, eventdata, handles);
+        ImageSaveImage('Save', hObject, eventdata, handles);
+
+        savedPath = gSaveImg.CurrentFullPath;
+        
+        % Compute the true iy index
+        if y_dir_plus
+            iy = iy_local - 1;
+        else
+            iy = (Ny - iy_local);
+        end
+        ix0 = ix - 1;
+        
+        % Log
+        fprintf(fid, '%s,%d,%d,%.3f,%.3f,%s\n', ...
+            datestr(now,'yyyy-mm-ddTHH:MM:SS.FFF'), ...
+            ix0, iy, x_target, y_target, savedPath);
+
+        if handles.multiScanStop.UserData == 1
+            fprintf("User stopped scanning.\n");
+            return;
+        end
+
+        scan_count = scan_count + 1;
+    end
+    % Flip serpentine direction for next x column
+    y_dir_plus = ~y_dir_plus;
+end
+
+fprintf("\n===== CLOSED LOOP MULTI-SCAN COMPLETE =====\n");
+
+% ==============================================================
+% Ask if return to origin
+% ==============================================================
+choice = questdlg('Return to (x_start, y_start)?', ...
+                  'Return to Origin', 'Yes','No','Yes');
+
+if strcmp(choice,'Yes')
+    fprintf("Returning to origin...\n");
+    atto_Move(amc,X,x_start)
+    atto_Move(amc,Y,y_start)
+    msgbox('Returned to starting motor position.');
+else
+    msgbox('Motor position not reset.');
+end
+
 
 function CPS_final = NewTrackFast(hObject, eventdata, handles)
 dx = 0.030;
@@ -916,7 +1187,7 @@ function helper_scan_attocube(hObject, eventdata, handles, amc, axis, Nstep, thr
            go_bkw = ~go_bkw;
            move_setNSteps(amc, axis, go_bkw, Nstep);
 %            pause(1)
-           disp("change_dir");
+           %disp("change_dir");
            break
         end
         
@@ -966,7 +1237,7 @@ if using_attocube
         %%% coarse scan
         coarse_thresh = 0.01; % stop scan if percentage change in photon count is 5%
         helper_scan_attocube(hObject, eventdata, handles, amc, axis, Nstep_coarse, coarse_thresh);
-        disp("done coarse z scan")
+        %disp("done coarse z scan")
         
         % set to fine amplitude
         control_setControlAmplitude(amc, axis, fine_amp); 
@@ -974,7 +1245,7 @@ if using_attocube
         %%% fine scan
         fine_thresh = 0.001; % fine scan thresh
         helper_scan_attocube(hObject, eventdata, handles, amc, axis, Nstep_fine, fine_thresh);
-        disp("done fine z scan");
+        %disp("done fine z scan");
         
     catch ME
         KillAllTasks;
@@ -1039,7 +1310,7 @@ else    % else we are using the RT set up, use the following piezo
     end
 end
 
-function atto_MoveZ(amc,axis,target)
+function atto_Move(amc,axis,target)
 target = target*1e3;%in um
 [errNo, sensor_status] = status_getOlStatus(amc, axis);
 if sensor_status == 1
@@ -1213,8 +1484,8 @@ DAQmxClearTask(hAlign);
 
 
 
-function CallMakeScan(gScan,hObject, eventdata, handles);
-global bGo
+function CallMakeScan(gScan,hObject, eventdata, handles)
+global bGo gConfocal
 bScanCont = get(handles.bScanCont,'Value');
 bGo = true;
 if bScanCont
@@ -1223,13 +1494,373 @@ else
     R = 0;
 end
 r = 0;
-while bGo & r<=R
-    r = r+1;
-    MakeScan(gScan,hObject, eventdata, handles);
-    bScanCont = get(handles.bScanCont,'Value');
-    if ~bScanCont,break; end
+
+planScan = PlanScan_Haopu(gScan,hObject, eventdata, handles);
+
+if get(handles.bFastScan,'Value') %preload image object
+    
+    % Convert axis to µm for display
+    x_um_per_V = 1/gConfocal.Vx_per_um;
+    y_um_per_V = 1/gConfocal.Vy_per_um;
+    
+    % Pre-create an image object for fast updates (streaming per-pixel)
+    CPS_buf = nan(planScan.SizeImg);
+    ax = handles.axes1;
+    himg = imagesc(ax, CPS_buf, ...
+        'XData', planScan.ContRange * x_um_per_V, ...s
+        'YData', planScan.FLRange   * y_um_per_V, ...
+        'Parent',handles.axes1);
+    colormap(ax, pink);
+    axis(ax, 'square');
+    colorbar('peer', ax, 'location', 'EastOutside');
+    xlabel(ax, 'distance [\mum]');
+    ylabel(ax, 'distance [\mum]');
+    drawnow;
 end
 
+
+while bGo && r<=R
+
+    r = r+1;
+    if get(handles.bFastScan,'Value')
+        if ~gScan.bFixVz
+            z_lst = planScan.VV{3};
+            for z = z_lst 
+                piezoPFM450FunctionPool('setposition', z);
+                fprintf('Current z = %3.f \n', z)
+                MakeScan_Haopu(planScan, himg, hObject, eventdata, handles);            
+                if ~bGo; return; end
+            end
+        else
+            MakeScan_Haopu(planScan, himg, hObject, eventdata, handles);
+        end
+    else
+        MakeScan(gScan,hObject, eventdata, handles);
+    end
+    bScanCont = get(handles.bScanCont,'Value');
+    if ~bScanCont,break; end
+
+end
+
+function MakeScan_Haopu(planScan, himg, hObject,eventdata,handles)
+%MAKESCAN_HAOPU  Run a 2D confocal raster scan with live imaging.
+%
+% Overview
+%   - Pre-move galvos to the first pixel
+%   - Configure NI-DAQ tasks:
+%       * CI (Counter)  : read cumulative photon counts (U32)
+%       * CO (Pulse)    : generate sample clock for AO/CI (DigPulseTrainCont)
+%       * AO (Voltage)  : output X/Y galvo voltages (SetXYOutPut_Haopu)
+%   - Stream non-blocking reads from CI and update the image live
+%   - Save image and return galvos to initial position
+%
+% Inputs
+%   planScan : strcut (ranges, counts, image size, etc. )
+%   himg     : image handle
+%   handles  : GUI handles
+%
+% Globals used
+%   bGo, gScan, gConfocal, hTasks
+%
+% Notes
+%   - Uses non-blocking DAQ reads (timeout=0) + “read all available”.
+%   - Serpentine (snake) scan for minimal flyback.
+%   - Diff on cumulative counts -> per-pixel counts; divide by DT -> CPS.
+
+% ---------- Globals & early setup ----------
+global bGo gScan gConfocal hTasks
+bGo = true;
+
+% Plan scan (ranges, counts, image size, etc.)
+% moved to CallMakeScan
+
+% Galvo pre-position to starting pixel (upper-left)
+WriteVoltage(PortMap('Galvo x'), gScan.minVx + gConfocal.XOffSet);
+WriteVoltage(PortMap('Galvo y'), gScan.minVy + gConfocal.XOffSet);
+pause(1);  % Increase if the first pixel looks off
+
+% Timing
+cvalue = gScan.FixDT;          % seconds per pixel (dwell time)
+planScan.DT = cvalue;
+planScan.TimeOut = cvalue * planScan.NRead * 4;  % conservative CI timeout fallback
+
+% ---------- Device reset (optional) ----------
+% If you see device-in-use errors, keep this enabled:
+%status = DAQmxResetDevice('Dev1'); %#ok<NASGU>
+
+% ---------- Configure tasks ----------
+% 1) CI (counter) — cumulative photon counts (Ntot+1 samples)
+planScan.hCounter = SetCounter(planScan.Ntot+1, 1/cvalue);
+% Enable "read all available samples" (non-blocking usage relies on this)
+status = calllib('mynidaqmx','DAQmxSetReadReadAllAvailSamp',planScan.hCounter,uint32(1));
+DAQmxErr(status);
+
+% 2) CO (pulse train) — shared sample clock at 1/DT, 50% duty, Ntot+1 ticks
+[status, planScan.hPulse] = DigPulseTrainCont(1/cvalue, 0.5, planScan.Ntot+1);
+DAQmxErr(status);
+
+% 3) AO (galvo voltages) — precomputed raster pattern (Ntot+1 samples/channel)
+planScan.hScan = SetXYOutPut_Haopu(planScan, 1/cvalue, hObject, eventdata, handles);
+
+% Stash for external control / emergency stop
+hTasks.hScan    = planScan.hScan;
+hTasks.hCounter = planScan.hCounter;
+hTasks.hPulse   = planScan.hPulse;
+
+%%---------- Start run ----------
+cumCounts = nan(1, planScan.Ntot+1, 'double'); % cumulative U32 -> double for diff
+currentScanIdx = 1;
+
+% % Pre-create an image object for fast updates (streaming per-pixel)
+% moved to CallMakeScan 
+
+try
+    % Start the tasks (order matters: start CI before CO to avoid missed ticks)
+    DAQmxErr( DAQmxStartTask(planScan.hCounter) );
+    DAQmxErr( DAQmxStartTask(planScan.hScan)    );
+    DAQmxErr( DAQmxStartTask(planScan.hPulse)   );
+    
+    if planScan.Ntot < 50000
+        MAX_BUFFER_SIZE = planScan.Ntot + 1;
+    else
+        MAX_BUFFER_SIZE = 50000;
+    end
+
+    while currentScanIdx < planScan.Ntot+2 && bGo          
+        
+        if ~bGo; break; end
+        
+        % Non-blocking: read "all available" U32 counter samples up to buffer size
+        [status, readArray, sampsRead] = ReadDataFromDAQ(planScan.hCounter, MAX_BUFFER_SIZE);
+        DAQmxErr(status);
+        
+        if sampsRead > 0
+            
+            valid = readArray(1:sampsRead); %extract only read data, the rest are all 0's
+            
+            if ~isempty(valid)
+                nvalid = numel(valid);
+                lastIdx = min(currentScanIdx + nvalid - 1, planScan.Ntot+1);
+                writeCount = lastIdx - currentScanIdx + 1;
+                
+                cumCounts(currentScanIdx:lastIdx) = double(valid(1:writeCount)); % fill read data
+                currentScanIdx = lastIdx + 1;
+            end
+        end
+        
+        % Update the live image once we have at least a couple of samples
+        if currentScanIdx > 3
+            % cumCounts -> counts -> CPS -> un-snake
+            I = reshape(diff(cumCounts), planScan.SizeImg);
+            II = I.'/gScan.FixDT;
+            II(2:2:end, :) = fliplr(II(2:2:end,:));
+            
+            % Push to image and throttle UI
+            set(himg, 'CData', II);
+            RePlot(hObject, eventdata, handles);
+            drawnow limitrate;
+        end
+        
+        pause(0.3); % adjust for CPU usage vs. latency
+        
+    end
+    
+catch ME
+    % Surface any error after cleanup
+    warning('MakeScan_Haopu:RuntimeError','%s',getReport(ME));
+    DAQmxClearTask(planScan.hPulse);
+    DAQmxClearTask(planScan.hScan);
+    DAQmxClearTask(planScan.hCounter);
+end
+
+% ---------- Always clear DAQ tasks!!! ----------
+DAQmxClearTask(planScan.hPulse);
+DAQmxClearTask(planScan.hScan);
+DAQmxClearTask(planScan.hCounter);
+
+% Don't do the following if continous scanning for speed
+if ~get(handles.bScanCont,'Value')
+    % ---------- Set clickcable ----------
+    set(himg, 'ButtonDownFcn',{@CallImageSetXYVoltage,hObject,handles});
+    
+    % ---------- Save image  ----------
+    %ImageSaveImage('Save',hObject,eventdata,handles);
+    % Image is saved outside this function
+    
+    % Draw crosshairs if requested 
+    if get(handles.cbMarker,'Value')
+        DrawCrossHairs(hObject,eventdata,handles);
+    end
+    
+    % Return galvos to initial fixed point
+    
+    WriteVoltage(PortMap('Galvo x'), gScan.FixVx + gConfocal.XOffSet);
+    WriteVoltage(PortMap('Galvo y'), gScan.FixVy + gConfocal.YOffSet);
+end
+
+function planScan = PlanScan_Haopu(Scan,~, ~, handles)
+global gConfocal;
+
+bScanX = ~get(handles.bFixVx,'Value');
+bScanY = ~get(handles.bFixVy,'Value');
+bScanZ = ~get(handles.bFixVz,'Value');
+bScanDT = ~get(handles.bFixDT,'Value');
+
+if bScanX
+    VV{1} = Scan.minVx:(Scan.maxVx-Scan.minVx)/(Scan.NVx-1):Scan.maxVx;
+    VVRange{1}= [min(VV{1}) max(VV{1})];
+    VV{1} = VV{1} + gConfocal.XOffSet;
+    
+else
+    VV{1} =  gConfocal.XOffSet + Scan.FixVx;
+    VVRange{1}= [min(VV{1}) max(VV{1})] - gConfocal.XOffSet;
+end
+if bScanY
+    VV{2} =  Scan.minVy:(Scan.maxVy-Scan.minVy)/(Scan.NVy-1):Scan.maxVy;
+    VVRange{2}= [min(VV{2}) max(VV{2})];
+    VV{2} = VV{2} + gConfocal.YOffSet;
+    
+else
+    VV{2} =  gConfocal.YOffSet + Scan.FixVy;
+    VVRange{2}= [min(VV{2}) max(VV{2})] - gConfocal.YOffSet;
+end
+if bScanZ
+    VV{3} = Scan.minVz:(Scan.maxVz-Scan.minVz)/(Scan.NVz-1):Scan.maxVz;
+    VVRange{3}= [min(VV{3}) max(VV{3})];
+else
+    VV{3} = Scan.FixVz;
+    VVRange{3}= [min(VV{3}) max(VV{3})];
+end
+if bScanDT
+    VV{4} = Scan.minDT:(Scan.maxDT-Scan.minDT)/(Scan.NDT-1):Scan.maxDT;
+    VVRange{4}= [min(VV{4}) max(VV{4})];
+elseif bScanZ && ~bScanX && ~bScanY
+    error('Please scan in 2D (XZ or YZ) rather than only in Z.');
+else
+    VV{4} = Scan.FixDT;
+    VVRange{4}= [min(VV{4}) max(VV{4})];
+end
+
+PS = [1 bScanX 1; 2 bScanY 2; 3 bScanZ 3; 4 bScanDT 4];
+PS = sortrows(PS,[-2 3]);
+
+Label{1} = 'V_x';
+Label{2} = 'V_y';
+Label{3} = 'V_z';
+Label{4} = 'DT';
+
+planScan.VV = VV;
+
+%Set Continuous
+planScan.Cont = [VV{PS(1,1)}(1) VV{PS(1,1)} fliplr(VV{PS(1,1)})];
+planScan.ContRange = VVRange{PS(1,1)};
+planScan.WhatCont = PS(1,1);
+planScan.NRead = (length(planScan.Cont)-1)/2;
+planScan.LabelCont = Label{PS(1,1)};
+
+planScan.FL = VV{PS(2,1)};
+planScan.WhatFL = PS(2,1);
+planScan.FLRange = VVRange{PS(2,1)};
+planScan.LabelFL = Label{PS(2,1)};
+planScan.Ntot = planScan.NRead*length(planScan.FL);
+
+planScan.SL = VV{PS(3,1)};
+planScan.WhatSL = PS(3,1);
+planScan.SLRange = VVRange{PS(3,1)};
+planScan.LabelSL = Label{PS(3,1)};
+
+planScan.TL = VV{PS(4,1)};
+planScan.WhatTL = PS(4,1);
+planScan.TLRange = VVRange{PS(4,1)};
+planScan.LabelTL = Label{PS(4,1)};
+
+planScan.ND = min([2 sum(PS(:,2))]); % Number of Dimensions to plot
+
+planScan.SizeImg = [length(planScan.FL) planScan.NRead ];
+
+planScan.DTloop = find(PS(:,1)==4)-1;
+
+planScan.FixDT = Scan.FixDT;
+
+planScan.hCounter = [];
+planScan.hPulse = [];
+planScan.hScan = [];
+
+function [status, readArray, sampsPerChanRead] = ReadDataFromDAQ(taskHandle, MAX_BUFFER_SIZE)
+%READDATAFROMDAQ  Non-blocking read of U32 counter samples (all available).
+%
+% Returns
+%   readArray         : buffer read in U32 array 
+%   sampsPerChanRead  : # of samples actually read 
+
+readArray    = zeros(1, MAX_BUFFER_SIZE, 'uint32');
+readArrayPtr = libpointer('uint32Ptr', readArray);
+sampsReadPtr = libpointer('int32Ptr', 0);
+
+numSampsPerChan   = int32(-1);        % -1 => read all available
+timeout           = 0;                % 0 => non-blocking
+arraySizeInSamps  = uint32(MAX_BUFFER_SIZE);
+
+[status, readArray, sampsPerChanRead] = calllib('mynidaqmx','DAQmxReadCounterU32', ...
+    taskHandle, numSampsPerChan, timeout, ...
+    readArrayPtr, arraySizeInSamps, sampsReadPtr, []);
+
+function task = SetXYOutPut_Haopu(planScan, rate, ~, ~, ~)
+%SETXYOUTPUT_HAOPU  Precompute serpentine raster and configure AO task.
+%
+
+% DAQmx constants
+DAQmx_Val_Volts= 10348; % measure volts
+DAQmx_Val_Rising = 10280; % Rising
+DAQmx_Val_FiniteSamps = 10178; % Finite Samples
+DAQmx_Val_CountUp = 10128; % Count Up
+DAQmx_Val_CountDown = 10124; % Count Down
+DAQmx_Val_GroupByChannel = 0; % Group by channel
+
+% Build snake X/Y voltage pulse train
+xVals = planScan.VV{1}; numX = numel(xVals);
+yVals = planScan.VV{2}; numY = numel(yVals);
+
+xPattern = zeros(1, numX * numY);
+yPattern = zeros(1, numX * numY);
+
+idx = 1;
+for i = 1:numY
+    if mod(i,2)==1           % odd rows: left->right
+        xLine = xVals;
+    else                     % even rows: right->left
+        xLine = fliplr(xVals);
+    end
+    n = numX;
+    xPattern(idx:idx+n-1) = xLine;
+    yPattern(idx:idx+n-1) = yVals(i);
+    idx = idx + n;
+end
+
+% Match CI/CO sample count: append one duplicate sample for counts differential
+xPattern = [xPattern, xPattern(end)];
+yPattern = [yPattern, yPattern(end)];
+N = planScan.Ntot + 1;    % samples per channel
+
+V = [xPattern yPattern];  % size: [1, 2N] layout: [AO0(1..N), AO1(1..N)]
+
+% Create and configure AO task
+[status, ~, task] = DAQmxCreateTask([]);
+DAQmxErr(status);
+
+status = DAQmxCreateAOVoltageChan(task, PortMap('Galvo x'), -10, 10, DAQmx_Val_Volts);
+DAQmxErr(status);
+status = DAQmxCreateAOVoltageChan(task, PortMap('Galvo y'), -10, 10, DAQmx_Val_Volts);
+DAQmxErr(status);
+
+% Use the counter output as the sample clock
+status = DAQmxCfgSampClkTiming(task, PortMap('Ctr Trig'), rate, ...
+                               DAQmx_Val_Rising, DAQmx_Val_FiniteSamps, N);
+DAQmxErr(status);
+
+zero_ptr = libpointer('int32Ptr', 0);
+status = DAQmxWriteAnalogF64(task, N, 0, 10, DAQmx_Val_GroupByChannel, V, zero_ptr);
+DAQmxErr(status);
 
 
 function StopAlign
@@ -2143,7 +2774,7 @@ if ~bOverWrite
         end
     end
     ImgN = ImgN + 1;
-    file = strrep(file,'.txt',sprintf('_Img%03d.txt',ImgN));
+    file = strrep(file,'.txt',sprintf('_Img%04d.txt',ImgN));
 end
 
 gSaveImg.CurrentFullPath = file;
@@ -2644,12 +3275,12 @@ DAQmxClearTask(hPulse);
 DAQmxClearTask(hCounter);
 
 function CPS = RunCPS(Scan,hObject, eventdata, handles)
-global bGo hCPS ;
+global bGo hCPS gmSEQ;
 
-% gmSEQ.meas=PortMap('meas');
+%gmSEQ.meas=PortMap('meas');
 bGo = true;
 
-NRead = 2;
+NRead = 20;
 
 DT = str2num(handles.CPS_DT.String);
 TimeOut = DT * NRead * 1.1;
@@ -3200,3 +3831,14 @@ if strcmp(gmSEQ.meas,'SPCM')
 elseif strcmp(gmSEQ.meas,'APD')
     data=RawData(2:length(RawData));
 end
+
+function SquareScan(hObject, eventdata, handles)
+sz = str2double(get(handles.squareScanSize, 'String'));
+X = str2double(get(handles.FixVx,'String'));
+Y = str2double(get(handles.FixVy,'String'));
+
+
+handles.minVx.String = num2str( X - sz/2 );
+handles.maxVx.String = num2str( X + sz/2 );
+handles.minVy.String = num2str( Y - sz/2 );
+handles.maxVy.String = num2str( Y + sz/2 );
