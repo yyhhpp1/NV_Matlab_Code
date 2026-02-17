@@ -1,5 +1,5 @@
 function RunSequence(hObject, eventdata, handles)
-[y,Fs] = audioread('ExptCompleted.mp3');
+%[y,Fs] = audioread('ExptCompleted.mp3');
 BackupFile = 'C:\MATLAB_Code\Data\TempDataBackup\Temp.mat';
 global gmSEQ gSG tmax hCPS gSG2 gSG3 fpga
 

@@ -2,6 +2,7 @@ function T1_SemiAuto_Run(hObject, eventdata, handles, handles2)
 %[y,Fs] = audioread('ExptCompleted.mp3');
 BackupFile = 'C:\MATLAB_Code\Data\TempDataBackup\Temp.mat';
 global gmSEQ gSG gSG2 tmax hCPS
+cfg = AutoPipelineConfig();
 
 % default setting
 gmSEQ.bRaman = 0;
@@ -136,23 +137,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                 
                 % save a backup of the data here in case matlab crashes
                 TemporarySave(BackupFile);
-                if gmSEQ.ctrN<=24 %do not plot if too many counter gates
-                
-                    if strcmp(gmSEQ.name,'Rabi')||strcmp(gmSEQ.name,'Rabi_SG2')
-                        PlotRabiData(handles,raw_j);
-                        FitRabi(handles, handles2);
-                    elseif strcmp(gmSEQ.name, 'T1_S00_S01_S10_S11_S1m1')
-                        PlotT1Data_method2(handles,raw_j)
-                    elseif strcmp(gmSEQ.name, 'T1_S11_S1m1')
-                        PlotT1Data_method3(handles,raw_j)
-                    elseif strcmp(gmSEQ.name, 'T1_S00_S01_S10')
-                        PlotT1Data_method4(handles,raw_j)
-                    elseif strcmp(gmSEQ.name,'T1_S00_S01_S10_S11_darkRef')
-                        PlotT1Data(handles,raw_j)
-                    else
-                        PlotData(handles,raw_j);
-                    end
-                end
+                autoplot.dispatch(handles, handles2, raw_j, gmSEQ.name, gmSEQ.ctrN, cfg.plotting);
                 drawnow;
                 
                 if ~gmSEQ.bGo
@@ -166,9 +151,9 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                 
             end
             
-            if ~mod(i,str2double(handles2.slackUploadFreq.String)) && handles2.slackUploadFlag.Value
-                save_and_upload_GUI_figure(handles,handles2)
-            end
+%             if ~mod(i,str2double(handles2.slackUploadFreq.String)) && handles2.slackUploadFlag.Value
+%                 save_and_upload_GUI_figure(handles,handles2)
+%             end
             
             SaveIgorText_Average(handles);
             SaveIgorText(handles);
@@ -224,7 +209,7 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
             [ ~, hScan ] = DAQmxFunctionPool('WriteAnalogVoltage',PortMap('SG ext mod'),vec, NN,gmSEQ.NSweepParam*gSG.sweepRate);
             hCPS.hScan=hScan;
             %%%%% Create counting channel %%%%
-            [~, hCounter] = SetNCounters(0,NN,'/Dev2/PFI13',gmSEQ.NSweepParam*gSG.sweepRate);
+            [~, hCounter] = SetNCounters(0,NN,'/Dev1/PFI13',gmSEQ.NSweepParam*gSG.sweepRate);
             hCPS.hCounter=hCounter;
             gmSEQ.iAverage=i;
             handles.biAverage.String=num2str(gmSEQ.iAverage);
@@ -291,7 +276,8 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
     gmSEQ.SweepParam=gmSEQ.SweepParam*1e9;
     %CreateCaliLog(hObject, eventdata, handles);
     
-    gmSEQ.bTomo = gmSEQ.Alternate;
+    %gmSEQ.bTomo = gmSEQ.Alternate;
+    gmSEQ.bTomo = false;
     if gmSEQ.bTomo
         gmSEQ.dataN = 3*gmSEQ.ctrN;
         disp("Tomographical measurement ongoing...")
@@ -323,14 +309,11 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
                     j = raw_j;
                 end
                 
-                Calibration(hObject, eventdata, handles)
+                %Calibration(hObject, eventdata, handles)
                 SequencePool(string(gmSEQ.name));
-                
-                if gSG.ACmodAWG
-                    gSG.Freq = gmSEQ.SweepParam(j)-str2double(get(handles.AWGFreq, 'String'))*1e9;
-                else
-                    gSG.Freq = gmSEQ.SweepParam(j);
-                end
+
+                gSG.Freq = gmSEQ.SweepParam(j);
+
                 %
                 SignalGeneratorFunctionPool('WriteFreq');
                 % SignalGeneratorFunctionPool('WritePow');
@@ -364,7 +347,7 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
                 
                 % save a backup of the data here in case matlab crashes
                 TemporarySave(BackupFile);
-                PlotData(handles,raw_j);
+                autoplot.dispatch(handles, handles2, raw_j, gmSEQ.name, gmSEQ.ctrN, cfg.plotting);
                 drawnow;
                 if ~gmSEQ.bGo
                     break
@@ -725,26 +708,51 @@ gSaveDataAve.file = strrep(file,'.txt',sprintf('_%03d.txt',ImgN));
 
 function save_and_upload_GUI_figure(handles, handlesT1)
 global gSaveDataAve
-% save the main exp GUI figure
-if handlesT1.use_title.Value
-    name = strcat(handlesT1.figTitle.String, gSaveDataAve.file);
-else
-    name = gSaveDataAve.file;
+cfg = AutoPipelineConfig();
+
+saveFolder = cfg.paths.saveFolder;
+if ~exist(saveFolder, 'dir')
+    mkdir(saveFolder);
 end
-filename = strcat('C:\Users\dilution_fridge_2\Desktop\T1_SemiAuto_Saves\',name);
-filename = replace(filename, '.txt', '.png');
-filename_char = filename{1};
-imwrite(getframe(handles.figure1).cdata, filename_char);
+
+fileTag = local_normalize_to_char(gSaveDataAve.file);
+if handlesT1.use_title.Value
+    fileTag = [local_normalize_to_char(handlesT1.figTitle.String) fileTag];
+end
+
+imageName = strrep(fileTag, '.txt', '.png');
+imagePath = fullfile(saveFolder, imageName);
+imwrite(getframe(handles.figure1).cdata, imagePath);
 
 % upload saved GUI figure to slack
-message = [char(handlesT1.slackUploadText.String) '. Current sequence is still running.'];
-default_keep = int32(100); %keep only 100 uploads
-scriptFolder = 'C:\Matlab_Code\AutoRunSequences';
+message = [local_normalize_to_char(handlesT1.slackUploadText.String) '. Current sequence is still running.'];
+default_keep = int32(cfg.slack.defaultKeep);
+scriptFolder = cfg.paths.slackScriptFolder;
 
-% Add it to Python's module search path if not already there
-if count(py.sys.path, scriptFolder) == 0
-    insert(py.sys.path, int32(0), scriptFolder);
+try
+    if count(py.sys.path, scriptFolder) == 0
+        insert(py.sys.path, int32(0), scriptFolder);
+    end
+    py.slack_upload_v2.upload_and_cleanup(imagePath, message, default_keep);
+catch ME
+    warning('T1_SemiAuto_Run:SlackUploadFailed', ...
+        'Slack upload failed during periodic update: %s', ME.message);
 end
 
-py.slack_upload_v2.upload_and_cleanup(filename_char, message, default_keep);
+function out = local_normalize_to_char(in)
+if iscell(in)
+    if isempty(in)
+        out = '';
+    else
+        out = local_normalize_to_char(in{1});
+    end
+elseif isstring(in)
+    out = char(in);
+elseif ischar(in)
+    out = in;
+elseif isnumeric(in)
+    out = num2str(in);
+else
+    out = char(string(in));
+end
 

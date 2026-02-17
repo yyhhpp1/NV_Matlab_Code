@@ -78,17 +78,32 @@ fprintf(fid, '\nEND\n');
 % end
 fprintf(fid,comment('SEQUENCE PARAMETERS'));
 
-for i=1:length(fnSEQ)
-    st=fnSEQ(i);
-    if ~strcmp(st,'CHN') &&~strcmp(st,'SweepParam')&&~strcmp(st,'reference')&&~strcmp(st,'signal')&&~strcmp(st,'reference2')&&~strcmp(st,'reference3')&&~strcmp(st,'signal_2')&&~strcmp(st,'reference_2')&&~strcmp(st,'reference2_2')&&~strcmp(st,'reference3_2')...
-            &&~strcmp(st,'reference_Ave')&&~strcmp(st,'signal_Ave')&&~strcmp(st,'reference2_Ave')&&~strcmp(st,'reference3_Ave')&&~strcmp(st,'signal_2_Ave')&&~strcmp(st,'reference_2_Ave')&&~strcmp(st,'reference2_2_Ave')&&~strcmp(st,'reference3_2_Ave')&&...
-            ~strcmp(st,'signal_3')&&~strcmp(st,'reference_3')&&~strcmp(st,'reference2_3')&&~strcmp(st,'reference3_3')&&~strcmp(st,'signal_3_Ave')&&~strcmp(st,'reference_3_Ave')&&~strcmp(st,'reference2_3_Ave')&&~strcmp(st,'reference3_3_Ave')&&~strcmp(st,'TotalSig')&&~strcmp(st,'TotalSig_Ave')...
-            &&~strcmp(st,'ScaleStr')&&~strcmp(st,'ScaleT')&&~strcmp(st,'Var')&&~strcmp(st,'sequenceLocation')
-        fprintf(fid,comment(string(st)));
-        
-        fprintf(fid,comment(string(gmSEQ.(char(st)))));
-        %disp(i)
+skipFields = { ...
+    'CHN', 'SweepParam', ...
+    'reference', 'signal', 'reference2', 'reference3', ...
+    'signal_2', 'reference_2', 'reference2_2', 'reference3_2', ...
+    'reference_Ave', 'signal_Ave', 'reference2_Ave', 'reference3_Ave', ...
+    'signal_2_Ave', 'reference_2_Ave', 'reference2_2_Ave', 'reference3_2_Ave', ...
+    'signal_3', 'reference_3', 'reference2_3', 'reference3_3', ...
+    'signal_3_Ave', 'reference_3_Ave', 'reference2_3_Ave', 'reference3_3_Ave', ...
+    'TotalSig', 'TotalSig_Ave', ...
+    'ScaleStr', 'ScaleT', 'Var', 'sequenceLocation', ...
+    'SmartFreqMapGHz' ...
+};
+
+for i = 1:numel(fnSEQ)
+    st = fnSEQ{i};
+    if ismember(st, skipFields)
+        continue;
     end
+
+    val = gmSEQ.(st);
+    if ~is_supported_save_value(val)
+        continue;
+    end
+
+    fprintf(fid, comment(st));
+    fprintf(fid, comment(value_to_string(val)));
 end
 % 
 % fprintf(fid,comment('SIGNAL GENERATOR PARAMETERS'));
@@ -107,3 +122,22 @@ handles.textFileName.String = file;
 
 function outStr = comment(inStr)
 outStr=strcat('X// ',inStr,'\n');
+
+function tf = is_supported_save_value(val)
+% Skip complex containers and custom objects in text export.
+tf = ~(isstruct(val) || iscell(val) || isobject(val) || isa(val, 'function_handle'));
+
+function out = value_to_string(val)
+if ischar(val)
+    out = val;
+elseif isstring(val)
+    out = strjoin(cellstr(val(:)), ', ');
+elseif isnumeric(val) || islogical(val)
+    if isscalar(val)
+        out = num2str(val);
+    else
+        out = mat2str(val);
+    end
+else
+    out = char(string(val));
+end

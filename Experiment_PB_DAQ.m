@@ -2700,7 +2700,7 @@ function button_T1_Semi_Auto_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 hFigExp = gcf; 
-T1_SemiAuto_ParamInput(hFigExp, hObject, eventdata);
+T1_SemiAuto_ParamInput_v2_1(hFigExp, hObject, eventdata);
 
 
 
