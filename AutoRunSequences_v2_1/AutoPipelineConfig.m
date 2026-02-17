@@ -62,6 +62,19 @@ cfg.smart.t1fit.nLower = 0.1;
 cfg.smart.t1fit.nUpper = 1.0;
 cfg.smart.t1fit.amplitudeUpper = 1.0;
 
+% Rabi fit selector.
+% model options:
+%   'cos'      => A*cos(2*pi*f*x + phi) + 1 - A
+%   'cos_exp'  => A*exp(-x/tau)*cos(2*pi*f*x + phi) + 1 - A
+cfg.smart.rabiFit = struct();
+cfg.smart.rabiFit.model = 'cos_exp';
+cfg.smart.rabiFit.minPointsCos = 4;      % nParam(3)+1
+cfg.smart.rabiFit.minPointsCosExp = 5;   % nParam(4)+1
+
+% ESR fit guard.
+cfg.smart.esrFit = struct();
+cfg.smart.esrFit.minPoints = 5;          % nParam(4)+1
+
 % Precalibration powers.
 cfg.smart.power = struct();
 cfg.smart.power.odmr_dBm = -15;

@@ -618,7 +618,7 @@ if stop_requested(hAuto)
     rabiFreqMHz = NaN;
     return;
 end
-FitRabi(hMain, hAuto);
+FitRabi(hMain, hAuto, false);
 global gmSEQ
 piNs = safe_gm_field(gmSEQ, 'RabiFitPi', NaN);
 rabiFreqMHz = safe_gm_field(gmSEQ, 'RabiFitFreqMHz', NaN);
