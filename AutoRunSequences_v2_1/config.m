@@ -21,13 +21,13 @@ cfg.smart = struct();
 cfg.smart.enabled = true;
 
 cfg.smart.physics = struct();
-cfg.smart.physics.zeroFieldGHz = 2.87;
+cfg.smart.physics.zeroFieldGHz = 2.877;
 cfg.smart.physics.gammaMHzPerG = 2.8025;
 
 % ODMR window planner.
 cfg.smart.odmr = struct();
 cfg.smart.odmr.splitThresholdMHz = 200;
-cfg.smart.odmr.windowMarginMHz = 60;
+cfg.smart.odmr.windowMarginMHz = 40;
 cfg.smart.odmr.minPoints = 51;
 cfg.smart.odmr.maxPoints = 601;
 cfg.smart.odmr.pointsPerMHz = 2.0;
@@ -45,9 +45,10 @@ cfg.smart.rough.average = 1;
 cfg.smart.rough.nPoints = 0; % 0 => use target/user nPoints
 cfg.smart.rough.maxRetries = 2;
 cfg.smart.rough.fitRelErrThreshold = 0.6;
-cfg.smart.rough.stopPolicy = 'first_good'; % first_good | max_retries
-cfg.smart.rough.minSpanFactor = 1.5;
-cfg.smart.rough.maxSpanFactor = 3.0;
+cfg.smart.rough.stopPolicy = 'max_retries'; % first_good | max_retries
+cfg.smart.rough.stopFactor = 3.0; % auto-correct stop target = start + stopFactor*T1
+cfg.smart.rough.minSpanFactor = 2;
+cfg.smart.rough.maxSpanFactor = 3.5;
 cfg.smart.rough.maxStopNs = 1e9+1000; % hard cap for rough/final stop (ns). inf for no cap
 
 % T1 fit model selector.
@@ -55,7 +56,7 @@ cfg.smart.rough.maxStopNs = 1e9+1000; % hard cap for rough/final stop (ns). inf 
 %   'single_exp'     => A*exp(-r*x)
 %   'stretched_exp'  => A*exp(-(r*x)^n)
 cfg.smart.t1fit = struct();
-cfg.smart.t1fit.model = 'single_exp';
+cfg.smart.t1fit.model = 'stretched_exp';
 cfg.smart.t1fit.nLower = 0.1;
 cfg.smart.t1fit.nUpper = 1.0;
 cfg.smart.t1fit.amplitudeUpper = 1.0;
@@ -120,6 +121,7 @@ t.rough.nPoints = 'edit_rough_npts';
 t.rough.maxRetries = 'edit_rough_max_retries';
 t.rough.fitRelErr = 'edit_rough_fit_relerr';
 t.rough.stopPolicy = 'popup_rough_stop_policy';
+t.rough.stopFactor = 'edit_rough_stop_factor';
 
 % Precalibration powers.
 t.power.odmr = 'edit_odmr_power';

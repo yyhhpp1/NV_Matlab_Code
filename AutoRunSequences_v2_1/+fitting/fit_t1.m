@@ -38,7 +38,7 @@ errMsg = '';
 try
     switch model
         case {'stretched_exp', 'stretched', 'stretched_exponential'}
-            [popt, perr, x_plot, y_plot] = fit_t1_stretched(x, y, fitCfg);
+            [popt, perr, x_plot, y_plot] = fitting.fit_t1_stretched(x, y, fitCfg);
         otherwise
             [popt, perr, x_plot, y_plot] = fit_t1_single_exp_local(x, y, fitCfg);
     end

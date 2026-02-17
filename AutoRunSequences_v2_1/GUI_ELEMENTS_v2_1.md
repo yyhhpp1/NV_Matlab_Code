@@ -34,6 +34,7 @@ Create these in `T1_SemiAuto_ParamInput.fig` (GUIDE/App Designer equivalent) wit
 - style: `edit`, tag: `edit_rough_max_retries`, label: `Rough Max Retries`
 - style: `edit`, tag: `edit_rough_fit_relerr`, label: `Rough Fit RelErr Threshold`
 - style: `popupmenu`, tag: `popup_rough_stop_policy`, label: `Rough Stop Policy`
+- style: `edit`, tag: `edit_rough_stop_factor`, label: `Rough Stop Factor (xT1)`
   - options: `first_good`, `max_retries`
 
 No rough start/stop entries are needed. Rough scan uses each target's T1 range as seed.

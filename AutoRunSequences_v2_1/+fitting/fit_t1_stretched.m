@@ -3,6 +3,19 @@ function [popt, perr, x_plot, y_plot] = fit_t1_stretched(x,y,fitCfg)
 % Model: y = A * exp(-(r*x)^n)
 % Parameters: p = [r, A, n]
 
+% Compatibility: accept legacy argument order (fitCfg, x, y).
+if nargin >= 1 && isstruct(x)
+    fitCfgIn = x;
+    if nargin >= 3
+        x = y;
+        y = fitCfg;
+    else
+        x = [];
+        y = [];
+    end
+    fitCfg = fitCfgIn;
+end
+
 if nargin < 3 || ~isstruct(fitCfg)
     fitCfg = struct();
 end

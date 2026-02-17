@@ -6,9 +6,7 @@ global gSaveDataAve gmSEQ
 
 % Ensure package folders (+plotting, +fitting, +autoplot) are resolvable.
 thisDir = fileparts(mfilename('fullpath'));
-if isempty(which('plotting.plot_data'))
-    addpath(thisDir);
-end
+addpath(thisDir, '-begin');
 
 cfg = config();
 cfg.runtime = struct();
@@ -191,6 +189,12 @@ ctx.rough.maxRetries = round(read_ui_numeric(hAuto, cfg.smart.ui.tags.rough.maxR
 ctx.rough.fitRelErrThreshold = read_ui_numeric(hAuto, cfg.smart.ui.tags.rough.fitRelErr, ctx.rough.fitRelErrThreshold);
 ctx.rough.stopPolicy = read_ui_string(hAuto, cfg.smart.ui.tags.rough.stopPolicy, ctx.rough.stopPolicy);
 ctx.rough.stopPolicy = canonical_stop_policy(ctx.rough.stopPolicy);
+if isfield(cfg.smart.ui.tags.rough, 'stopFactor')
+    ctx.rough.stopFactor = read_ui_numeric(hAuto, cfg.smart.ui.tags.rough.stopFactor, ctx.rough.stopFactor);
+end
+if ~isfinite(ctx.rough.stopFactor) || ctx.rough.stopFactor <= 0
+    ctx.rough.stopFactor = 2.0;
+end
 
 ctx.power = cfg.smart.power;
 ctx.power.odmr_dBm = read_ui_numeric(hAuto, cfg.smart.ui.tags.power.odmr, ...
@@ -671,6 +675,7 @@ if stop_requested(hAuto)
 end
 
 rangeRough = [start0, stop0];
+roughHist = struct('xMs', [], 'xDisp', [], 'y', []);
 for iTry = 1:max(1, ctx.rough.maxRetries)
     if stop_requested(hAuto)
         finalRange = rangeRough;
@@ -693,7 +698,18 @@ for iTry = 1:max(1, ctx.rough.maxRetries)
         return;
     end
 
-    [t1Ms, relErr] = estimate_t1_from_current_data(target.transition);
+    overlay_previous_rough_points(hMain, roughHist.xDisp, roughHist.y);
+    [t1Ms, relErr, curData, fitCurve] = estimate_t1_from_current_data( ...
+        target.transition, roughHist.xMs, roughHist.y);
+    if ~isempty(curData.xMs)
+        roughHist.xMs = [roughHist.xMs; curData.xMs(:)];
+        roughHist.xDisp = [roughHist.xDisp; curData.xDisp(:)];
+        roughHist.y = [roughHist.y; curData.y(:)];
+    end
+    overlay_combined_rough_fit(hMain, fitCurve.xPlotMs, fitCurve.yPlot, t1Ms, relErr);
+    save_rough_overlay_figure(hMain, hAuto, cfg, ...
+        sprintf(' [Rough T1 %s try %d]', target.id, iTry));
+
     roughInfo.t1RoughMs = t1Ms;
     roughInfo.fitRelErr = relErr;
     if isfinite(t1Ms)
@@ -705,9 +721,9 @@ for iTry = 1:max(1, ctx.rough.maxRetries)
         end
     end
 
-    % Retry policy: keep start fixed, only extend stop to 2*T1 (ms->ns).
+    % Retry policy: keep start fixed, only extend stop to stopFactor*T1 (ms->ns).
     if isfinite(t1Ms) && t1Ms > 0
-        span = 2 * t1Ms * 1e6;
+        span = ctx.rough.stopFactor * t1Ms * 1e6;
     else
         span = max(rangeRough(2) - rangeRough(1), 1);
     end
@@ -730,10 +746,10 @@ end
 % Policy:
 % 1) Keep start fixed.
 % 2) If stop is within [start+1.5*T1, start+3*T1], keep stop.
-% 3) Otherwise set stop to start+2*T1.
+% 3) Otherwise set stop to start+stopFactor*T1.
 stopMin = start0 + ctx.rough.minSpanFactor * roughInfo.t1RoughMs * 1e6;
 stopMax = start0 + ctx.rough.maxSpanFactor * roughInfo.t1RoughMs * 1e6;
-stopTarget = start0 + 2 * roughInfo.t1RoughMs * 1e6;
+stopTarget = start0 + ctx.rough.stopFactor * roughInfo.t1RoughMs * 1e6;
 
 newStart = start0; % start must remain unchanged
 newStop = stop0;
@@ -768,10 +784,19 @@ if ~strcmp(reason, 'within_range')
 end
 end
 
-function [t1Ms, relErr] = estimate_t1_from_current_data(transition)
+function [t1Ms, relErr, curData, fitCurve] = estimate_t1_from_current_data(transition, histXMs, histY)
 global gmSEQ
 t1Ms = NaN;
 relErr = inf;
+curData = struct('xMs', [], 'xDisp', [], 'y', []);
+fitCurve = struct('xPlotMs', [], 'yPlot', []);
+
+if nargin < 2 || isempty(histXMs)
+    histXMs = [];
+end
+if nargin < 3 || isempty(histY)
+    histY = [];
+end
 
 if ~isfield(gmSEQ, 'signal') || isempty(gmSEQ.signal)
     return;
@@ -782,13 +807,10 @@ if isempty(signal)
     return;
 end
 
-    % gmSEQ.SweepParam is programmed in ns from GUI/main sequence fields.
-    % fitting.fit_t1 expects x in ms, so convert directly ns->ms here instead
-    % of using gmSEQ.ScaleT (which is display-unit dependent).
-    x = double(gmSEQ.SweepParam(1:size(signal, 2))) * 1e-6;
-if numel(x) < 6
-    return;
-end
+% gmSEQ.SweepParam is programmed in ns from GUI/main sequence fields.
+% fitting.fit_t1 expects x in ms, so convert directly ns->ms here.
+xMs = double(gmSEQ.SweepParam(1:size(signal, 2))) * 1e-6;
+xDisp = double(gmSEQ.SweepParam(1:size(signal, 2))) .* safe_gm_field(gmSEQ, 'ScaleT', 1e-6);
 
 try
     switch transition
@@ -811,14 +833,26 @@ try
     end
 
     y = sig ./ ref;
-    valid = isfinite(x) & isfinite(y);
-    x = x(valid);
+    valid = isfinite(xMs) & isfinite(y);
+    xMs = xMs(valid);
+    xDisp = xDisp(valid);
     y = y(valid);
-    if numel(x) < 6
+    curData.xMs = xMs(:);
+    curData.xDisp = xDisp(:);
+    curData.y = y(:);
+
+    xFit = [histXMs(:); xMs(:)];
+    yFit = [histY(:); y(:)];
+    validFit = isfinite(xFit) & isfinite(yFit);
+    xFit = xFit(validFit);
+    yFit = yFit(validFit);
+    if numel(xFit) < 6
         return;
     end
 
-    [popt, perr] = fitting.fit_t1(x, y);
+    [popt, perr, xPlotMs, yPlot] = fitting.fit_t1(xFit, yFit);
+    fitCurve.xPlotMs = xPlotMs;
+    fitCurve.yPlot = yPlot;
     rate = popt(1);
     if isfinite(rate) && rate > 0
         t1Ms = 1 / rate;
@@ -828,6 +862,68 @@ catch
     t1Ms = NaN;
     relErr = inf;
 end
+end
+
+function overlay_previous_rough_points(handlesMain, xPrevDisp, yPrev)
+if nargin < 3 || isempty(xPrevDisp) || isempty(yPrev)
+    return;
+end
+if ~isfield(handlesMain, 'axes3') || ~isgraphics(handlesMain.axes3, 'axes')
+    return;
+end
+ax = handlesMain.axes3;
+delete(findobj(ax, 'Tag', 'rough_prev_points'));
+hold(ax, 'on');
+plot(ax, xPrevDisp, yPrev, ...
+    'LineStyle', 'none', ...
+    'Marker', 'o', ...
+    'MarkerSize', 4, ...
+    'Color', [0.55 0.55 0.55], ...
+    'DisplayName', 'Prev rough tries', ...
+    'Tag', 'rough_prev_points');
+if isfield(handlesMain, 'bShowLegend') && get(handlesMain.bShowLegend, 'Value')
+    legend(ax, 'Location', 'best');
+end
+hold(ax, 'off');
+end
+
+function overlay_combined_rough_fit(handlesMain, xPlotMs, yPlot, t1Ms, relErr)
+if nargin < 4 || isempty(xPlotMs) || isempty(yPlot)
+    return;
+end
+if ~isfield(handlesMain, 'axes3') || ~isgraphics(handlesMain.axes3, 'axes')
+    return;
+end
+global gmSEQ
+ax = handlesMain.axes3;
+delete(findobj(ax, 'Tag', 'rough_combined_fit'));
+scaleT = safe_gm_field(gmSEQ, 'ScaleT', 1e-6);
+xPlotDisp = xPlotMs .* (scaleT / 1e-6);
+if isfinite(t1Ms)
+    label = sprintf('Rough combined fit: T1=%.4f ms (relErr=%.3f)', t1Ms, relErr);
+else
+    label = 'Rough combined fit';
+end
+hold(ax, 'on');
+plot(ax, xPlotDisp, yPlot, ...
+    'LineStyle', '--', ...
+    'LineWidth', 1.0, ...
+    'Color', [0.10 0.55 0.10], ...
+    'DisplayName', label, ...
+    'Tag', 'rough_combined_fit');
+if isfield(handlesMain, 'bShowLegend') && get(handlesMain.bShowLegend, 'Value')
+    legend(ax, 'Location', 'best');
+end
+hold(ax, 'off');
+end
+
+function save_rough_overlay_figure(handlesMain, handlesAuto, cfg, suffix)
+global gSaveDataAve
+if isempty(gSaveDataAve) || ~isstruct(gSaveDataAve) || ~isfield(gSaveDataAve, 'file')
+    return;
+end
+save_main_figure(handlesMain, handlesAuto, gSaveDataAve.file, cfg, ...
+    ['. Current sequence is finished.' suffix], 'Rough_T1_');
 end
 
 function seq = build_t1_sequence(target, range, fSg1, fSg2, piSg1, piSg2, ctx)
@@ -841,7 +937,21 @@ split = tStart + (tStop - tStart)/4;
 if ctx.nonuniform
     n1 = max(2, ceil(n/2));
     n2 = max(1, floor(n/2));
-    [split, tStop] = align_nonuniform_grid(tStart, split, tStop, n1, n2);
+    targetSpan = round_span_to_1000(tStop - tStart);
+    [splitSolve, stopSolve, okSolve] = solve_nonuniform_span_grid(tStart, targetSpan, n1, n2, split);
+    if okSolve
+        split = splitSolve;
+        tStop = stopSolve;
+    else
+        [split, tStop] = align_nonuniform_grid(tStart, split, tStop, n1, n2);
+        tStop = tStart + round_span_to_1000(tStop - tStart);
+    end
+    [split, tStop, nudged] = force_integer_grid_nonuniform(tStart, split, tStop, n1, n2);
+    if nudged
+        disp(sprintf(['[SmartT1] Smart-distribution grid adjusted for integer points: ', ...
+            'start=%.0f, split=%.0f, stop=%.0f, n1=%d, n2=%d'], ...
+            round(tStart), round(split), round(tStop), n1, n2));
+    end
 else
     tStop = align_stop_to_integer_points(tStart, tStop, n);
 end
@@ -1334,6 +1444,115 @@ spanOut = round(spanIn / 1000) * 1000;
 if ~isfinite(spanOut) || spanOut <= 0
     spanOut = 1000;
 end
+end
+
+function [splitOut, stopOut, ok] = solve_nonuniform_span_grid(startIn, spanTarget, n1, n2, splitPref)
+% Solve two-segment integer-grid constraints with exact total span.
+% Ensures:
+%   split = start + a*(n1-1), a integer >=1 (for n1>=2)
+%   stop  = split + b*(n2-1), b integer >=1 (for n2>=2)
+%   stop-start = spanTarget (exact, e.g. multiple of 1000)
+splitOut = splitPref;
+stopOut = startIn + spanTarget;
+ok = false;
+
+if ~isfinite(spanTarget) || spanTarget <= 0
+    return;
+end
+if n1 < 2 || n2 < 2
+    return;
+end
+
+m1 = n1 - 1;
+m2 = n2 - 1;
+S = round(spanTarget);
+
+% Need exact integer solution to m1*a + m2*b = S, with a,b >= 1.
+d = gcd(m1, m2);
+if mod(S, d) ~= 0
+    return;
+end
+
+m1r = m1 / d;
+m2r = m2 / d;
+Sr = S / d;
+
+[g, invM1, ~] = gcd(m1r, m2r);
+if g ~= 1
+    return;
+end
+
+% One congruence class: a = aBase + k*m2r
+aBase = mod(invM1 * mod(Sr, m2r), m2r);
+if aBase == 0
+    aBase = m2r;
+end
+
+aMin = 1;
+aMax = floor((S - m2) / m1);
+if aMax < aMin
+    return;
+end
+
+kMin = ceil((aMin - aBase) / m2r);
+kMax = floor((aMax - aBase) / m2r);
+if kMin > kMax
+    return;
+end
+
+% Prefer split near 1/4 of range by default.
+if isfinite(splitPref)
+    aPref = round((splitPref - startIn) / m1);
+else
+    aPref = round((S / 4) / m1);
+end
+kStar = round((aPref - aBase) / m2r);
+kStar = min(max(kStar, kMin), kMax);
+
+a = aBase + kStar * m2r;
+b = (S - m1 * a) / m2;
+if a < 1 || b < 1 || abs(b - round(b)) > 1e-9
+    return;
+end
+b = round(b);
+
+splitOut = startIn + m1 * a;
+stopOut = splitOut + m2 * b;
+ok = (stopOut - startIn) == S;
+end
+
+function [splitOut, stopOut, changed] = force_integer_grid_nonuniform(startIn, splitIn, stopIn, n1, n2)
+% Final guard: if start is integer, force integer-grid points for both
+% nonuniform segments by nudging split/stop via integer steps.
+splitOut = splitIn;
+stopOut = stopIn;
+changed = false;
+
+if abs(startIn - round(startIn)) > 1e-9
+    % With non-integer start, exact integer points are impossible without
+    % changing start (disallowed by policy).
+    return;
+end
+
+if n1 >= 2
+    m1 = n1 - 1;
+    step1 = round((splitOut - startIn) / m1);
+    step1 = max(1, step1);
+    splitOut = startIn + m1 * step1;
+else
+    splitOut = round(splitOut);
+end
+
+if n2 >= 2
+    m2 = n2 - 1;
+    step2 = round((stopOut - splitOut) / m2);
+    step2 = max(1, step2);
+    stopOut = splitOut + m2 * step2;
+else
+    stopOut = splitOut;
+end
+
+changed = (abs(splitOut - splitIn) > 1e-9) || (abs(stopOut - stopIn) > 1e-9);
 end
 
 function tf = stop_requested(handlesAuto)
