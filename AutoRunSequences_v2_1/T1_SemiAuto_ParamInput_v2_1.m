@@ -137,7 +137,7 @@ if isfield(handles, 'eventdataA')
 end
 
 handlesB = handles;
-T1_SemiAuto_Program(hObjectA, eventdataA, handlesA, handlesB);
+t1_semi_auto_program(hObjectA, eventdataA, handlesA, handlesB);
 
 
 % --- Executes on button press in pushbutton_stopProg.

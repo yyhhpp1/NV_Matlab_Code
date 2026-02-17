@@ -1,4 +1,4 @@
-function Auto_LoadUserInputs(hObject,eventdata,handles)
+function auto_load_user_inputs(hObject,eventdata,handles)
 global gmSEQ gSG gSG2
 
 gmSEQ.From= str2double(get(handles.FROM1, 'String'));

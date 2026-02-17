@@ -15,11 +15,20 @@ This README is written as an operational memory document: if you read only this 
 - v2.1 is focused on one-shot smart T1 execution for a fixed environment (B/T already set externally).
 - Outer loops over B/T are intentionally out of scope in v2.1.
 - Core experimental runner is **not redesigned**:
-  - `T1_SemiAuto_Run.m` is used as-is and treated as base code.
+  - `t1_semi_auto_run.m` is used as-is and treated as base code.
 - v2.1 orchestration layer is in:
-  - `T1_SemiAuto_Program.m`
-  - `AutoPipelineConfig.m`
+  - `t1_semi_auto_program.m`
+  - `config.m`
   - `T1_SemiAuto_ParamInput_v2_1.m` + `.fig`
+- Canonical implementation folders:
+  - `+plotting/` for all plotting functions (snake_case)
+  - `+fitting/` for all fitting functions (snake_case)
+- Root `Plot*.m`, `Fit*.m`, `fit_T1*.m` are compatibility wrappers.
+- Legacy entrypoint wrappers are kept for compatibility:
+  - `T1_SemiAuto_Program.m` -> `t1_semi_auto_program.m`
+  - `T1_SemiAuto_Run.m` -> `t1_semi_auto_run.m`
+  - `Auto_LoadUserInputs.m` -> `auto_load_user_inputs.m`
+  - `AutoPipelineConfig.m` -> `config.m`
 
 ## 2. Supported Sequence Set
 
@@ -37,11 +46,11 @@ Plot/live-fit routing is config-driven via `cfg.plotting` and dispatched by `+au
 
 Entry point:
 
-- `T1_SemiAuto_Program(hObject, eventdata, handlesMain, handlesAuto)`
+- `t1_semi_auto_program(hObject, eventdata, handlesMain, handlesAuto)`
 
 Execution order:
 
-1. Load cfg from `AutoPipelineConfig.m`.
+1. Load cfg from `config.m`.
 2. Push T1 fit model settings into `gmSEQ`:
    - `gmSEQ.T1FitModel`
    - `gmSEQ.T1FitCfg`
@@ -119,7 +128,7 @@ Behavior:
 - clips to hard bounds `[hardMinGHz, hardMaxGHz]`
 - each window tracks expected peak count = number of labels in cluster
 
-Default ODMR cfg (`AutoPipelineConfig.m`):
+Default ODMR cfg (`config.m`):
 
 - `splitThresholdMHz = 200`
 - `windowMarginMHz = 20`
@@ -244,7 +253,7 @@ Important unit handling:
 
 - T1 sequence fields (`start/stop`) are treated as ns in this workflow.
 - Rough-T1 fit converts `gmSEQ.SweepParam` ns -> ms before fitting.
-- `fit_T1_func` expects x in ms.
+- `fitting.fit_t1` expects x in ms.
 - ODMR frequencies are GHz.
 - Rabi pi is ns.
 
@@ -266,8 +275,8 @@ Implemented models:
 
 Files:
 
-- `fit_T1_func.m` (dispatcher + status)
-- `fit_T1_stretched_func.m` (stretched model)
+- `+fitting/fit_t1.m` (dispatcher + status)
+- `+fitting/fit_t1_stretched.m` (stretched model)
 
 Fit guards:
 
@@ -302,11 +311,11 @@ Behavior:
 
 Default v2.1 mapping:
 
-- `ODMR` -> `PlotRabiData` + `FitESR`
-- `Rabi` -> `PlotRabiData` + `FitRabi`
-- `Rabi_SG2` -> `PlotRabiData` + `FitRabi`
-- `T1_S00_S01_S10` -> `PlotT1Data_method4`
-- `T1_S11_S1m1` -> `PlotT1Data_method3`
+- `ODMR` -> `plotting.plot_rabi_data` + `fitting.fit_esr`
+- `Rabi` -> `plotting.plot_rabi_data` + `fitting.fit_rabi`
+- `Rabi_SG2` -> `plotting.plot_rabi_data` + `fitting.fit_rabi`
+- `T1_S00_S01_S10` -> `plotting.plot_t1_data_method4`
+- `T1_S11_S1m1` -> `plotting.plot_t1_data_method3`
 
 ## 15. Program Stop Behavior
 
@@ -318,21 +327,15 @@ Stop button callback (`pushbutton_stopProg_Callback`) does:
   - `gmSEQ.bGoAfterAvg = 0`
   - `gmSEQ.bExp = 0`
 
-`T1_SemiAuto_Program` checks stop state before/after major stages.
-`T1_SemiAuto_Run` loop checks `gmSEQ.bGo`/`gmSEQ.bGoAfterAvg` and exits current acquisition loop at the next check.
+`t1_semi_auto_program` checks stop state before/after major stages.
+`t1_semi_auto_run` loop checks `gmSEQ.bGo`/`gmSEQ.bGoAfterAvg` and exits current acquisition loop at the next check.
 
-## 16. Figure Saving And Slack
+## 16. Figure Saving
 
 After each sequence run (`run_one_sequence`):
 
 - GUI figure is saved to `cfg.paths.saveFolder`
 - if suffix indicates rough T1, filename gets `Rough_T1_` prefix
-
-Slack upload:
-
-- optional, gated by GUI `slackUploadFlag`
-- disabled path returns early (no script-path use)
-- enabled path uses `slack_upload_v2.py` and cfg keep count.
 
 ## 17. GUI State Persistence
 
@@ -347,7 +350,7 @@ Saved fields:
 
 ## 18. GUI Tag Reference (Backend-Critical)
 
-Authoritative map is generated in `AutoPipelineConfig.m` (`build_ui_tag_map`).
+Authoritative map is generated in `config.m` (`build_ui_tag_map`).
 Detailed checklist is in:
 
 - `GUI_ELEMENTS_v2_1.md`
@@ -376,13 +379,10 @@ Per-target T1 input tags are also defined and consumed for all 6 targets.
 
 ## 19. Config Reference (Current Defaults)
 
-See `AutoPipelineConfig.m` for exact values. Main sections:
+See `config.m` for exact values. Main sections:
 
 - `cfg.paths`
   - `saveFolder`
-  - `slackScriptFolder`
-- `cfg.slack`
-  - `defaultKeep`
 - `cfg.plotting`
   - `maxCtrToPlot`, `default`, `rules`
 - `cfg.smart.physics`
@@ -430,14 +430,14 @@ Typical operator flow:
 
 Core v2.1 logic:
 
-- `AutoPipelineConfig.m`
-- `T1_SemiAuto_Program.m`
+- `config.m`
+- `t1_semi_auto_program.m`
 - `T1_SemiAuto_ParamInput_v2_1.m`
 - `+autoplot/dispatch.m`
-- `fit_T1_func.m`
-- `fit_T1_stretched_func.m`
-- `PlotT1Data_method3.m`
-- `PlotT1Data_method4.m`
+- `+fitting/fit_t1.m`
+- `+fitting/fit_t1_stretched.m`
+- `+plotting/plot_t1_data_method3.m`
+- `+plotting/plot_t1_data_method4.m`
 
 Spec and integration docs:
 
@@ -446,9 +446,9 @@ Spec and integration docs:
 
 ## 23. Change-Safety Reminder
 
-Keep `T1_SemiAuto_Run.m` compatibility intact unless explicitly doing base-code refactor work.
+Keep `t1_semi_auto_run.m` compatibility intact unless explicitly doing base-code refactor work.
 Most behavior should be changed via:
 
-- cfg values (`AutoPipelineConfig.m`)
-- orchestration logic (`T1_SemiAuto_Program.m`)
+- cfg values (`config.m`)
+- orchestration logic (`t1_semi_auto_program.m`)
 - GUI tags/callbacks (`T1_SemiAuto_ParamInput_v2_1.*`)

@@ -1,4 +1,4 @@
-function [popt, perr, x_plot, y_plot] = fit_T1_stretched_func(x,y,fitCfg)
+function [popt, perr, x_plot, y_plot] = fit_t1_stretched(x,y,fitCfg)
 %%% Stretched exponential fit
 % Model: y = A * exp(-(r*x)^n)
 % Parameters: p = [r, A, n]

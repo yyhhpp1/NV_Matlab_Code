@@ -1,8 +1,8 @@
-function T1_SemiAuto_Run(hObject, eventdata, handles, handles2)
+function t1_semi_auto_run(hObject, eventdata, handles, handles2)
 %[y,Fs] = audioread('ExptCompleted.mp3');
 BackupFile = 'C:\MATLAB_Code\Data\TempDataBackup\Temp.mat';
 global gmSEQ gSG gSG2 tmax hCPS
-cfg = AutoPipelineConfig();
+cfg = config();
 
 % default setting
 gmSEQ.bRaman = 0;
@@ -151,10 +151,6 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                 
             end
             
-%             if ~mod(i,str2double(handles2.slackUploadFreq.String)) && handles2.slackUploadFlag.Value
-%                 save_and_upload_GUI_figure(handles,handles2)
-%             end
-            
             SaveIgorText_Average(handles);
             SaveIgorText(handles);
             
@@ -241,10 +237,6 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
             DAQmxClearTask(hCounter);
             DAQmxClearTask(hPulse);
             DAQmxClearTask(hScan);
-            
-            if ~mod(i,str2double(handles2.slackUploadFreq.String)) && handles2.slackUploadFlag.Value
-                save_and_upload_GUI_figure(handles,handles2)
-            end
             
             SaveIgorText_Average(handles);
             
@@ -705,54 +697,4 @@ end
 ImgN = ImgN + 1;
 gSaveDataAve.file = strrep(file,'.txt',sprintf('_%03d.txt',ImgN));
 
-
-function save_and_upload_GUI_figure(handles, handlesT1)
-global gSaveDataAve
-cfg = AutoPipelineConfig();
-
-saveFolder = cfg.paths.saveFolder;
-if ~exist(saveFolder, 'dir')
-    mkdir(saveFolder);
-end
-
-fileTag = local_normalize_to_char(gSaveDataAve.file);
-if handlesT1.use_title.Value
-    fileTag = [local_normalize_to_char(handlesT1.figTitle.String) fileTag];
-end
-
-imageName = strrep(fileTag, '.txt', '.png');
-imagePath = fullfile(saveFolder, imageName);
-imwrite(getframe(handles.figure1).cdata, imagePath);
-
-% upload saved GUI figure to slack
-message = [local_normalize_to_char(handlesT1.slackUploadText.String) '. Current sequence is still running.'];
-default_keep = int32(cfg.slack.defaultKeep);
-scriptFolder = cfg.paths.slackScriptFolder;
-
-try
-    if count(py.sys.path, scriptFolder) == 0
-        insert(py.sys.path, int32(0), scriptFolder);
-    end
-    py.slack_upload_v2.upload_and_cleanup(imagePath, message, default_keep);
-catch ME
-    warning('T1_SemiAuto_Run:SlackUploadFailed', ...
-        'Slack upload failed during periodic update: %s', ME.message);
-end
-
-function out = local_normalize_to_char(in)
-if iscell(in)
-    if isempty(in)
-        out = '';
-    else
-        out = local_normalize_to_char(in{1});
-    end
-elseif isstring(in)
-    out = char(in);
-elseif ischar(in)
-    out = in;
-elseif isnumeric(in)
-    out = num2str(in);
-else
-    out = char(string(in));
-end
 

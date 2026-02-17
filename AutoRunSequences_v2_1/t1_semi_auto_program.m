@@ -1,10 +1,16 @@
-function T1_SemiAuto_Program(hObject, eventdata, handlesMain, handlesAuto)
+function t1_semi_auto_program(hObject, eventdata, handlesMain, handlesAuto)
 % Smart v2.1 orchestration entry point.
-% NOTE: T1_SemiAuto_Run.m is treated as core and is not modified here.
+% NOTE: t1_semi_auto_run.m is treated as core and is not modified here.
 
 global gSaveDataAve gmSEQ
 
-cfg = AutoPipelineConfig();
+% Ensure package folders (+plotting, +fitting, +autoplot) are resolvable.
+thisDir = fileparts(mfilename('fullpath'));
+if isempty(which('plotting.plot_data'))
+    addpath(thisDir);
+end
+
+cfg = config();
 cfg.runtime = struct();
 cfg.runtime.runSaveFolder = create_run_save_folder(cfg.paths.saveFolder);
 if isfield(cfg.smart, 't1fit')
@@ -27,7 +33,7 @@ apply_sequence_to_main_gui(presetSeq, handlesMain);
 if stop_requested(handlesAuto)
     return;
 end
-Auto_LoadUserInputs(hObject, eventdata, handlesMain);
+auto_load_user_inputs(hObject, eventdata, handlesMain);
 if stop_requested(handlesAuto)
     return;
 end
@@ -618,7 +624,7 @@ if stop_requested(hAuto)
     rabiFreqMHz = NaN;
     return;
 end
-FitRabi(hMain, hAuto, false);
+fitting.fit_rabi(hMain, hAuto, false);
 global gmSEQ
 piNs = safe_gm_field(gmSEQ, 'RabiFitPi', NaN);
 rabiFreqMHz = safe_gm_field(gmSEQ, 'RabiFitFreqMHz', NaN);
@@ -777,7 +783,7 @@ if isempty(signal)
 end
 
     % gmSEQ.SweepParam is programmed in ns from GUI/main sequence fields.
-    % fit_T1_func expects x in ms, so convert directly ns->ms here instead
+    % fitting.fit_t1 expects x in ms, so convert directly ns->ms here instead
     % of using gmSEQ.ScaleT (which is display-unit dependent).
     x = double(gmSEQ.SweepParam(1:size(signal, 2))) * 1e-6;
 if numel(x) < 6
@@ -812,7 +818,7 @@ try
         return;
     end
 
-    [popt, perr] = fit_T1_func(x, y);
+    [popt, perr] = fitting.fit_t1(x, y);
     rate = popt(1);
     if isfinite(rate) && rate > 0
         t1Ms = 1 / rate;
@@ -903,12 +909,12 @@ if stop_requested(hAuto)
     return;
 end
 
-Auto_LoadUserInputs(hObject, eventdata, hMain);
+auto_load_user_inputs(hObject, eventdata, hMain);
 if stop_requested(hAuto)
     return;
 end
 
-T1_SemiAuto_Run(hObject, eventdata, hMain, hAuto);
+t1_semi_auto_run(hObject, eventdata, hMain, hAuto);
 if stop_requested(hAuto)
     return;
 end
@@ -918,7 +924,7 @@ if contains(lower(normalize_to_char(suffix)), '[rough t1')
     fileNamePrefix = 'Rough_T1_';
 end
 
-save_and_maybe_upload_main_figure(hMain, hAuto, gSaveDataAve.file, cfg, ...
+save_main_figure(hMain, hAuto, gSaveDataAve.file, cfg, ...
     ['. Current sequence is finished.' suffix], fileNamePrefix);
 end
 
@@ -1034,7 +1040,7 @@ if isprop(h, 'Value')
 end
 end
 
-function save_and_maybe_upload_main_figure(handlesMain, handlesAuto, runFileName, cfg, statusSuffix, fileNamePrefix)
+function save_main_figure(handlesMain, handlesAuto, runFileName, cfg, statusSuffix, fileNamePrefix)
 saveFolder = cfg.paths.saveFolder;
 if isfield(cfg, 'runtime') && isstruct(cfg.runtime) && ...
         isfield(cfg.runtime, 'runSaveFolder') && ~isempty(cfg.runtime.runSaveFolder)
@@ -1063,38 +1069,6 @@ imageName = strrep(rawName, '.txt', '.png');
 imagePath = fullfile(saveFolder, imageName);
 
 imwrite(getframe(handlesMain.figure1).cdata, imagePath);
-
-% Slack upload is optional and should be skipped when disabled.
-enableSlack = false;
-if isfield(handlesAuto, 'slackUploadFlag')
-    hSlackFlag = handlesAuto.slackUploadFlag;
-    if isgraphics(hSlackFlag, 'uicontrol') && isprop(hSlackFlag, 'Value')
-        enableSlack = logical(get(hSlackFlag, 'Value'));
-    end
-end
-if ~enableSlack
-    return;
-end
-
-message = '';
-if isfield(handlesAuto, 'slackUploadText')
-    hSlackText = handlesAuto.slackUploadText;
-    if isgraphics(hSlackText, 'uicontrol') && isprop(hSlackText, 'String')
-        message = normalize_to_char(get(hSlackText, 'String'));
-    end
-end
-message = [message statusSuffix];
-scriptFolder = cfg.paths.slackScriptFolder;
-keepCount = int32(cfg.slack.defaultKeep);
-
-try
-    if count(py.sys.path, scriptFolder) == 0
-        insert(py.sys.path, int32(0), scriptFolder);
-    end
-    py.slack_upload_v2.upload_and_cleanup(imagePath, message, keepCount);
-catch ME
-    warning('SmartT1:SlackUploadFailed', 'Slack upload failed: %s', ME.message);
-end
 end
 
 function runFolder = create_run_save_folder(baseFolder)

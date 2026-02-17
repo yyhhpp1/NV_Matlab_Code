@@ -135,7 +135,20 @@ end
 end
 
 function tf = function_exists(funcName)
-tf = exist(funcName, 'file') == 2;
+if isempty(funcName)
+    tf = false;
+    return;
+end
+
+% Package-qualified functions (e.g., plotting.plot_rabi_data) are more
+% reliably resolved via WHICH than EXIST(...,'file') alone.
+w = which(funcName);
+if ~isempty(w)
+    tf = true;
+    return;
+end
+
+tf = (exist(funcName, 'file') == 2) || (exist(funcName, 'builtin') == 5);
 end
 
 function out = normalize_to_char(in)

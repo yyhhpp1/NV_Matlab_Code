@@ -1,4 +1,4 @@
-function FitRabi(varargin)
+function fit_rabi(varargin)
 global gmSEQ
 
 if nargin < 1
@@ -19,7 +19,7 @@ if nargin >= 3
     end
 end
 
-cfg = AutoPipelineConfig();
+cfg = config();
 fitCfg = struct();
 if isfield(cfg, 'smart') && isfield(cfg.smart, 'rabiFit')
     fitCfg = cfg.smart.rabiFit;

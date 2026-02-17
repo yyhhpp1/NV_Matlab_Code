@@ -1,4 +1,4 @@
-function PlotESRData(handles)
+function plot_esr_data(handles)
 global gmSEQ
 
 cmp = tab10(20);

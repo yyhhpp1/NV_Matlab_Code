@@ -1,4 +1,4 @@
-function PlotRabiData(handles,raw_j)
+function plot_rabi_data(handles,raw_j)
 global gmSEQ
 
 %dataN is number of counters

@@ -1,4 +1,4 @@
-function FitESR(varargin)
+function fit_esr(varargin)
 global gmSEQ
 
 if nargin < 1
@@ -11,7 +11,7 @@ else
     handles2 = [];
 end
 
-cfg = AutoPipelineConfig();
+cfg = config();
 minPoints = 5;
 if isfield(cfg, 'smart') && isfield(cfg.smart, 'esrFit') && ...
         isfield(cfg.smart.esrFit, 'minPoints')

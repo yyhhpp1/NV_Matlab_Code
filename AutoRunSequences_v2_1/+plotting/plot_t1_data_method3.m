@@ -1,4 +1,4 @@
-function PlotT1Data_method3(handles,raw_j)
+function plot_t1_data_method3(handles,raw_j)
 % use on T1_S11_S1m1
 
 global gmSEQ
@@ -93,7 +93,7 @@ if get(handles.bShowLegend,'Value')
     
     x1 = double(gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT); %ms
     y1 = data;
-    [popt1, perr1, x1_plot, y1_plot] = fit_T1_func(x1, y1);
+    [popt1, perr1, x1_plot, y1_plot] = fitting.fit_t1(x1, y1);
     fit1_text = sprintf('\\Omega + 2\\gamma = %.1f \\pm %.1f Hz', popt1(1)*1000, perr1(1)*1000);
     if isfield(gmSEQ, 'T1FitLastStatus') && isstruct(gmSEQ.T1FitLastStatus) ...
             && isfield(gmSEQ.T1FitLastStatus, 'ok') && ~gmSEQ.T1FitLastStatus.ok
