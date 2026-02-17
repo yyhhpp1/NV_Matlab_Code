@@ -73,6 +73,7 @@ Execution order:
 9. For each selected target:
    - resolve frequencies (`fSg1`, `fSg2`)
    - run rough T1 policy to determine final range
+   - rough fit can use current + previous rough tries (combined fit)
    - run final T1 sequence
    - update optional per-target status text
 
@@ -131,7 +132,7 @@ Behavior:
 Default ODMR cfg (`config.m`):
 
 - `splitThresholdMHz = 200`
-- `windowMarginMHz = 20`
+- `windowMarginMHz = 40`
 - `minPoints = 51`
 - `maxPoints = 601`
 - `pointsPerMHz = 2.0`
@@ -205,10 +206,13 @@ Key rules implemented:
 
 - start is never reduced below 0 and is kept fixed by policy
 - rough scan can override point count via `edit_rough_npts`
-- each rough retry runs real T1 sequence and fits current data
+- each rough retry runs real T1 sequence
+- rough fit can use aggregated data from previous tries + current try
+- previous rough-try points are overlaid in gray markers
+- combined rough fit is overlaid as a dashed line
 - latest rough result is displayed immediately:
   - `txt_rough_t1_ms = "Rough T1: xxx ms"` (overwrites previous)
-- retry span update uses `2*T1rough` (ms -> ns)
+- retry span update uses `stopFactor*T1rough` (ms -> ns)
 - span is rounded to nearest 1000 (time unit used by sequence fields, ns in this setup)
 - stop is aligned so sweep points remain integer-grid-consistent where possible
 - optional cap:
@@ -217,10 +221,10 @@ Key rules implemented:
 Final correction rule after rough fit:
 
 - compute window:
-  - lower bound = `start + 1.5*T1rough`
-  - upper bound = `start + 3.0*T1rough`
+  - lower bound = `start + minSpanFactor*T1rough`
+  - upper bound = `start + maxSpanFactor*T1rough`
 - if original stop is inside this window -> keep stop
-- otherwise -> set stop to `start + 2*T1rough`
+- otherwise -> set stop to `start + stopFactor*T1rough`
 - when auto-correcting stop:
   - round span to nearest 1000
   - align stop to integer-point grid
@@ -241,7 +245,9 @@ When enabled:
 - uses:
   - `n1 = ceil(n/2)`
   - `n2 = floor(n/2)`
-- split/stop are aligned to integer-point grids for both segments.
+- total span is rounded to nearest 1000 first
+- split/stop are solved against integer-step constraints for both segments
+- if exact rounded-span solve is impossible, stop is nudged slightly to enforce integer-point grids.
 
 When disabled:
 
@@ -334,8 +340,14 @@ Stop button callback (`pushbutton_stopProg_Callback`) does:
 
 After each sequence run (`run_one_sequence`):
 
-- GUI figure is saved to `cfg.paths.saveFolder`
+- GUI figure is saved inside a per-run timestamp folder under `cfg.paths.saveFolder`
 - if suffix indicates rough T1, filename gets `Rough_T1_` prefix
+- rough tries are re-saved after rough overlays are drawn (previous points + combined fit)
+
+## 16.1 GUI Rewrite Behavior
+
+- Main experiment GUI is rewritten per sequence step via `apply_sequence_to_main_gui(...)`.
+- Auto-run parameter GUI (`T1_SemiAuto_ParamInput_v2_1`) is not rewritten with corrected rough stop values.
 
 ## 17. GUI State Persistence
 
@@ -366,7 +378,7 @@ Most critical tags:
 - rough:
   - `chk_enable_rough_scan`, `edit_rough_npts`, `edit_rough_repeat`,
     `edit_rough_average`, `edit_rough_max_retries`, `edit_rough_fit_relerr`,
-    `popup_rough_stop_policy`
+    `popup_rough_stop_policy`, `edit_rough_stop_factor`
 - precal:
   - `chk_enable_precal`, `edit_odmr_power`, `edit_rabi_power`
   - `edit_precal_rabi_start/stop/npts/repeat/average`
@@ -390,7 +402,7 @@ See `config.m` for exact values. Main sections:
 - `cfg.smart.odmr`
   - split/margin/points/spacing/hard bounds
 - `cfg.smart.rough`
-  - enable/repeat/average/nPoints/retries/fit quality/policy/span factors/maxStopNs
+  - enable/repeat/average/nPoints/retries/fit quality/policy/span factors/stopFactor/maxStopNs
 - `cfg.smart.t1fit`
   - `model`, stretched bounds, amplitude bound
 - `cfg.smart.power`
