@@ -94,11 +94,13 @@ hold(handles.axes3, "off")
 if get(handles.bShowLegend,'Value')
     legend(handles.axes2, 'Location', 'best')
     legend(handles.axes3, 'Location', 'best')
+end
 
-    
-    x1 = double(gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT); %ms
-    y1 = data;
-    [popt1, perr1, x1_plot, y1_plot] = fitting.fit_t1(x1, y1);
+x1 = double(gmSEQ.SweepParam(1:length(data)).*gmSEQ.ScaleT); %ms
+y1 = data;
+[popt1, perr1, x1_plot, y1_plot] = fitting.fit_t1(x1, y1);
+
+if get(handles.bShowLegend,'Value')
     fit1_text = sprintf('3\\Omega = %.1f \\pm %.1f Hz', popt1(1)*1000, perr1(1)*1000);
     if isfield(gmSEQ, 'T1FitLastStatus') && isstruct(gmSEQ.T1FitLastStatus) ...
             && isfield(gmSEQ.T1FitLastStatus, 'ok') && ~gmSEQ.T1FitLastStatus.ok

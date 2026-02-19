@@ -55,6 +55,30 @@ status.model = model;
 status.validN = validN;
 status.nRequired = nRequired;
 status.ok = ~isempty(x_plot) && all(isfinite(popt));
+status.rate = NaN;
+status.rateErr = NaN;
+status.timeScaleMs = NaN;
+status.timeScaleRelErr = inf;
+status.stretchN = NaN;
+status.stretchNErr = NaN;
+if ~isempty(popt) && numel(popt) >= 1 && isfinite(popt(1))
+    status.rate = popt(1);
+    if ~isempty(perr) && numel(perr) >= 1 && isfinite(perr(1))
+        status.rateErr = perr(1);
+    end
+    if status.rate > 0
+        status.timeScaleMs = 1 / status.rate;
+        if isfinite(status.rateErr)
+            status.timeScaleRelErr = status.rateErr / max(abs(status.rate), eps);
+        end
+    end
+end
+if ~isempty(popt) && numel(popt) >= 3 && isfinite(popt(3))
+    status.stretchN = popt(3);
+    if ~isempty(perr) && numel(perr) >= 3 && isfinite(perr(3))
+        status.stretchNErr = perr(3);
+    end
+end
 if ~isempty(errMsg)
     status.ok = false;
     status.msg = ['Fit skipped: ' errMsg];

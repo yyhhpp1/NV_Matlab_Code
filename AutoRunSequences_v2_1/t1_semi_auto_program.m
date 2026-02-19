@@ -165,10 +165,17 @@ for iT = 1:numel(ctx.targets)
         fDispP1 = fSg2;
     end
 
+    if isfinite(roughInfo.t1RoughMs)
+        roughTail = sprintf('roughT1=%.3fms', roughInfo.t1RoughMs);
+    elseif isfield(roughInfo, 'edgeRatio') && isfinite(roughInfo.edgeRatio)
+        roughTail = sprintf('roughRatio=%.4f', roughInfo.edgeRatio);
+    else
+        roughTail = 'rough=NA';
+    end
     statusText = sprintf(['%s: f_m1=%.6fGHz f_p1=%.6fGHz | ', ...
-        'SG1 pi=%.1fns fR=%.2fMHz | SG2 pi=%.1fns fR=%.2fMHz | roughT1=%.3fms'], ...
+        'SG1 pi=%.1fns fR=%.2fMHz | SG2 pi=%.1fns fR=%.2fMHz | %s'], ...
         target.id, fDispM1, fDispP1, ...
-        piSg1, freqSg1MHz, piSg2, freqSg2MHz, roughInfo.t1RoughMs);
+        piSg1, freqSg1MHz, piSg2, freqSg2MHz, roughTail);
     disp(['[SmartT1] ' statusText]);
     update_target_status_display(handlesAuto, cfg, target.id, statusText);
 end
@@ -194,6 +201,25 @@ if isfield(cfg.smart.ui.tags.rough, 'stopFactor')
 end
 if ~isfinite(ctx.rough.stopFactor) || ctx.rough.stopFactor <= 0
     ctx.rough.stopFactor = 2.0;
+end
+if isfield(ctx.rough, 'stopEstimator')
+    ctx.rough.stopEstimator = canonical_rough_stop_estimator(ctx.rough.stopEstimator);
+else
+    ctx.rough.stopEstimator = 'single_exp';
+end
+if isfield(ctx.rough, 'ratioThreshold')
+    if ~isfinite(ctx.rough.ratioThreshold) || ctx.rough.ratioThreshold <= 0
+        ctx.rough.ratioThreshold = 0.1;
+    end
+else
+    ctx.rough.ratioThreshold = 0.1;
+end
+if isfield(ctx.rough, 'ratioExtendFactor')
+    if ~isfinite(ctx.rough.ratioExtendFactor) || ctx.rough.ratioExtendFactor <= 1
+        ctx.rough.ratioExtendFactor = 1.5;
+    end
+else
+    ctx.rough.ratioExtendFactor = 1.5;
 end
 
 ctx.power = cfg.smart.power;
@@ -637,7 +663,8 @@ cache.(key) = struct('piNs', piNs, 'rabiFreqMHz', rabiFreqMHz);
 end
 
 function [finalRange, roughInfo] = determine_t1_final_range(target, fSg1, fSg2, piSg1, piSg2, ctx, hMain, hAuto, hObject, eventdata, cfg)
-roughInfo = struct('t1RoughMs', NaN, 'fitRelErr', NaN, 'nRuns', 0);
+roughInfo = struct('t1RoughMs', NaN, 'fitRelErr', NaN, 'edgeRatio', NaN, ...
+    'nRuns', 0, 'stopEstimator', ctx.rough.stopEstimator);
 start0 = target.t1.start;
 stop0 = target.t1.stop;
 if ~isfinite(start0)
@@ -699,8 +726,8 @@ for iTry = 1:max(1, ctx.rough.maxRetries)
     end
 
     overlay_previous_rough_points(hMain, roughHist.xDisp, roughHist.y);
-    [t1Ms, relErr, curData, fitCurve] = estimate_t1_from_current_data( ...
-        target.transition, roughHist.xMs, roughHist.y);
+    [t1Ms, relErr, curData, fitCurve, edgeRatio] = estimate_t1_from_current_data( ...
+        target.transition, roughHist.xMs, roughHist.y, ctx.rough, cfg.smart.t1fit);
     if ~isempty(curData.xMs)
         roughHist.xMs = [roughHist.xMs; curData.xMs(:)];
         roughHist.xDisp = [roughHist.xDisp; curData.xDisp(:)];
@@ -712,17 +739,28 @@ for iTry = 1:max(1, ctx.rough.maxRetries)
 
     roughInfo.t1RoughMs = t1Ms;
     roughInfo.fitRelErr = relErr;
+    roughInfo.edgeRatio = edgeRatio;
     if isfinite(t1Ms)
         update_rough_t1_display(hAuto, cfg, t1Ms);
+    elseif isfinite(edgeRatio)
+        update_rough_ratio_display(hAuto, cfg, edgeRatio);
     end
-    if isfinite(t1Ms)
+    if strcmpi(ctx.rough.stopEstimator, 'edge_ratio')
+        if isfinite(edgeRatio) && edgeRatio <= ctx.rough.ratioThreshold
+            break;
+        end
+    elseif isfinite(t1Ms)
         if strcmpi(ctx.rough.stopPolicy, 'first_good') && relErr <= ctx.rough.fitRelErrThreshold
             break;
         end
     end
 
-    % Retry policy: keep start fixed, only extend stop to stopFactor*T1 (ms->ns).
-    if isfinite(t1Ms) && t1Ms > 0
+    % Retry policy:
+    % - fit modes: extend stop to stopFactor*Tmetric (ms->ns)
+    % - edge-ratio mode: extend current span multiplicatively.
+    if strcmpi(ctx.rough.stopEstimator, 'edge_ratio')
+        span = max(rangeRough(2) - rangeRough(1), 1) * ctx.rough.ratioExtendFactor;
+    elseif isfinite(t1Ms) && t1Ms > 0
         span = ctx.rough.stopFactor * t1Ms * 1e6;
     else
         span = max(rangeRough(2) - rangeRough(1), 1);
@@ -736,6 +774,11 @@ for iTry = 1:max(1, ctx.rough.maxRetries)
             target.id, maxStopCap));
     end
     rangeRough = [start0, stopTry];
+end
+
+if strcmpi(ctx.rough.stopEstimator, 'edge_ratio')
+    finalRange = rangeRough;
+    return;
 end
 
 if ~isfinite(roughInfo.t1RoughMs)
@@ -784,18 +827,26 @@ if ~strcmp(reason, 'within_range')
 end
 end
 
-function [t1Ms, relErr, curData, fitCurve] = estimate_t1_from_current_data(transition, histXMs, histY)
+function [t1Ms, relErr, curData, fitCurve, edgeRatio] = estimate_t1_from_current_data( ...
+    transition, histXMs, histY, roughCfg, t1FitCfg)
 global gmSEQ
 t1Ms = NaN;
 relErr = inf;
 curData = struct('xMs', [], 'xDisp', [], 'y', []);
 fitCurve = struct('xPlotMs', [], 'yPlot', []);
+edgeRatio = NaN;
 
 if nargin < 2 || isempty(histXMs)
     histXMs = [];
 end
 if nargin < 3 || isempty(histY)
     histY = [];
+end
+if nargin < 4 || ~isstruct(roughCfg)
+    roughCfg = struct('stopEstimator', 'single_exp');
+end
+if nargin < 5 || ~isstruct(t1FitCfg)
+    t1FitCfg = struct();
 end
 
 if ~isfield(gmSEQ, 'signal') || isempty(gmSEQ.signal)
@@ -846,22 +897,80 @@ try
     validFit = isfinite(xFit) & isfinite(yFit);
     xFit = xFit(validFit);
     yFit = yFit(validFit);
+
+    if strcmpi(roughCfg.stopEstimator, 'edge_ratio')
+        if numel(y) >= 2 && isfinite(y(1)) && isfinite(y(end))
+            edgeRatio = abs(y(end)) / max(abs(y(1)), eps);
+        end
+        return;
+    end
+
     if numel(xFit) < 6
         return;
     end
 
-    [popt, perr, xPlotMs, yPlot] = fitting.fit_t1(xFit, yFit);
+    fitModel = 'single_exp';
+    if strcmpi(roughCfg.stopEstimator, 'stretched_div_n')
+        fitModel = 'stretched_exp';
+    end
+    [popt, perr, xPlotMs, yPlot] = run_t1_fit_with_model(xFit, yFit, fitModel, t1FitCfg);
     fitCurve.xPlotMs = xPlotMs;
     fitCurve.yPlot = yPlot;
+
     rate = popt(1);
     if isfinite(rate) && rate > 0
-        t1Ms = 1 / rate;
-        relErr = perr(1) / max(abs(rate), eps);
+        baseT1Ms = 1 / rate;
+        relBase = perr(1) / max(abs(rate), eps);
+        if strcmpi(roughCfg.stopEstimator, 'stretched_div_n')
+            n = NaN;
+            nErr = NaN;
+            if numel(popt) >= 3 && isfinite(popt(3))
+                n = popt(3);
+            end
+            if numel(perr) >= 3 && isfinite(perr(3))
+                nErr = perr(3);
+            end
+            if isfinite(n) && n > 0
+                t1Ms = baseT1Ms / n;
+                relN = 0;
+                if isfinite(nErr)
+                    relN = nErr / max(abs(n), eps);
+                end
+                relErr = sqrt(relBase.^2 + relN.^2);
+            end
+        else
+            t1Ms = baseT1Ms;
+            relErr = relBase;
+        end
     end
 catch
     t1Ms = NaN;
     relErr = inf;
 end
+end
+
+function [popt, perr, xPlot, yPlot] = run_t1_fit_with_model(x, y, modelName, t1FitCfg)
+global gmSEQ
+
+prevModel = '';
+if isfield(gmSEQ, 'T1FitModel')
+    prevModel = gmSEQ.T1FitModel;
+end
+prevCfg = struct();
+if isfield(gmSEQ, 'T1FitCfg') && isstruct(gmSEQ.T1FitCfg)
+    prevCfg = gmSEQ.T1FitCfg;
+end
+cleanupObj = onCleanup(@() restore_t1_fit_model(prevModel, prevCfg)); %#ok<NASGU>
+
+gmSEQ.T1FitModel = modelName;
+gmSEQ.T1FitCfg = t1FitCfg;
+[popt, perr, xPlot, yPlot] = fitting.fit_t1(x, y);
+end
+
+function restore_t1_fit_model(prevModel, prevCfg)
+global gmSEQ
+gmSEQ.T1FitModel = prevModel;
+gmSEQ.T1FitCfg = prevCfg;
 end
 
 function overlay_previous_rough_points(handlesMain, xPrevDisp, yPrev)
@@ -888,15 +997,15 @@ hold(ax, 'off');
 end
 
 function overlay_combined_rough_fit(handlesMain, xPlotMs, yPlot, t1Ms, relErr)
-if nargin < 4 || isempty(xPlotMs) || isempty(yPlot)
-    return;
-end
 if ~isfield(handlesMain, 'axes3') || ~isgraphics(handlesMain.axes3, 'axes')
     return;
 end
 global gmSEQ
 ax = handlesMain.axes3;
 delete(findobj(ax, 'Tag', 'rough_combined_fit'));
+if nargin < 4 || isempty(xPlotMs) || isempty(yPlot)
+    return;
+end
 scaleT = safe_gm_field(gmSEQ, 'ScaleT', 1e-6);
 xPlotDisp = xPlotMs .* (scaleT / 1e-6);
 if isfinite(t1Ms)
@@ -1009,10 +1118,31 @@ end
 end
 
 function run_one_sequence(seq, hMain, hAuto, hObject, eventdata, cfg, suffix)
-global gSaveDataAve
+global gSaveDataAve gmSEQ
 if stop_requested(hAuto)
     return;
 end
+
+isRough = contains(lower(normalize_to_char(suffix)), '[rough t1');
+isTrueT1 = isfield(seq, 'name') && ...
+    (strcmp(seq.name, 'T1_S00_S01_S10') || strcmp(seq.name, 'T1_S11_S1m1'));
+autoStopEnabled = false;
+autoStopThr = 0.05;
+autoStopMinAvg = 3;
+if isfield(cfg, 'smart') && isfield(cfg.smart, 'finalT1')
+    if isfield(cfg.smart.finalT1, 'autoStopByRelErr')
+        autoStopEnabled = logical(cfg.smart.finalT1.autoStopByRelErr);
+    end
+    if isfield(cfg.smart.finalT1, 'relErrThreshold') && isfinite(cfg.smart.finalT1.relErrThreshold)
+        autoStopThr = cfg.smart.finalT1.relErrThreshold;
+    end
+    if isfield(cfg.smart.finalT1, 'minAverageForAutoStop') && isfinite(cfg.smart.finalT1.minAverageForAutoStop)
+        autoStopMinAvg = max(1, round(cfg.smart.finalT1.minAverageForAutoStop));
+    end
+end
+gmSEQ.AutoStopT1ByRelErr = autoStopEnabled && isTrueT1 && ~isRough;
+gmSEQ.AutoStopT1RelErrThreshold = autoStopThr;
+gmSEQ.AutoStopT1MinAverage = autoStopMinAvg;
 
 apply_sequence_to_main_gui(seq, hMain);
 if stop_requested(hAuto)
@@ -1025,17 +1155,25 @@ if stop_requested(hAuto)
 end
 
 t1_semi_auto_run(hObject, eventdata, hMain, hAuto);
-if stop_requested(hAuto)
-    return;
-end
+stoppedByAutoGui = stop_requested(hAuto);
 
 fileNamePrefix = '';
-if contains(lower(normalize_to_char(suffix)), '[rough t1')
+if isRough
     fileNamePrefix = 'Rough_T1_';
 end
 
-save_main_figure(hMain, hAuto, gSaveDataAve.file, cfg, ...
-    ['. Current sequence is finished.' suffix], fileNamePrefix);
+if ~isempty(gSaveDataAve) && isstruct(gSaveDataAve) && isfield(gSaveDataAve, 'file')
+    if stoppedByAutoGui
+        statusSuffix = ['. Sequence stopped by Auto GUI' suffix];
+    else
+        statusSuffix = ['. Current sequence is finished.' suffix];
+    end
+    save_main_figure(hMain, hAuto, gSaveDataAve.file, cfg, statusSuffix, fileNamePrefix);
+end
+
+if stoppedByAutoGui
+    return;
+end
 end
 
 function seq = build_preset_step(h)
@@ -1244,6 +1382,16 @@ tag = cfg.smart.ui.tags.display.roughT1;
 set_display_control_string(handlesAuto, tag, msg);
 end
 
+function update_rough_ratio_display(handlesAuto, cfg, edgeRatio)
+if ~isfield(cfg.smart.ui.tags, 'display') || ...
+        ~isfield(cfg.smart.ui.tags.display, 'roughT1')
+    return;
+end
+msg = sprintf('Rough ratio: %.4f', edgeRatio);
+tag = cfg.smart.ui.tags.display.roughT1;
+set_display_control_string(handlesAuto, tag, msg);
+end
+
 function set_display_control_string(handlesStruct, tag, msg)
 if ~isfield(handlesStruct, tag)
     return;
@@ -1358,6 +1506,20 @@ if contains(s, 'max')
     out = 'max_retries';
 else
     out = 'first_good';
+end
+end
+
+function out = canonical_rough_stop_estimator(in)
+s = lower(strtrim(normalize_to_char(in)));
+switch s
+    case {'single_exp', 'single', 'single_exponential'}
+        out = 'single_exp';
+    case {'stretched_div_n', 'stretched', 'stretched_exp_div_n', 'stretched_exponential_div_n'}
+        out = 'stretched_div_n';
+    case {'edge_ratio', 'ratio', 'first_last_ratio'}
+        out = 'edge_ratio';
+    otherwise
+        out = 'single_exp';
 end
 end
 

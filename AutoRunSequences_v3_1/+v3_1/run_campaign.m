@@ -16,6 +16,7 @@ campaign.isRunning = true;
 campaign.stopRequested = false;
 campaign.lastSavedAt = now_stamp();
 v3_1.save_campaign_state(campaign);
+push_runtime_state(campaign, runtimeCtx);
 
 report = struct( ...
     'campaignId', campaign.campaignId, ...
@@ -28,6 +29,7 @@ report = struct( ...
 while true
     drawnow;
     campaign = sync_runtime_state(campaign, runtimeCtx);
+    push_runtime_state(campaign, runtimeCtx);
 
     if is_stop_requested(campaign.runtimeControl.stopMode)
         break;
@@ -42,6 +44,7 @@ while true
     report.jobsExecuted = report.jobsExecuted + 1;
     append_attempt_log_row(campaign.attemptLogPath, campaign, campaign.jobs(idx), attemptRec);
     v3_1.save_campaign_state(campaign);
+    push_runtime_state(campaign, runtimeCtx);
 
     if is_stop_requested(campaign.runtimeControl.stopMode)
         break;
@@ -54,6 +57,7 @@ campaign.currentJobId = '';
 campaign.currentJobIndex = 0;
 campaign.lastSavedAt = now_stamp();
 v3_1.save_campaign_state(campaign);
+push_runtime_state(campaign, runtimeCtx);
 
 v3_1.generate_final_sq_dq_log(campaign, campaign.finalLogPath);
 
@@ -383,9 +387,51 @@ if isa(runtimeCtx.pullCampaignFcn, 'function_handle')
                 campaign.runtimeControl = pulled.runtimeControl;
             end
             if isfield(pulled, 'jobs')
-                campaign.jobs = pulled.jobs;
+                campaign.jobs = merge_jobs_from_gui(campaign.jobs, pulled.jobs);
             end
         end
+    catch
+    end
+end
+end
+
+function jobsOut = merge_jobs_from_gui(jobsIn, jobsGui)
+% Merge user edits from GUI without clobbering runner-owned runtime status.
+jobsOut = jobsIn;
+if isempty(jobsIn) || isempty(jobsGui)
+    return;
+end
+
+idsIn = arrayfun(@(j) char(j.id), jobsIn, 'UniformOutput', false);
+idsGui = arrayfun(@(j) char(j.id), jobsGui, 'UniformOutput', false);
+
+for i = 1:numel(jobsIn)
+    iGui = find(strcmp(idsGui, idsIn{i}), 1);
+    if isempty(iGui)
+        continue;
+    end
+
+    src = jobsGui(iGui);
+    dst = jobsOut(i);
+
+    % Runtime state/history are owned by the runner. Only allow user-edits
+    % for pending jobs so reordering/config updates work during queue run.
+    if strcmpi(dst.status.state, 'pending')
+        if isfield(src, 'enabled'), dst.enabled = src.enabled; end
+        if isfield(src, 'order'),   dst.order = src.order; end
+        if isfield(src, 'name'),    dst.name = src.name; end
+        if isfield(src, 'setpoint'), dst.setpoint = src.setpoint; end
+        if isfield(src, 'profile'),  dst.profile = src.profile; end
+    end
+
+    jobsOut(i) = dst;
+end
+end
+
+function push_runtime_state(campaign, runtimeCtx)
+if isa(runtimeCtx.pushCampaignFcn, 'function_handle')
+    try
+        runtimeCtx.pushCampaignFcn(campaign);
     catch
     end
 end
@@ -427,4 +473,5 @@ if ~isfield(runtimeCtx, 'eventdataA'), runtimeCtx.eventdataA = []; end
 if ~isfield(runtimeCtx, 'handlesMain'), runtimeCtx.handlesMain = struct(); end
 if ~isfield(runtimeCtx, 'handlesAuto'), runtimeCtx.handlesAuto = struct(); end
 if ~isfield(runtimeCtx, 'pullCampaignFcn'), runtimeCtx.pullCampaignFcn = []; end
+if ~isfield(runtimeCtx, 'pushCampaignFcn'), runtimeCtx.pushCampaignFcn = []; end
 end

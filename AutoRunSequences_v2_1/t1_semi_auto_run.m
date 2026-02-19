@@ -153,6 +153,7 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
             
             SaveIgorText_Average(handles);
             SaveIgorText(handles);
+            maybe_stop_current_t1_on_fit_relerr(handles);
             
             if ~gmSEQ.bGo || ~gmSEQ.bGoAfterAvg
                 break
@@ -353,6 +354,7 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
             end
             SaveIgorText(handles);
             SaveIgorText_Average(handles);
+            maybe_stop_current_t1_on_fit_relerr(handles);
             
             if ~gmSEQ.bGo || ~gmSEQ.bGoAfterAvg
                 break
@@ -696,5 +698,44 @@ for f = 1:size(A,1)
 end
 ImgN = ImgN + 1;
 gSaveDataAve.file = strrep(file,'.txt',sprintf('_%03d.txt',ImgN));
+
+function maybe_stop_current_t1_on_fit_relerr(handles)
+global gmSEQ
+
+if ~isfield(gmSEQ, 'AutoStopT1ByRelErr') || ~logical(gmSEQ.AutoStopT1ByRelErr)
+    return;
+end
+if ~isfield(gmSEQ, 'T1FitLastStatus') || ~isstruct(gmSEQ.T1FitLastStatus)
+    return;
+end
+
+st = gmSEQ.T1FitLastStatus;
+if ~isfield(st, 'ok') || ~st.ok
+    return;
+end
+if ~isfield(st, 'timeScaleRelErr') || ~isfinite(st.timeScaleRelErr)
+    return;
+end
+
+thr = 0.05;
+if isfield(gmSEQ, 'AutoStopT1RelErrThreshold') && isfinite(gmSEQ.AutoStopT1RelErrThreshold)
+    thr = gmSEQ.AutoStopT1RelErrThreshold;
+end
+minAvg = 3;
+if isfield(gmSEQ, 'AutoStopT1MinAverage') && isfinite(gmSEQ.AutoStopT1MinAverage)
+    minAvg = max(1, round(gmSEQ.AutoStopT1MinAverage));
+end
+if ~isfield(gmSEQ, 'iAverage') || ~isfinite(gmSEQ.iAverage) || gmSEQ.iAverage < minAvg
+    return;
+end
+
+if st.timeScaleRelErr <= thr
+    gmSEQ.bGo = 0;
+    gmSEQ.bGoAfterAvg = 0; % stop current sequence gracefully
+    disp(sprintf('[SmartT1] Final T1 auto-stop: relErr=%.4f <= %.4f', st.timeScaleRelErr, thr));
+    if isfield(handles, 'runningText') && isgraphics(handles.runningText, 'uicontrol')
+        handles.runningText.String = 'Stopping (fit relErr reached)';
+    end
+end
 
 

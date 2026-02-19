@@ -46,10 +46,19 @@ cfg.smart.rough.nPoints = 0; % 0 => use target/user nPoints
 cfg.smart.rough.maxRetries = 2;
 cfg.smart.rough.fitRelErrThreshold = 0.6;
 cfg.smart.rough.stopPolicy = 'max_retries'; % first_good | max_retries
+cfg.smart.rough.stopEstimator = 'single_exp'; % single_exp | stretched_div_n | edge_ratio
 cfg.smart.rough.stopFactor = 3.0; % auto-correct stop target = start + stopFactor*T1
+cfg.smart.rough.ratioThreshold = 0.1; % for edge_ratio: require last/first <= threshold
+cfg.smart.rough.ratioExtendFactor = 1.5; % for edge_ratio: extend span by this factor per retry
 cfg.smart.rough.minSpanFactor = 2;
 cfg.smart.rough.maxSpanFactor = 3.5;
 cfg.smart.rough.maxStopNs = 1e9+1000; % hard cap for rough/final stop (ns). inf for no cap
+
+% Final (non-rough) T1 early-stop policy.
+cfg.smart.finalT1 = struct();
+cfg.smart.finalT1.autoStopByRelErr = true;
+cfg.smart.finalT1.relErrThreshold = 0.07; % 7%
+cfg.smart.finalT1.minAverageForAutoStop = 3;
 
 % T1 fit model selector.
 % model options:

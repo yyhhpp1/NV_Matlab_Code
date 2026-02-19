@@ -58,3 +58,47 @@ runtimeCtx.executeV21 = false;  % architecture dry-run by default
 
 [campaign, report] = v3_1.run_campaign(campaign, runtimeCtx);
 ```
+
+## Minimal B-Queue (Today)
+
+If you only need a queue of B-field points with v2.1 runs:
+
+### GUI
+
+```matlab
+addpath('AutoRunSequences_v3_1');
+addpath('AutoRunSequences_v3_1/BT_Control');
+v3_1.open_b_queue_minimal_gui
+```
+
+In the GUI:
+1. Open `T1_SemiAuto_ParamInput_v2_1` first.
+2. Click `Auto Detect v2.1 GUI`.
+3. Enter B list in kG.
+4. Click `Run Queue`.
+5. Use `Stop Queue` to request stop.
+
+### Script
+
+```matlab
+addpath('AutoRunSequences_v3_1');
+addpath('AutoRunSequences_v3_1/BT_Control');
+
+% hFigAuto should be your open T1_SemiAuto_ParamInput_v2_1 figure handle.
+runtimeCtx = struct( ...
+    'hFigAuto', hFigAuto, ...
+    'mode', 'driven', ...          % final magnet mode
+    'bEstimateScale', 1000, ...    % v2.1 B_estimate is in G
+    'writeStartLog', true, ...
+    'verbose', true);
+
+out = v3_1.run_b_queue_minimal([0.2 0.5 1.0], runtimeCtx);   % kG list
+disp(out.startLogPath);                                       % CSV start log
+```
+
+Stop / clear stop:
+
+```matlab
+v3_1.request_stop_b_queue_minimal(struct('hFigAuto', hFigAuto));
+v3_1.clear_stop_b_queue_minimal(struct('hFigAuto', hFigAuto));
+```
