@@ -59,12 +59,14 @@ Execution order:
 5. Predict resonance centers from estimated B (full matrix model).
 6. Determine required resonance labels from selected targets.
 7. If precalibration enabled:
-   - plan ODMR windows for required labels only
-   - run ODMR on each window
+   - plan ODMR windows for selected labels (or all 4 labels if `cfg.smart.precal.forceMeasureAllFreqs=true`)
+   - run ODMR windows iteratively
+   - after first fitted ODMR window, backout refined B and re-plan remaining windows from refined prediction
    - fit peaks from measured data
    - fill missing peaks with prediction
-   - run Rabi (SG1) for required labels
-   - run Rabi_SG2 only for DQ p1 labels
+   - run MW calibration for required labels:
+   - if `cfg.smart.precal.calipi.enabled=true`: run one `PiCal`/`PiCal_SG2` power sweep at target pulse length, fit local quadratic near minimum to pick power (with max-power safety cap), then run `Rabi`/`Rabi_SG2` at that power to get final pi
+   - else: run legacy fixed-power `Rabi`/`Rabi_SG2`
    - update unified precal summary display
 8. If precalibration disabled:
    - skip ODMR/Rabi
@@ -158,7 +160,7 @@ If fit/assignment fails:
 
 - window falls back to predicted centers for missing labels via `fill_missing_freqs`.
 
-## 8. Precalibration (ODMR + Rabi)
+## 8. Precalibration (ODMR + MW Calibration)
 
 Controlled by GUI checkbox:
 
@@ -166,12 +168,16 @@ Controlled by GUI checkbox:
 
 If enabled:
 
-- SG1 Rabi is run for all required labels.
-- SG2 Rabi is run only for p1 labels needed by DQ targets.
+- SG1 calibration is run for all required labels.
+- SG2 calibration is run only for p1 labels needed by DQ targets.
+- optional ODMR-only full-peak check via `cfg.smart.precal.forceMeasureAllFreqs`.
+- final T1 sequences use the same label-based SG power rule as calibration (including `sq_p1_calibration_boost_dB` when applicable).
 - results stored in:
   - `precal.sg1PiNs`, `precal.sg1FreqMHz`
   - `precal.sg2PiNs`, `precal.sg2FreqMHz`
+  - `precal.sg1PowDbm`, `precal.sg2PowDbm`
 - unified summary display written to `txt_precal_summary`.
+- if outermost measured ODMR peaks exist, summary appends `B(aligned from outermost)=... G`.
 
 If disabled:
 
@@ -341,8 +347,12 @@ Stop button callback (`pushbutton_stopProg_Callback`) does:
 After each sequence run (`run_one_sequence`):
 
 - GUI figure is saved inside a per-run timestamp folder under `cfg.paths.saveFolder`
+- run folder name includes estimated field from GUI, e.g. `Run_120p00G_YYYYMMDD_HHMMSS`
 - if suffix indicates rough T1, filename gets `Rough_T1_` prefix
 - rough tries are re-saved after rough overlays are drawn (previous points + combined fit)
+- at run end, final snapshots are also written:
+  - `MainGUI_Final.png`
+  - `AutoGUI_v2_1_Final.png`
 
 ## 16.1 GUI Rewrite Behavior
 
@@ -383,6 +393,9 @@ Most critical tags:
   - `chk_enable_precal`, `edit_odmr_power`, `edit_rabi_power`
   - `edit_precal_rabi_start/stop/npts/repeat/average`
   - `edit_precal_odmr_repeat/average/points_per_mhz`
+  - `chk_precal_find_power_for_pi`
+  - `edit_precal_target_pi_ns`
+  - `edit_precal_power_start_dbm`, `edit_precal_power_stop_dbm`, `edit_precal_power_npts`
 - displays:
   - `txt_precal_summary`
   - `txt_rough_t1_ms`
@@ -401,6 +414,8 @@ See `config.m` for exact values. Main sections:
   - `zeroFieldGHz`, `gammaMHzPerG`
 - `cfg.smart.odmr`
   - split/margin/points/spacing/hard bounds
+  - first-window B refinement knobs:
+  - `refineBFromFirstWindow`, `bSearchMinG`, `bSearchMaxG`, `maxBBackoutResidualMHz`, `maxBInversionSpreadG`
 - `cfg.smart.rough`
   - enable/repeat/average/nPoints/retries/fit quality/policy/span factors/stopFactor/maxStopNs
 - `cfg.smart.t1fit`
@@ -409,6 +424,8 @@ See `config.m` for exact values. Main sections:
   - ODMR/Rabi power defaults
 - `cfg.smart.precal`
   - Rabi/ODMR precal defaults
+  - `forceMeasureAllFreqs`: if `true`, precal ODMR always measures all 4 labels (`aligned_m1`, `aligned_p1`, `off_m1`, `off_p1`) even when some T1 targets are unchecked; MW calibration remains target-driven
+  - `calipi`: target-pi power calibration knobs (`enabled`, `targetPiNs`, `powerStartDbm`, `powerStopDbm`, `powerNPoints`, `maxSafePowerDbm`, `quadFitNPoints`)
 - `cfg.smart.ui.tags`
   - GUI tag map
 - `cfg.smart.targets`

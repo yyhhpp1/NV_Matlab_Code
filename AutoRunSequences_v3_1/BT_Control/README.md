@@ -67,22 +67,24 @@ request_stop_b_field_queue(struct('hFigAuto', hFigAuto));
 ## Behavior Summary
 
 1. Queries `PERSistent?` to determine starting mode.
-2. If starting persistent, sends `PS 1`, waits a fixed minimum 30 s, then checks heater transition.
+2. If starting persistent, sends `PS 1`, waits `hsHeatUpMinBufferSec` (default 30 s), then checks heater transition.
 3. Sends `ZERO` and waits `STATE? == 8`.
 4. Ramps to target and waits `STATE? == 2` (unless target is `0` and duplicate second ramp is skipped).
 5. Applies buffer wait (`psOffBufferSec`) after each completed ramp stage:
    - after down-ramp to zero (`STATE? == 8`)
    - after up-ramp to target (`STATE? == 2`, when executed)
 6. Applies final requested mode:
-   - `driven`: send `PS 1`, wait fixed minimum 30 s, then verify transition.
-   - `persistent`: send `PS 0`, wait fixed minimum 600 s, then wait `PERSistent? == 1`.
+   - `driven`: send `PS 1`, wait `hsHeatUpMinBufferSec` (default 30 s), then verify transition.
+   - `persistent`: send `PS 0`, wait `hsCoolDownMinBufferSec` (default 30 s), then wait `PERSistent? == 1`.
 7. Fails on timeout, quench (`STATE 7`), external rampdown (`STATE 11`), parse errors, or non-zero `SYST:ERR?`.
 
 ## Extra Config Fields
 
 - `skipSecondRampIfTargetZero` (default: `true`)
 - `waitPersistentBy` (default: `'pers_query'`)
-- `psOffBufferSec` (default: `0`, applied after every completed ramp stage)
+- `psOffBufferSec` (default: `10`, applied after every completed ramp stage)
+- `hsHeatUpMinBufferSec` (default: `30`, minimum wait after `PS 1`)
+- `hsCoolDownMinBufferSec` (default: `30`, minimum wait after `PS 0`)
 
 ## Fixed Internal Settings
 
@@ -92,8 +94,6 @@ The program intentionally does not take these from `cfg`:
 - `zeroTimeoutSec = 1800`
 - `heaterTimeoutSec = 120`
 - `persistentTimeoutSec = 800`
-- `psHeatupMinSec = 30`
-- `psCooldownMinSec = 600`
 - `rampRatekGPerMin` is not set by this program
 
 ## Temperature Safety Policy (set_temperature_safe)

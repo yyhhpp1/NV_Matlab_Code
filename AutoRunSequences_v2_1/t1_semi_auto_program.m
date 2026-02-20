@@ -10,15 +10,17 @@ addpath(thisDir, '-begin');
 
 cfg = config();
 cfg.runtime = struct();
-cfg.runtime.runSaveFolder = create_run_save_folder(cfg.paths.saveFolder);
 if isfield(cfg.smart, 't1fit')
     gmSEQ.T1FitModel = cfg.smart.t1fit.model;
     gmSEQ.T1FitCfg = cfg.smart.t1fit;
 end
+reset_v2_1_run_state(handlesAuto, cfg);
 ctx = build_execution_context(cfg, handlesAuto);
 if stop_requested(handlesAuto)
     return;
 end
+cfg.runtime.runSaveFolder = create_run_save_folder(cfg.paths.saveFolder, ctx.estimatedB_G);
+cleanupSave = onCleanup(@() save_end_of_run_snapshots(handlesMain, handlesAuto, cfg)); %#ok<NASGU>
 
 if isempty(ctx.targets)
     error('SmartT1:NoTargetSelected', ...
@@ -39,34 +41,65 @@ end
 predicted = estimate_resonance_centers(ctx.estimatedB_G, cfg.smart.physics);
 allLabels = {'aligned_m1', 'aligned_p1', 'off_m1', 'off_p1'};
 requiredLabels = collect_required_resonance_labels(ctx.targets);
+odmrLabels = requiredLabels;
+if isfield(ctx, 'precal') && isfield(ctx.precal, 'forceMeasureAllFreqs') && ctx.precal.forceMeasureAllFreqs
+    odmrLabels = allLabels;
+end
 
 freqMap = struct();
 rabiCache = struct();
 precal = struct('sg1PiNs', struct(), 'sg1FreqMHz', struct(), ...
-    'sg2PiNs', struct(), 'sg2FreqMHz', struct());
+    'sg2PiNs', struct(), 'sg2FreqMHz', struct(), ...
+    'sg1PowDbm', struct(), 'sg2PowDbm', struct());
 
 if ctx.precal.enabled
-    windows = plan_odmr_windows(requiredLabels, predicted, cfg.smart.odmr);
-    disp(['[SmartT1] Precal required labels: ' strjoin(requiredLabels, ', ')]);
-    disp(sprintf('[SmartT1] Planned ODMR windows: %d', numel(windows)));
-    for iW = 1:numel(windows)
+    disp(['[SmartT1] Precal ODMR labels: ' strjoin(odmrLabels, ', ')]);
+    pendingLabels = odmrLabels;
+    iW = 0;
+    refinedBUsed = false;
+    while ~isempty(pendingLabels)
+        windows = plan_odmr_windows(pendingLabels, predicted, cfg.smart.odmr);
+        if isempty(windows)
+            break;
+        end
+        w = windows(1);
+        iW = iW + 1;
+        disp(sprintf('[SmartT1] Planned ODMR windows (remaining): %d', numel(windows)));
         if stop_requested(handlesAuto)
             return;
         end
 
-        seq = build_odmr_sequence(windows(iW), ctx, handlesAuto, cfg);
+        seq = build_odmr_sequence(w, ctx, handlesAuto, cfg);
         run_one_sequence(seq, handlesMain, handlesAuto, hObject, eventdata, cfg, ...
-            sprintf(' [ODMR window %d/%d]', iW, numel(windows)));
+            sprintf(' [ODMR window %d]', iW));
         if stop_requested(handlesAuto)
             return;
         end
 
-        [fitMap, ok] = fit_odmr_window_from_current_data(windows(iW), predicted, cfg.smart.odmr);
+        [fitMap, ok] = fit_odmr_window_from_current_data(w, predicted, cfg.smart.odmr);
         if ~ok
             warning('SmartT1:ODMRWindowFitFallback', ...
                 'Using predicted frequencies for failed ODMR window #%d.', iW);
         end
         freqMap = merge_freq_map(freqMap, fitMap);
+        update_precal_summary_display(handlesAuto, cfg, ...
+            build_precal_summary_text(freqMap, precal, allLabels, odmrLabels, cfg.smart.physics, cfg.smart.odmr));
+
+        if ~refinedBUsed && iW == 1 && ok && isfield(cfg.smart.odmr, 'refineBFromFirstWindow') ...
+                && logical(cfg.smart.odmr.refineBFromFirstWindow)
+            [BRefinedG, bOk, usedLabels] = backout_true_B_from_first_odmr_window( ...
+                w, fitMap, predicted, ctx.estimatedB_G, cfg.smart.physics, cfg.smart.odmr);
+            if bOk
+                predicted = estimate_resonance_centers(BRefinedG, cfg.smart.physics);
+                disp(sprintf('[SmartT1] Refined B from first ODMR: %.3f G -> %.3f G (labels: %s)', ...
+                    ctx.estimatedB_G, BRefinedG, strjoin(usedLabels, ', ')));
+            else
+                disp('[SmartT1] Skipped B refinement from first ODMR (fit quality/consistency not sufficient).');
+            end
+            refinedBUsed = true;
+        end
+
+        pendingLabels = setdiff(pendingLabels, w.labels, 'stable');
     end
 
     freqMap = fill_missing_freqs(freqMap, allLabels, predicted);
@@ -75,10 +108,13 @@ if ctx.precal.enabled
     for iL = 1:numel(requiredLabels)
         label = requiredLabels{iL};
         fGHz = get_map_freq(freqMap, label);
-        [rabiCache, piNs, fRMHz] = calibrate_rabi_path( ...
-            'sg1', fGHz, ctx, handlesMain, handlesAuto, hObject, eventdata, cfg, rabiCache);
+        [rabiCache, piNs, fRMHz, pDbm] = calibrate_rabi_path( ...
+            'sg1', label, fGHz, ctx, handlesMain, handlesAuto, hObject, eventdata, cfg, rabiCache);
         precal.sg1PiNs.(label) = piNs;
         precal.sg1FreqMHz.(label) = fRMHz;
+        precal.sg1PowDbm.(label) = pDbm;
+        update_precal_summary_display(handlesAuto, cfg, ...
+            build_precal_summary_text(freqMap, precal, allLabels, odmrLabels, cfg.smart.physics, cfg.smart.odmr));
         if stop_requested(handlesAuto)
             return;
         end
@@ -88,17 +124,20 @@ if ctx.precal.enabled
     for iL = 1:numel(p1Labels)
         label = p1Labels{iL};
         fGHz = get_map_freq(freqMap, label);
-        [rabiCache, piNs, fRMHz] = calibrate_rabi_path( ...
-            'sg2', fGHz, ctx, handlesMain, handlesAuto, hObject, eventdata, cfg, rabiCache);
+        [rabiCache, piNs, fRMHz, pDbm] = calibrate_rabi_path( ...
+            'sg2', label, fGHz, ctx, handlesMain, handlesAuto, hObject, eventdata, cfg, rabiCache);
         precal.sg2PiNs.(label) = piNs;
         precal.sg2FreqMHz.(label) = fRMHz;
+        precal.sg2PowDbm.(label) = pDbm;
+        update_precal_summary_display(handlesAuto, cfg, ...
+            build_precal_summary_text(freqMap, precal, allLabels, odmrLabels, cfg.smart.physics, cfg.smart.odmr));
         if stop_requested(handlesAuto)
             return;
         end
     end
 
     update_precal_summary_display(handlesAuto, cfg, ...
-        build_precal_summary_text(freqMap, precal, allLabels, requiredLabels));
+        build_precal_summary_text(freqMap, precal, allLabels, odmrLabels, cfg.smart.physics, cfg.smart.odmr));
 else
     freqMap = predicted;
     gmSEQ.SmartFreqMapGHz = freqMap;
@@ -145,12 +184,43 @@ for iT = 1:numel(ctx.targets)
         freqSg2MHz = NaN;
     end
 
+    ctxTarget = ctx;
+    if ctx.precal.enabled
+        pSg1 = choose_best_precal_power(precal.sg1PowDbm, labelM1, labelP1, target.transition, ctx.power.rabi_sg1_dBm, false);
+        pSg2 = choose_best_precal_power(precal.sg2PowDbm, labelM1, labelP1, target.transition, ctx.power.rabi_sg2_dBm, true);
+        if ~isfinite(pSg2)
+            pSg2 = choose_best_precal_power(precal.sg1PowDbm, labelM1, labelP1, target.transition, ctx.power.rabi_sg2_dBm, true);
+        end
+        if ~isfinite(pSg1)
+            pSg1 = ctx.power.rabi_sg1_dBm;
+        end
+        if ~isfinite(pSg2)
+            pSg2 = ctx.power.rabi_sg2_dBm;
+        end
+
+        if isfield(ctx.precal, 'calipi') && isfield(ctx.precal.calipi, 'enabled') && ctx.precal.calipi.enabled
+            [piSg1, freqSg1MHz, pSg1, piSg2, freqSg2MHz, pSg2] = ...
+                maybe_match_pi_when_one_power_capped(target, labelM1, labelP1, fSg1, fSg2, ...
+                piSg1, freqSg1MHz, pSg1, piSg2, freqSg2MHz, pSg2, ...
+                ctx, handlesMain, handlesAuto, hObject, eventdata, cfg);
+            if stop_requested(handlesAuto)
+                break;
+            end
+        end
+
+        ctxTarget.power.rabi_sg1_dBm = pSg1;
+        ctxTarget.power.rabi_sg2_dBm = pSg2;
+        if isfield(ctx.precal, 'calipi') && isfield(ctx.precal.calipi, 'enabled') && ctx.precal.calipi.enabled
+            ctxTarget.power.sq_p1_calibration_boost_dB = 0;
+        end
+    end
+
     [finalRange, roughInfo] = determine_t1_final_range( ...
-        target, fSg1, fSg2, piSg1, piSg2, ctx, handlesMain, handlesAuto, hObject, eventdata, cfg);
+        target, fSg1, fSg2, piSg1, piSg2, ctxTarget, handlesMain, handlesAuto, hObject, eventdata, cfg);
     if stop_requested(handlesAuto)
         break;
     end
-    finalSeq = build_t1_sequence(target, finalRange, fSg1, fSg2, piSg1, piSg2, ctx);
+    finalSeq = build_t1_sequence(target, finalRange, fSg1, fSg2, piSg1, piSg2, ctxTarget);
     run_one_sequence(finalSeq, handlesMain, handlesAuto, hObject, eventdata, cfg, ...
         sprintf(' [T1 %s]', target.id));
     if stop_requested(handlesAuto)
@@ -173,9 +243,10 @@ for iT = 1:numel(ctx.targets)
         roughTail = 'rough=NA';
     end
     statusText = sprintf(['%s: f_m1=%.6fGHz f_p1=%.6fGHz | ', ...
-        'SG1 pi=%.1fns fR=%.2fMHz | SG2 pi=%.1fns fR=%.2fMHz | %s'], ...
+        'SG1 pi=%.1fns fR=%.2fMHz P=%.2fdBm | SG2 pi=%.1fns fR=%.2fMHz P=%.2fdBm | %s'], ...
         target.id, fDispM1, fDispP1, ...
-        piSg1, freqSg1MHz, piSg2, freqSg2MHz, roughTail);
+        piSg1, freqSg1MHz, ctxTarget.power.rabi_sg1_dBm, ...
+        piSg2, freqSg2MHz, ctxTarget.power.rabi_sg2_dBm, roughTail);
     disp(['[SmartT1] ' statusText]);
     update_target_status_display(handlesAuto, cfg, target.id, statusText);
 end
@@ -225,6 +296,11 @@ end
 ctx.power = cfg.smart.power;
 ctx.power.odmr_dBm = read_ui_numeric(hAuto, cfg.smart.ui.tags.power.odmr, ...
     read_ui_numeric(hAuto, 'MWPowerESR', ctx.power.odmr_dBm));
+if isfield(cfg.smart.ui.tags.power, 'odmrP1')
+    ctx.power.odmr_p1_dBm = read_ui_numeric(hAuto, cfg.smart.ui.tags.power.odmrP1, ctx.power.odmr_p1_dBm);
+else
+    ctx.power.odmr_p1_dBm = ctx.power.odmr_dBm;
+end
 ctx.power.rabi_dBm = read_ui_numeric(hAuto, cfg.smart.ui.tags.power.rabi, ...
     read_ui_numeric(hAuto, 'MWPowerRabi', ctx.power.rabi_dBm));
 ctx.power.rabi_sg1_dBm = read_ui_numeric(hAuto, cfg.smart.ui.tags.power.rabiSg1, ctx.power.rabi_dBm);
@@ -249,6 +325,20 @@ ctx.precal.odmr.average = round(read_ui_numeric(hAuto, cfg.smart.ui.tags.precal.
     read_ui_numeric(hAuto, 'maxAveESR', ctx.precal.odmr.average)));
 ctx.precal.odmr.pointsPerMHz = read_ui_numeric(hAuto, cfg.smart.ui.tags.precal.odmr.pointsPerMHz, ...
     ctx.precal.odmr.pointsPerMHz);
+if isfield(ctx.precal, 'calipi')
+    tagsPrecal = cfg.smart.ui.tags.precal;
+    ctx.precal.calipi.enabled = logical(read_ui_numeric(hAuto, tagsPrecal.calipi.enable, ctx.precal.calipi.enabled));
+    ctx.precal.calipi.targetPiNs = read_ui_numeric(hAuto, tagsPrecal.calipi.targetPiNs, ctx.precal.calipi.targetPiNs);
+    ctx.precal.calipi.powerStartDbm = read_ui_numeric(hAuto, tagsPrecal.calipi.powerStartDbm, ctx.precal.calipi.powerStartDbm);
+    ctx.precal.calipi.powerStopDbm = read_ui_numeric(hAuto, tagsPrecal.calipi.powerStopDbm, ctx.precal.calipi.powerStopDbm);
+    ctx.precal.calipi.powerNPoints = round(read_ui_numeric(hAuto, tagsPrecal.calipi.powerNPoints, ctx.precal.calipi.powerNPoints));
+    if ~isfinite(ctx.precal.calipi.powerNPoints) || ctx.precal.calipi.powerNPoints < 1
+        ctx.precal.calipi.powerNPoints = 1;
+    end
+else
+    ctx.precal.calipi = struct('enabled', false, 'targetPiNs', NaN, ...
+        'powerStartDbm', NaN, 'powerStopDbm', NaN, 'powerNPoints', 1);
+end
 
 targets = cfg.smart.targets;
 for i = 1:numel(targets)
@@ -331,6 +421,98 @@ fM1GHz = min(f1, f2);
 fP1GHz = max(f1, f2);
 end
 
+function [BRefinedG, ok, usedLabels] = backout_true_B_from_first_odmr_window(window, fitMap, predicted, BSeedG, phys, odmrCfg)
+BRefinedG = NaN;
+ok = false;
+usedLabels = {};
+
+labels = window.labels;
+if isempty(labels)
+    return;
+end
+
+bCandidates = [];
+for i = 1:numel(labels)
+    label = labels{i};
+    fFitGHz = get_map_freq(fitMap, label);
+    fEstGHz = get_map_freq(predicted, label);
+    if ~isfinite(fFitGHz) || ~isfinite(fEstGHz)
+        continue;
+    end
+
+    [bNow, bOk] = invert_one_label_to_B(label, fFitGHz, BSeedG, phys, odmrCfg);
+    if bOk && isfinite(bNow)
+        bCandidates(end+1) = bNow; %#ok<AGROW>
+        usedLabels{end+1} = label; %#ok<AGROW>
+    end
+end
+
+if isempty(bCandidates)
+    return;
+end
+
+spreadG = max(bCandidates) - min(bCandidates);
+maxSpreadG = get_cfg_numeric_with_default(odmrCfg, 'maxBInversionSpreadG', 200);
+if numel(bCandidates) > 1 && spreadG > maxSpreadG
+    return;
+end
+
+BRefinedG = median(bCandidates);
+ok = isfinite(BRefinedG) && (BRefinedG >= 0);
+end
+
+function [BbestG, ok] = invert_one_label_to_B(label, targetFGHz, BSeedG, phys, odmrCfg)
+BbestG = NaN;
+ok = false;
+if ~isfinite(targetFGHz) || targetFGHz <= 0
+    return;
+end
+
+bMin = get_cfg_numeric_with_default(odmrCfg, 'bSearchMinG', 0);
+bMax = get_cfg_numeric_with_default(odmrCfg, 'bSearchMaxG', max(2000, abs(BSeedG) * 3 + 200));
+if ~isfinite(bMin)
+    bMin = 0;
+end
+if ~isfinite(bMax) || bMax <= bMin
+    bMax = max(2000, bMin + 100);
+end
+
+obj = @(B) (predict_label_frequency_from_B(B, label, phys) - targetFGHz).^2;
+try
+    BbestG = fminbnd(obj, bMin, bMax);
+catch
+    return;
+end
+if ~isfinite(BbestG)
+    return;
+end
+
+residualMHz = abs(predict_label_frequency_from_B(BbestG, label, phys) - targetFGHz) * 1000;
+maxResidualMHz = get_cfg_numeric_with_default(odmrCfg, 'maxBBackoutResidualMHz', 30);
+ok = isfinite(residualMHz) && (residualMHz <= maxResidualMHz);
+end
+
+function fGHz = predict_label_frequency_from_B(BG, label, phys)
+if contains(label, 'aligned')
+    cosTheta = 1.0;
+else
+    cosTheta = -1/3;
+end
+[fM1, fP1] = solve_nv_resonances_full_matrix(BG, cosTheta, phys);
+if endsWith(label, '_m1')
+    fGHz = fM1;
+else
+    fGHz = fP1;
+end
+end
+
+function v = get_cfg_numeric_with_default(s, fieldName, defaultValue)
+v = defaultValue;
+if isstruct(s) && isfield(s, fieldName) && isfinite(s.(fieldName))
+    v = s.(fieldName);
+end
+end
+
 function labels = collect_required_resonance_labels(targets)
 labels = {};
 for i = 1:numel(targets)
@@ -396,7 +578,7 @@ for i = 2:numel(centersSorted)
     end
 end
 
-windows = repmat(struct('fromGHz',0,'toGHz',0,'labels',{{}},'expectedPeakCount',0), 1, numel(clusters));
+windows = repmat(struct('fromGHz',0,'toGHz',0,'labels',{{}},'labelCentersGHz',[],'expectedPeakCount',0), 1, numel(clusters));
 for i = 1:numel(clusters)
     c = clusters{i};
     cFreq = centersSorted(c);
@@ -408,6 +590,7 @@ for i = 1:numel(clusters)
     windows(i).fromGHz = f0;
     windows(i).toGHz = f1;
     windows(i).labels = labelsSorted(c);
+    windows(i).labelCentersGHz = cFreq;
     windows(i).expectedPeakCount = numel(c);
 end
 end
@@ -426,11 +609,84 @@ seq.name = 'ODMR';
 seq.FROM1 = num2str(window.fromGHz, '%.6f');
 seq.TO1 = num2str(window.toGHz, '%.6f');
 seq.SweepNPoints = num2str(nPts);
-seq.fixPow = num2str(ctx.power.odmr_dBm);
+odmrPow = choose_odmr_power_for_window(window, ctx, cfg);
+seq.fixPow = num2str(odmrPow);
 seq.Repeat = num2str(max(1, round(ctx.precal.odmr.repeat)));
 seq.Average = num2str(max(1, round(ctx.precal.odmr.average)));
 seq.useSG2 = 0;
 seq.bSweep2 = 0;
+end
+
+function odmrPow = choose_odmr_power_for_window(window, ctx, cfg)
+% Policy:
+% 1) For each target label in this ODMR window, choose power from nearest-frequency
+%    Rabi memory entry when available.
+% 2) If no memory for that label, use GUI-configured ODMR power:
+%    m1 -> odmr_dBm, p1 -> odmr_p1_dBm.
+% 3) If multiple peaks are scanned in one window, use the highest chosen power.
+
+labels = window.labels;
+if isempty(labels)
+    odmrPow = ctx.power.odmr_dBm;
+    return;
+end
+
+if isfield(window, 'labelCentersGHz') && numel(window.labelCentersGHz) == numel(labels)
+    fTargets = double(window.labelCentersGHz(:).');
+else
+    fTargets = repmat((window.fromGHz + window.toGHz) / 2, 1, numel(labels));
+end
+
+pList = nan(1, numel(labels));
+for i = 1:numel(labels)
+    lb = labels{i};
+    fGHz = fTargets(i);
+    pMem = nearest_rabi_power_from_memory('sg1', fGHz, ctx, cfg);
+    if isfinite(pMem)
+        pList(i) = pMem;
+    else
+        pList(i) = default_odmr_power_for_label(lb, ctx);
+    end
+end
+
+valid = isfinite(pList);
+if ~any(valid)
+    odmrPow = ctx.power.odmr_dBm;
+else
+    odmrPow = max(pList(valid)); % multi-peak window: use highest power
+end
+end
+
+function p = default_odmr_power_for_label(label, ctx)
+p = ctx.power.odmr_dBm;
+if isfield(ctx.power, 'odmr_p1_dBm') && isfinite(ctx.power.odmr_p1_dBm)
+    if ~isempty(regexp(lower(normalize_to_char(label)), '_p1$', 'once'))
+        p = ctx.power.odmr_p1_dBm;
+    end
+end
+end
+
+function p = nearest_rabi_power_from_memory(pathName, freqGHz, ctx, cfg)
+p = NaN;
+if ~isfinite(freqGHz)
+    return;
+end
+rows = collect_calipi_memory_rows(pathName, ctx, cfg); % [freqGHz, powerdBm, piNs]
+if isempty(rows)
+    return;
+end
+f = rows(:, 1);
+pw = rows(:, 2);
+valid = isfinite(f) & isfinite(pw);
+f = f(valid);
+pw = pw(valid);
+if isempty(f)
+    return;
+end
+d = abs(f - freqGHz);
+dMin = min(d);
+idx = find(d == dMin, 1, 'last'); % prefer the most recently appended memory on ties
+p = pw(idx);
 end
 
 function [fitMap, ok] = fit_odmr_window_from_current_data(window, predicted, odmrCfg)
@@ -604,51 +860,48 @@ switch target.transition
 end
 end
 
-function [cache, piNs, rabiFreqMHz] = calibrate_rabi_path(pathName, freqGHz, ctx, hMain, hAuto, hObject, eventdata, cfg, cache)
+function [cache, piNs, rabiFreqMHz, powerDbm] = calibrate_rabi_path(pathName, label, freqGHz, ctx, hMain, hAuto, hObject, eventdata, cfg, cache)
 if stop_requested(hAuto)
     piNs = NaN;
     rabiFreqMHz = NaN;
+    powerDbm = NaN;
     return;
 end
 
-key = [pathName '_' strrep(num2str(freqGHz, '%.6f'), '.', 'p')];
+key = [pathName '_' normalize_to_char(label) '_' strrep(num2str(freqGHz, '%.6f'), '.', 'p')];
 if isfield(cache, key)
     piNs = cache.(key).piNs;
     rabiFreqMHz = cache.(key).rabiFreqMHz;
+    powerDbm = safe_cache_field(cache.(key), 'powerDbm', NaN);
     return;
 end
 
-seq = struct();
-if strcmp(pathName, 'sg2')
-    seq.name = 'Rabi_SG2';
-    seq.FROM1 = num2str(ctx.precal.rabi.start);
-    seq.TO1 = num2str(ctx.precal.rabi.stop);
-    seq.SweepNPoints = num2str(max(3, round(ctx.precal.rabi.nPoints)));
-    seq.fixPow2 = num2str(ctx.power.rabi_sg2_dBm);
-    seq.fixFreq2 = num2str(freqGHz, '%.8f');
-    seq.Repeat = num2str(max(1, round(ctx.precal.rabi.repeat)));
-    seq.Average = num2str(max(1, round(ctx.precal.rabi.average)));
-    seq.useSG2 = 1;
+useCaliPiMode = isfield(ctx.precal, 'calipi') && isfield(ctx.precal.calipi, 'enabled') && ...
+    logical(ctx.precal.calipi.enabled);
+if useCaliPiMode
+    [piNs, rabiFreqMHz, powerDbm] = calibrate_power_for_target_pi( ...
+        pathName, label, freqGHz, ctx, hMain, hAuto, hObject, eventdata, cfg);
 else
-    seq.name = 'Rabi';
-    seq.FROM1 = num2str(ctx.precal.rabi.start);
-    seq.TO1 = num2str(ctx.precal.rabi.stop);
-    seq.SweepNPoints = num2str(max(3, round(ctx.precal.rabi.nPoints)));
-    seq.fixPow = num2str(ctx.power.rabi_sg1_dBm);
-    seq.fixFreq = num2str(freqGHz, '%.8f');
-    seq.Repeat = num2str(max(1, round(ctx.precal.rabi.repeat)));
-    seq.Average = num2str(max(1, round(ctx.precal.rabi.average)));
-    seq.useSG2 = 0;
+    [piNs, rabiFreqMHz, powerDbm] = calibrate_pi_at_fixed_power( ...
+        pathName, label, freqGHz, ctx, hMain, hAuto, hObject, eventdata, cfg);
 end
 
+cache.(key) = struct('piNs', piNs, 'rabiFreqMHz', rabiFreqMHz, 'powerDbm', powerDbm);
+end
+
+function [piNs, rabiFreqMHz, powerDbm] = calibrate_pi_at_fixed_power(pathName, label, freqGHz, ctx, hMain, hAuto, hObject, eventdata, cfg)
+if strcmp(pathName, 'sg2')
+    basePow = ctx.power.rabi_sg2_dBm;
+    seqName = 'Rabi_SG2';
+else
+    basePow = ctx.power.rabi_sg1_dBm;
+    seqName = 'Rabi';
+end
+powerDbm = apply_p1_calibration_power_boost(basePow, label, cfg);
+
+seq = build_power_calibration_sequence(seqName, pathName, freqGHz, powerDbm, ctx);
 run_one_sequence(seq, hMain, hAuto, hObject, eventdata, cfg, ...
-    sprintf(' [Rabi %s @ %.6fGHz]', upper(pathName), freqGHz));
-if stop_requested(hAuto)
-    piNs = NaN;
-    rabiFreqMHz = NaN;
-    return;
-end
-
+    sprintf(' [%s %s %s @ %.6fGHz P=%.2fdBm]', seqName, upper(pathName), label, freqGHz, powerDbm));
 if stop_requested(hAuto)
     piNs = NaN;
     rabiFreqMHz = NaN;
@@ -658,8 +911,599 @@ fitting.fit_rabi(hMain, hAuto, false);
 global gmSEQ
 piNs = safe_gm_field(gmSEQ, 'RabiFitPi', NaN);
 rabiFreqMHz = safe_gm_field(gmSEQ, 'RabiFitFreqMHz', NaN);
+end
 
-cache.(key) = struct('piNs', piNs, 'rabiFreqMHz', rabiFreqMHz);
+function [piNs, rabiFreqMHz, powerDbm] = calibrate_power_for_target_pi(pathName, label, freqGHz, ctx, hMain, hAuto, hObject, eventdata, cfg)
+piNs = NaN;
+rabiFreqMHz = NaN;
+powerDbm = NaN;
+if ~isfield(ctx.precal, 'calipi')
+    return;
+end
+
+if strcmp(pathName, 'sg2')
+    basePow = ctx.power.rabi_sg2_dBm;
+else
+    basePow = ctx.power.rabi_sg1_dBm;
+end
+
+if ~isfield(ctx.precal.calipi, 'targetPiNs') || ~isfinite(ctx.precal.calipi.targetPiNs) || ctx.precal.calipi.targetPiNs <= 0
+    targetPiNs = NaN;
+else
+    targetPiNs = ctx.precal.calipi.targetPiNs;
+end
+
+powerDbm = pick_power_from_pical_quadratic(pathName, label, freqGHz, basePow, targetPiNs, ctx, hMain, hAuto, hObject, eventdata, cfg);
+if ~isfinite(powerDbm)
+    safeMax = get_numeric_field_with_default(ctx.precal.calipi, 'maxSafePowerDbm', inf);
+    powerDbm = apply_p1_calibration_power_boost(basePow, label, cfg);
+    powerDbm = enforce_power_safety_cap(powerDbm, safeMax, 'PiCal fallback base power');
+end
+
+% Step 2: run standard Rabi at the fitted power to get final pi time.
+[piNs, rabiFreqMHz] = run_rabi_at_fixed_power(pathName, label, freqGHz, powerDbm, ctx, hMain, hAuto, hObject, eventdata, cfg);
+if ~isfinite(piNs)
+    warning('SmartT1:PiCalRabiFitFailed', ...
+        'Rabi fit after PiCal failed for %s/%s at %.6f GHz (P=%.2f dBm).', ...
+        pathName, label, freqGHz, powerDbm);
+    return;
+end
+save_calipi_memory_entry(pathName, freqGHz, powerDbm, piNs, ctx, cfg);
+if isfinite(targetPiNs)
+    disp(sprintf('[SmartT1] PiCal+Rabi result for %s/%s: targetPi=%.2f ns, pi=%.2f ns at P=%.2f dBm', ...
+        pathName, label, targetPiNs, piNs, powerDbm));
+else
+    disp(sprintf('[SmartT1] PiCal+Rabi result for %s/%s: pi=%.2f ns at P=%.2f dBm', ...
+        pathName, label, piNs, powerDbm));
+end
+end
+
+function powerDbm = pick_power_from_pical_quadratic(pathName, label, freqGHz, basePow, targetPiNs, ctx, hMain, hAuto, hObject, eventdata, cfg)
+powerDbm = NaN;
+safeMax = get_numeric_field_with_default(ctx.precal.calipi, 'maxSafePowerDbm', inf);
+quadN = max(3, round(get_numeric_field_with_default(ctx.precal.calipi, 'quadFitNPoints', 5)));
+pRef = NaN;
+
+pStart = get_numeric_field_with_default(ctx.precal.calipi, 'powerStartDbm', basePow);
+pStop = get_numeric_field_with_default(ctx.precal.calipi, 'powerStopDbm', basePow);
+nPow = max(1, round(get_numeric_field_with_default(ctx.precal.calipi, 'powerNPoints', 1)));
+
+if logical(get_numeric_field_with_default(ctx.precal.calipi, 'useMemoryPrior', 1)) && ...
+        isfinite(targetPiNs) && targetPiNs > 0
+    [pPred, predSource] = predict_power_from_calipi_memory(pathName, freqGHz, targetPiNs, ctx, cfg);
+    if isfinite(pPred)
+        pRef = pPred;
+        halfSpan = max(0.5, get_numeric_field_with_default(ctx.precal.calipi, 'memoryWindowHalfSpanDb', 4));
+        pStart = pPred - halfSpan;
+        pStop = pPred + halfSpan;
+        disp(sprintf('[SmartT1] PiCal memory prior (%s): Ppred=%.2f dBm -> sweep [%.2f, %.2f] dBm at %.6f GHz', ...
+            predSource, pPred, pStart, pStop, freqGHz));
+    end
+end
+
+pStart = apply_p1_calibration_power_boost(pStart, label, cfg);
+pStop = apply_p1_calibration_power_boost(pStop, label, cfg);
+
+pStart = enforce_power_safety_cap(pStart, safeMax, 'PiCal sweep start');
+pStop = enforce_power_safety_cap(pStop, safeMax, 'PiCal sweep stop');
+if nPow <= 1 || abs(pStop - pStart) < eps
+    pStart = apply_p1_calibration_power_boost(basePow, label, cfg);
+    pStart = enforce_power_safety_cap(pStart, safeMax, 'PiCal single power');
+    pStop = pStart;
+    nPow = 1;
+end
+
+if strcmp(pathName, 'sg2')
+    seqName = 'PiCal_SG2';
+else
+    seqName = 'PiCal';
+end
+    seq = build_pical_power_sweep_sequence(seqName, pathName, freqGHz, pStart, pStop, nPow, targetPiNs, ctx);
+run_one_sequence(seq, hMain, hAuto, hObject, eventdata, cfg, ...
+    sprintf(' [%s %s %s @ %.6fGHz P:[%.2f, %.2f] dBm]', seqName, upper(pathName), label, freqGHz, pStart, pStop));
+if stop_requested(hAuto)
+    return;
+end
+
+[xPow, yContrast] = extract_rabi_like_contrast_from_current_data();
+if numel(xPow) < 3
+    warning('SmartT1:PiCalDataTooSmall', ...
+        'PiCal data too small for quadratic fit (%s/%s @ %.6f GHz).', pathName, label, freqGHz);
+    powerDbm = apply_p1_calibration_power_boost(basePow, label, cfg);
+    powerDbm = enforce_power_safety_cap(powerDbm, safeMax, 'PiCal fallback base power');
+    return;
+end
+
+[pFit, fitOk] = fit_quadratic_power_near_minimum(xPow, yContrast, quadN, pRef);
+if ~fitOk || ~isfinite(pFit)
+    warning('SmartT1:PiCalQuadraticFitFailed', ...
+        'PiCal quadratic fit failed for %s/%s at %.6f GHz. Falling back to sampled minimum.', ...
+        pathName, label, freqGHz);
+    iMin = pick_local_min_index(xPow, yContrast, pRef, quadN);
+    pFit = xPow(iMin);
+end
+pFit = min(max(pFit, min(xPow)), max(xPow));
+pFit = enforce_power_safety_cap(pFit, safeMax, 'PiCal fitted power');
+powerDbm = pFit;
+disp(sprintf('[SmartT1] PiCal fitted power for %s/%s at %.6f GHz: %.2f dBm', ...
+    pathName, label, freqGHz, powerDbm));
+end
+
+function [piNs, rabiFreqMHz] = run_rabi_at_fixed_power(pathName, label, freqGHz, powerDbm, ctx, hMain, hAuto, hObject, eventdata, cfg)
+piNs = NaN;
+rabiFreqMHz = NaN;
+if strcmp(pathName, 'sg2')
+    seqName = 'Rabi_SG2';
+else
+    seqName = 'Rabi';
+end
+seq = build_power_calibration_sequence(seqName, pathName, freqGHz, powerDbm, ctx);
+run_one_sequence(seq, hMain, hAuto, hObject, eventdata, cfg, ...
+    sprintf(' [%s %s %s @ %.6fGHz P=%.2fdBm]', seqName, upper(pathName), label, freqGHz, powerDbm));
+if stop_requested(hAuto)
+    return;
+end
+fitting.fit_rabi(hMain, hAuto, false);
+global gmSEQ
+piNs = safe_gm_field(gmSEQ, 'RabiFitPi', NaN);
+rabiFreqMHz = safe_gm_field(gmSEQ, 'RabiFitFreqMHz', NaN);
+end
+
+function seq = build_pical_power_sweep_sequence(seqName, pathName, freqGHz, pStart, pStop, nPow, targetPiNs, ctx)
+seq = struct();
+seq.name = seqName;
+seq.FROM1 = num2str(pStart);
+seq.TO1 = num2str(pStop);
+seq.SweepNPoints = num2str(max(1, round(nPow)));
+seq.Repeat = num2str(max(1, round(ctx.precal.rabi.repeat)));
+seq.Average = num2str(max(1, round(ctx.precal.rabi.average)));
+seq.bSweep2 = 0;
+if isfinite(targetPiNs) && targetPiNs > 0
+    seq.pi = num2str(targetPiNs, '%.0f');
+end
+if strcmp(pathName, 'sg2')
+    seq.useSG2 = 1;
+    seq.fixFreq2 = num2str(freqGHz, '%.8f');
+else
+    seq.useSG2 = 0;
+    seq.fixFreq = num2str(freqGHz, '%.8f');
+end
+end
+
+function [xPow, yContrast] = extract_rabi_like_contrast_from_current_data()
+global gmSEQ
+xPow = [];
+yContrast = [];
+if ~isfield(gmSEQ, 'signal') || ~isfield(gmSEQ, 'SweepParam')
+    return;
+end
+signal = gmSEQ.signal(:, ~any(isnan(gmSEQ.signal), 1));
+if size(signal, 1) < 2 || isempty(signal)
+    return;
+end
+sig = signal(2, :);
+ref = signal(1, :);
+y = sig ./ ref;
+x = double(gmSEQ.SweepParam(1:numel(y)));
+valid = isfinite(x) & isfinite(y);
+x = x(valid);
+y = y(valid);
+if isempty(x)
+    return;
+end
+[xPow, ord] = sort(x(:), 'ascend');
+yContrast = y(ord);
+end
+
+function [pFit, ok] = fit_quadratic_power_near_minimum(xPow, yContrast, nFitPts, pRef)
+pFit = NaN;
+ok = false;
+n = numel(xPow);
+if n < 3
+    return;
+end
+iMin = pick_local_min_index(xPow, yContrast, pRef, nFitPts);
+nWin = min(n, max(3, round(nFitPts)));
+half = floor(nWin/2);
+i0 = max(1, iMin - half);
+i1 = min(n, i0 + nWin - 1);
+i0 = max(1, i1 - nWin + 1);
+xw = xPow(i0:i1);
+yw = yContrast(i0:i1);
+if numel(unique(xw)) < 3
+    return;
+end
+p = polyfit(xw, yw, 2);
+a = p(1);
+b = p(2);
+if ~isfinite(a) || ~isfinite(b) || a <= 0
+    return;
+end
+pFit = -b / (2*a);
+ok = isfinite(pFit);
+end
+
+function iMin = pick_local_min_index(xPow, yContrast, pRef, nFitPts)
+n = numel(xPow);
+if n <= 1
+    iMin = 1;
+    return;
+end
+if nargin < 3 || ~isfinite(pRef)
+    [~, iMin] = min(yContrast);
+    return;
+end
+
+[~, iRef] = min(abs(xPow - pRef));
+nSearch = min(n, max(3, round(nFitPts)));
+half = floor(nSearch/2);
+i0 = max(1, iRef - half);
+i1 = min(n, i0 + nSearch - 1);
+i0 = max(1, i1 - nSearch + 1);
+
+[~, idx] = min(yContrast(i0:i1));
+iMin = i0 + idx - 1;
+end
+
+function pOut = enforce_power_safety_cap(pIn, maxSafe, whatLabel)
+pOut = pIn;
+if isfinite(maxSafe) && pOut > maxSafe
+    warning('SmartT1:PowerSafetyCap', '%s capped from %.2f dBm to %.2f dBm.', whatLabel, pOut, maxSafe);
+    pOut = maxSafe;
+end
+end
+
+function v = get_numeric_field_with_default(s, fieldName, defaultValue)
+v = defaultValue;
+if isstruct(s) && isfield(s, fieldName) && isfinite(s.(fieldName))
+    v = s.(fieldName);
+end
+end
+
+function [pPred, source] = predict_power_from_calipi_memory(pathName, freqGHz, targetPiNs, ctx, cfg)
+pPred = NaN;
+source = 'none';
+if ~isfinite(freqGHz) || ~isfinite(targetPiNs) || targetPiNs <= 0
+    return;
+end
+
+rows = collect_calipi_memory_rows(pathName, ctx, cfg);
+if isempty(rows)
+    return;
+end
+
+fGHz = rows(:, 1);
+pDbm = rows(:, 2);
+piNs = rows(:, 3);
+valid = isfinite(fGHz) & isfinite(pDbm) & isfinite(piNs) & (piNs > 0);
+fGHz = fGHz(valid);
+pDbm = pDbm(valid);
+piNs = piNs(valid);
+if isempty(fGHz)
+    return;
+end
+
+% Normalize every memory point to the requested target pi using
+% pi ~ 1/sqrt(P):  P_target(dBm) = P_meas(dBm) + 20*log10(pi_meas/pi_target).
+pTargetDbm = pDbm + 20 * log10(piNs ./ targetPiNs);
+
+% Use local neighborhood in frequency to reduce bias from distant/outlier points.
+[~, ord] = sort(abs(fGHz - freqGHz), 'ascend');
+k = min(numel(ord), 6);
+idxLocal = ord(1:k);
+fLoc = fGHz(idxLocal);
+pLoc = pTargetDbm(idxLocal);
+
+if numel(pLoc) >= 2 && numel(unique(fLoc)) >= 2
+    c = polyfit(fLoc, pLoc, 1);
+    pPred = polyval(c, freqGHz);
+    source = 'memory_local_linear';
+else
+    [~, iNear] = min(abs(fLoc - freqGHz));
+    pPred = pLoc(iNear);
+    source = 'memory_nearest';
+end
+
+if isfinite(pPred)
+    pMin = min(pTargetDbm) - 6;
+    pMax = max(pTargetDbm) + 6;
+    pPred = min(max(pPred, pMin), pMax);
+end
+end
+
+function rows = collect_calipi_memory_rows(pathName, ctx, cfg)
+rows = [];
+fieldName = 'sg1';
+if strcmp(pathName, 'sg2')
+    fieldName = 'sg2';
+end
+
+if isfield(ctx, 'precal') && isfield(ctx.precal, 'calipi') && ...
+        isfield(ctx.precal.calipi, 'defaultMemory') && ...
+        isstruct(ctx.precal.calipi.defaultMemory) && ...
+        isfield(ctx.precal.calipi.defaultMemory, fieldName)
+    defaultRows = double(ctx.precal.calipi.defaultMemory.(fieldName));
+    if ~isempty(defaultRows) && size(defaultRows, 2) >= 3
+        rows = [rows; defaultRows(:, 1:3)]; %#ok<AGROW>
+    end
+elseif isfield(cfg, 'smart') && isfield(cfg.smart, 'precal') && ...
+        isfield(cfg.smart.precal, 'calipi') && isfield(cfg.smart.precal.calipi, 'defaultMemory') && ...
+        isstruct(cfg.smart.precal.calipi.defaultMemory) && isfield(cfg.smart.precal.calipi.defaultMemory, fieldName)
+    defaultRows = double(cfg.smart.precal.calipi.defaultMemory.(fieldName));
+    if ~isempty(defaultRows) && size(defaultRows, 2) >= 3
+        rows = [rows; defaultRows(:, 1:3)]; %#ok<AGROW>
+    end
+end
+
+memFile = get_calipi_memory_file(ctx, cfg);
+if ~isempty(memFile) && exist(memFile, 'file')
+    try
+        s = load(memFile, 'mem');
+        if isfield(s, 'mem') && isstruct(s.mem) && isfield(s.mem, fieldName)
+            memRows = double(s.mem.(fieldName));
+            if ~isempty(memRows) && size(memRows, 2) >= 3
+                rows = [rows; memRows(:, 1:3)]; %#ok<AGROW>
+            end
+        end
+    catch ME
+        warning('SmartT1:PiCalMemoryLoadFailed', 'Failed to load PiCal memory file (%s): %s', memFile, ME.message);
+    end
+end
+
+if isempty(rows)
+    return;
+end
+rows = rows(all(isfinite(rows), 2) & rows(:, 3) > 0, :);
+end
+
+function save_calipi_memory_entry(pathName, freqGHz, powerDbm, piNs, ctx, cfg)
+if ~isfinite(freqGHz) || ~isfinite(powerDbm) || ~isfinite(piNs) || piNs <= 0
+    return;
+end
+
+fieldName = 'sg1';
+if strcmp(pathName, 'sg2')
+    fieldName = 'sg2';
+end
+
+memFile = get_calipi_memory_file(ctx, cfg);
+if isempty(memFile)
+    return;
+end
+
+mem = struct('sg1', [], 'sg2', []);
+if exist(memFile, 'file')
+    try
+        s = load(memFile, 'mem');
+        if isfield(s, 'mem') && isstruct(s.mem)
+            mem = s.mem;
+            if ~isfield(mem, 'sg1'); mem.sg1 = []; end
+            if ~isfield(mem, 'sg2'); mem.sg2 = []; end
+        end
+    catch
+        % Keep fresh struct fallback.
+    end
+end
+
+arr = mem.(fieldName);
+if isempty(arr)
+    arr = zeros(0, 3);
+end
+arr = double(arr);
+if size(arr, 2) < 3
+    arr(:, end+1:3) = NaN;
+elseif size(arr, 2) > 3
+    arr = arr(:, 1:3);
+end
+arr = [arr; [freqGHz, powerDbm, piNs]];
+arr = arr(all(isfinite(arr), 2) & arr(:, 3) > 0, :);
+
+maxRows = max(10, round(get_numeric_field_with_default(ctx.precal.calipi, 'maxMemoryRows', 400)));
+if size(arr, 1) > maxRows
+    arr = arr(end-maxRows+1:end, :);
+end
+mem.(fieldName) = arr;
+
+try
+    folder = fileparts(memFile);
+    if ~isempty(folder) && ~exist(folder, 'dir')
+        mkdir(folder);
+    end
+    save(memFile, 'mem');
+catch ME
+    warning('SmartT1:PiCalMemorySaveFailed', 'Failed to save PiCal memory file (%s): %s', memFile, ME.message);
+end
+end
+
+function memFile = get_calipi_memory_file(ctx, cfg)
+memFile = '';
+if isfield(ctx, 'precal') && isfield(ctx.precal, 'calipi') && isfield(ctx.precal.calipi, 'memoryFile')
+    memFile = ctx.precal.calipi.memoryFile;
+elseif isfield(cfg, 'smart') && isfield(cfg.smart, 'precal') && ...
+        isfield(cfg.smart.precal, 'calipi') && isfield(cfg.smart.precal.calipi, 'memoryFile')
+    memFile = cfg.smart.precal.calipi.memoryFile;
+else
+    memFile = fullfile(fileparts(mfilename('fullpath')), 'calipi_memory.mat');
+end
+if isstring(memFile)
+    memFile = char(memFile);
+end
+end
+
+function seq = build_power_calibration_sequence(seqName, pathName, freqGHz, powerDbm, ctx)
+seq = struct();
+seq.name = seqName;
+seq.FROM1 = num2str(ctx.precal.rabi.start);
+seq.TO1 = num2str(ctx.precal.rabi.stop);
+seq.SweepNPoints = num2str(max(3, round(ctx.precal.rabi.nPoints)));
+seq.Repeat = num2str(max(1, round(ctx.precal.rabi.repeat)));
+seq.Average = num2str(max(1, round(ctx.precal.rabi.average)));
+seq.bSweep2 = 0;
+if strcmp(pathName, 'sg2')
+    seq.useSG2 = 1;
+    seq.fixPow2 = num2str(powerDbm);
+    seq.fixFreq2 = num2str(freqGHz, '%.8f');
+else
+    seq.useSG2 = 0;
+    seq.fixPow = num2str(powerDbm);
+    seq.fixFreq = num2str(freqGHz, '%.8f');
+end
+end
+
+function out = safe_cache_field(s, fieldName, defaultValue)
+out = defaultValue;
+if isstruct(s) && isfield(s, fieldName) && ~isempty(s.(fieldName))
+    out = s.(fieldName);
+end
+end
+
+function p = choose_best_precal_power(powMap, labelM1, labelP1, transition, defaultPow, useP1ForDQ)
+p = defaultPow;
+switch transition
+    case 'SQ_0_TO_M1'
+        cand = get_map_freq(powMap, labelM1);
+    case 'SQ_0_TO_P1'
+        cand = get_map_freq(powMap, labelP1);
+    otherwise
+        if useP1ForDQ
+            cand = get_map_freq(powMap, labelP1);
+        else
+            cand = get_map_freq(powMap, labelM1);
+        end
+end
+if isfinite(cand)
+    p = cand;
+end
+end
+
+function [piSg1, freqSg1MHz, pSg1, piSg2, freqSg2MHz, pSg2] = ...
+    maybe_match_pi_when_one_power_capped(target, labelM1, labelP1, fSg1, fSg2, ...
+    piSg1, freqSg1MHz, pSg1, piSg2, freqSg2MHz, pSg2, ...
+    ctx, hMain, hAuto, hObject, eventdata, cfg)
+
+if ~strcmp(target.transition, 'DQ_M1_TO_P1')
+    return;
+end
+if ~isfield(ctx, 'precal') || ~isfield(ctx.precal, 'pi_match')
+    return;
+end
+
+pm = ctx.precal.pi_match;
+if ~isfield(pm, 'enabled') || ~logical(pm.enabled)
+    return;
+end
+
+tolNs = get_numeric_field_with_default(pm, 'tolNs', 10);
+maxIter = max(1, round(get_numeric_field_with_default(pm, 'maxIter', 3)));
+minSafe = get_numeric_field_with_default(pm, 'minSafePowerDbm', -40);
+maxSafeCommon = get_numeric_field_with_default(ctx.precal.calipi, 'maxSafePowerDbm', inf);
+maxSafeSg1 = get_numeric_field_with_default(ctx.precal.calipi, 'maxSafePowerDbmSg1', maxSafeCommon);
+maxSafeSg2 = get_numeric_field_with_default(ctx.precal.calipi, 'maxSafePowerDbmSg2', maxSafeCommon);
+
+if ~isfinite(piSg1) || ~isfinite(piSg2) || ~isfinite(pSg1) || ~isfinite(pSg2)
+    return;
+end
+if piSg1 <= 0 || piSg2 <= 0 || ~isfinite(fSg1) || ~isfinite(fSg2)
+    return;
+end
+if abs(piSg1 - piSg2) <= tolNs
+    return;
+end
+
+atCap1 = isfinite(maxSafeSg1) && (pSg1 >= maxSafeSg1);
+atCap2 = isfinite(maxSafeSg2) && (pSg2 >= maxSafeSg2);
+if xor(atCap1, atCap2) == 0
+    return;
+end
+
+if atCap1
+    anchorPi = piSg1;
+    adjustPath = 'sg2';
+    adjustLabel = labelP1;
+    adjustFreqGHz = fSg2;
+    adjustPi = piSg2;
+    adjustFreqMHz = freqSg2MHz;
+    adjustPow = pSg2;
+    adjustMaxSafe = maxSafeSg2;
+else
+    anchorPi = piSg2;
+    adjustPath = 'sg1';
+    adjustLabel = labelM1;
+    adjustFreqGHz = fSg1;
+    adjustPi = piSg1;
+    adjustFreqMHz = freqSg1MHz;
+    adjustPow = pSg1;
+    adjustMaxSafe = maxSafeSg1;
+end
+
+disp(sprintf('[SmartT1] PI-MATCH start (%s): pi1=%.2f ns @ %.2f dBm, pi2=%.2f ns @ %.2f dBm', ...
+    target.id, piSg1, pSg1, piSg2, pSg2));
+
+% Intent policy: when one SG is capped, only reduce the other SG power.
+if adjustPi >= (anchorPi + tolNs)
+    disp(sprintf(['[SmartT1] PI-MATCH skip (%s): non-capped %s already slower ', ...
+        '(pi=%.2f ns) than capped anchor (pi=%.2f ns). Reduce-only policy cannot improve.'], ...
+        target.id, upper(adjustPath), adjustPi, anchorPi));
+    return;
+end
+
+for iIter = 1:maxIter
+    if stop_requested(hAuto)
+        return;
+    end
+    if ~isfinite(anchorPi) || ~isfinite(adjustPi) || anchorPi <= 0 || adjustPi <= 0
+        break;
+    end
+
+    pTarget = adjustPow + 20 * log10(adjustPi / anchorPi);
+    % Reduce-only policy on the non-capped channel.
+    pNew = min(pTarget, adjustPow);
+    if ~isfinite(pNew)
+        break;
+    end
+    pNew = max(pNew, minSafe);
+    if isfinite(adjustMaxSafe)
+        pNew = min(pNew, adjustMaxSafe);
+    end
+
+    if abs(pNew - adjustPow) < 1e-9
+        break;
+    end
+
+    [piNew, freqNewMHz] = run_rabi_at_fixed_power(adjustPath, adjustLabel, adjustFreqGHz, pNew, ctx, hMain, hAuto, hObject, eventdata, cfg);
+    if ~isfinite(piNew) || piNew <= 0
+        break;
+    end
+
+    adjustPow = pNew;
+    adjustPi = piNew;
+    adjustFreqMHz = freqNewMHz;
+    errNs = abs(adjustPi - anchorPi);
+    disp(sprintf('[SmartT1] PI-MATCH iter %d (%s): P=%.2f dBm, pi=%.2f ns, err=%.2f ns', ...
+        iIter, upper(adjustPath), adjustPow, adjustPi, errNs));
+
+    if errNs <= tolNs
+        break;
+    end
+
+    atBoundary = (adjustPow <= minSafe) || (isfinite(adjustMaxSafe) && adjustPow >= adjustMaxSafe);
+    if atBoundary
+        break;
+    end
+end
+
+if strcmp(adjustPath, 'sg2')
+    piSg2 = adjustPi;
+    freqSg2MHz = adjustFreqMHz;
+    pSg2 = adjustPow;
+else
+    piSg1 = adjustPi;
+    freqSg1MHz = adjustFreqMHz;
+    pSg1 = adjustPow;
+end
+
+disp(sprintf('[SmartT1] PI-MATCH done (%s): pi1=%.2f ns @ %.2f dBm, pi2=%.2f ns @ %.2f dBm', ...
+    target.id, piSg1, pSg1, piSg2, pSg2));
 end
 
 function [finalRange, roughInfo] = determine_t1_final_range(target, fSg1, fSg2, piSg1, piSg2, ctx, hMain, hAuto, hObject, eventdata, cfg)
@@ -973,6 +1817,38 @@ gmSEQ.T1FitModel = prevModel;
 gmSEQ.T1FitCfg = prevCfg;
 end
 
+function outPow = apply_p1_calibration_power_boost(basePow, labelOrLabels, cfg)
+outPow = basePow;
+boost = 0;
+if isfield(cfg, 'smart') && isfield(cfg.smart, 'power') && ...
+        isfield(cfg.smart.power, 'sq_p1_calibration_boost_dB') && ...
+        isfinite(cfg.smart.power.sq_p1_calibration_boost_dB)
+    boost = cfg.smart.power.sq_p1_calibration_boost_dB;
+end
+if boost == 0
+    return;
+end
+if is_p1_calibration_label(labelOrLabels)
+    outPow = basePow + boost;
+end
+end
+
+function tf = is_p1_calibration_label(labelOrLabels)
+tf = false;
+if iscell(labelOrLabels)
+    for i = 1:numel(labelOrLabels)
+        s = lower(strtrim(normalize_to_char(labelOrLabels{i})));
+        if ~isempty(regexp(s, '_p1$', 'once'))
+            tf = true;
+            return;
+        end
+    end
+else
+    s = lower(strtrim(normalize_to_char(labelOrLabels)));
+    tf = ~isempty(regexp(s, '_p1$', 'once'));
+end
+end
+
 function overlay_previous_rough_points(handlesMain, xPrevDisp, yPrev)
 if nargin < 3 || isempty(xPrevDisp) || isempty(yPrev)
     return;
@@ -1042,6 +1918,7 @@ n = max(3, round(target.t1.nPoints));
 n1 = n;
 n2 = 0;
 split = tStart + (tStop - tStart)/4;
+[powLabelSg1, powLabelSg2] = get_t1_power_labels(target);
 
 if ctx.nonuniform
     n1 = max(2, ceil(n/2));
@@ -1071,9 +1948,12 @@ switch target.transition
         seq.name = 'T1_S00_S01_S10';
         seq.useSG2 = 0;
         if ctx.precal.enabled
-            seq.fixPow = num2str(ctx.power.rabi_sg1_dBm);
+            cfgLocal = power_boost_cfg_from_ctx(ctx);
+            powSg1 = apply_p1_calibration_power_boost(ctx.power.rabi_sg1_dBm, powLabelSg1, cfgLocal);
+            powSg2 = apply_p1_calibration_power_boost(ctx.power.rabi_sg2_dBm, powLabelSg2, cfgLocal);
+            seq.fixPow = num2str(powSg1);
             seq.fixFreq = num2str(fSg1, '%.8f');
-            seq.fixPow2 = num2str(ctx.power.rabi_sg2_dBm);
+            seq.fixPow2 = num2str(powSg2);
             if isfinite(piSg1) && piSg1 > 0
                 seq.pi = num2str(piSg1, '%.0f');
                 seq.halfpi = num2str(piSg1 / 2, '%.0f');
@@ -1083,9 +1963,12 @@ switch target.transition
         seq.name = 'T1_S11_S1m1';
         seq.useSG2 = 1;
         if ctx.precal.enabled
-            seq.fixPow = num2str(ctx.power.rabi_sg1_dBm);
+            cfgLocal = power_boost_cfg_from_ctx(ctx);
+            powSg1 = apply_p1_calibration_power_boost(ctx.power.rabi_sg1_dBm, powLabelSg1, cfgLocal);
+            powSg2 = apply_p1_calibration_power_boost(ctx.power.rabi_sg2_dBm, powLabelSg2, cfgLocal);
+            seq.fixPow = num2str(powSg1);
             seq.fixFreq = num2str(fSg1, '%.8f');
-            seq.fixPow2 = num2str(ctx.power.rabi_sg2_dBm);
+            seq.fixPow2 = num2str(powSg2);
             seq.fixFreq2 = num2str(fSg2, '%.8f');
             if isfinite(piSg1) && piSg1 > 0
                 seq.pi = num2str(piSg1, '%.0f');
@@ -1114,6 +1997,34 @@ else
     seq.FROM1 = num2str(tStart);
     seq.TO1 = num2str(tStop);
     seq.SweepNPoints = num2str(n);
+end
+end
+
+function [labelSg1, labelSg2] = get_t1_power_labels(target)
+if isfield(target, 'group') && strcmp(target.group, 'aligned')
+    base = 'aligned';
+else
+    base = 'off';
+end
+
+switch target.transition
+    case 'SQ_0_TO_M1'
+        labelSg1 = [base '_m1'];
+        labelSg2 = [base '_m1'];
+    case 'SQ_0_TO_P1'
+        labelSg1 = [base '_p1'];
+        labelSg2 = [base '_p1'];
+    otherwise % DQ_M1_TO_P1
+        labelSg1 = [base '_m1'];
+        labelSg2 = [base '_p1'];
+end
+end
+
+function cfgOut = power_boost_cfg_from_ctx(ctx)
+cfgOut = struct('smart', struct('power', struct('sq_p1_calibration_boost_dB', 0)));
+if isfield(ctx, 'power') && isfield(ctx.power, 'sq_p1_calibration_boost_dB') && ...
+        isfinite(ctx.power.sq_p1_calibration_boost_dB)
+    cfgOut.smart.power.sq_p1_calibration_boost_dB = ctx.power.sq_p1_calibration_boost_dB;
 end
 end
 
@@ -1316,19 +2227,122 @@ end
 imageName = strrep(rawName, '.txt', '.png');
 imagePath = fullfile(saveFolder, imageName);
 
-imwrite(getframe(handlesMain.figure1).cdata, imagePath);
+mainFig = resolve_figure_handle(handlesMain, {'figure1', 'output'});
+if isempty(mainFig) || ~isgraphics(mainFig, 'figure')
+    warning('SmartT1:SaveMainFigureHandleMissing', 'Cannot resolve main GUI figure handle for saving.');
+    return;
+end
+drawnow;
+imwrite(getframe(mainFig).cdata, imagePath);
+
+% Also save AutoRun v2.1 GUI snapshot alongside each sequence snapshot.
+autoImagePath = strrep(imagePath, '.png', '_AutoGUI_v2_1.png');
+save_auto_gui_snapshot(handlesAuto, autoImagePath);
 end
 
-function runFolder = create_run_save_folder(baseFolder)
+function save_end_of_run_snapshots(handlesMain, handlesAuto, cfg)
+saveFolder = cfg.paths.saveFolder;
+if isfield(cfg, 'runtime') && isstruct(cfg.runtime) && ...
+        isfield(cfg.runtime, 'runSaveFolder') && ~isempty(cfg.runtime.runSaveFolder)
+    saveFolder = cfg.runtime.runSaveFolder;
+end
+if ~exist(saveFolder, 'dir')
+    mkdir(saveFolder);
+end
+
+try
+    mainFig = resolve_figure_handle(handlesMain, {'figure1', 'output'});
+    if ~isempty(mainFig) && isgraphics(mainFig, 'figure')
+        drawnow;
+        frameMain = getframe(mainFig);
+        if isfield(frameMain, 'cdata') && ~isempty(frameMain.cdata)
+            imwrite(frameMain.cdata, fullfile(saveFolder, 'MainGUI_Final.png'));
+        end
+    end
+catch ME
+    warning('SmartT1:FinalMainGuiSaveFailed', 'Final main GUI save failed: %s', ME.message);
+end
+
+try
+    save_auto_gui_snapshot(handlesAuto, fullfile(saveFolder, 'AutoGUI_v2_1_Final.png'));
+catch ME
+    warning('SmartT1:FinalAutoGuiSaveFailed', 'Final auto GUI save failed: %s', ME.message);
+end
+end
+
+function save_auto_gui_snapshot(handlesAuto, imagePath)
+autoFig = resolve_figure_handle(handlesAuto, {'figure1', 'output', 'pushbutton_startProg', 'pushbutton_stopProg'});
+if isempty(autoFig) || ~isgraphics(autoFig, 'figure')
+    warning('SmartT1:SaveAutoGuiHandleMissing', 'Cannot resolve AutoRun v2.1 GUI figure handle for saving.');
+    return;
+end
+drawnow;
+frameAuto = getframe(autoFig);
+if isfield(frameAuto, 'cdata') && ~isempty(frameAuto.cdata)
+    imwrite(frameAuto.cdata, imagePath);
+else
+    warning('SmartT1:SaveAutoGuiFrameEmpty', 'AutoRun v2.1 GUI frame is empty; skip saving.');
+end
+end
+
+function figH = resolve_figure_handle(handlesStruct, candidateFields)
+figH = [];
+if nargin < 1 || isempty(handlesStruct) || ~isstruct(handlesStruct)
+    return;
+end
+if nargin < 2 || isempty(candidateFields)
+    candidateFields = {'figure1', 'output'};
+end
+
+for i = 1:numel(candidateFields)
+    fn = candidateFields{i};
+    if ~isfield(handlesStruct, fn)
+        continue;
+    end
+    h = handlesStruct.(fn);
+    if isempty(h) || ~ishandle(h)
+        continue;
+    end
+    if isgraphics(h, 'figure')
+        figH = h;
+        return;
+    end
+    try
+        anc = ancestor(h, 'figure');
+        if ~isempty(anc) && isgraphics(anc, 'figure')
+            figH = anc;
+            return;
+        end
+    catch
+    end
+end
+end
+
+function tag = format_b_est_tag(B_G)
+if ~isfinite(B_G)
+    tag = 'NAG';
+    return;
+end
+val = num2str(B_G, '%.2f');
+val = strrep(val, '-', 'm');
+val = strrep(val, '.', 'p');
+tag = [val 'G'];
+end
+
+function runFolder = create_run_save_folder(baseFolder, estimatedB_G)
 if nargin < 1 || isempty(baseFolder)
     baseFolder = pwd;
+end
+if nargin < 2
+    estimatedB_G = NaN;
 end
 if ~exist(baseFolder, 'dir')
     mkdir(baseFolder);
 end
 
 stamp = datestr(now, 'yyyymmdd_HHMMSS');
-runFolder = fullfile(baseFolder, ['Run_' stamp]);
+bTag = format_b_est_tag(estimatedB_G);
+runFolder = fullfile(baseFolder, ['Run_' bTag '_' stamp]);
 if exist(runFolder, 'dir')
     k = 1;
     while exist([runFolder '_' num2str(k)], 'dir')
@@ -1340,7 +2354,70 @@ mkdir(runFolder);
 disp(['[SmartT1] Figure save folder for this run: ' runFolder]);
 end
 
-function msg = build_precal_summary_text(freqMap, precal, labels, measuredLabels)
+function [BoutG, ok, info] = estimate_aligned_b_from_outermost_measured(freqMap, measuredLabels, phys, odmrCfg)
+BoutG = NaN;
+ok = false;
+info = struct('lowLabel', '', 'lowFreqGHz', NaN, 'highLabel', '', 'highFreqGHz', NaN);
+if isempty(measuredLabels)
+    return;
+end
+
+labels = {};
+freqs = [];
+for i = 1:numel(measuredLabels)
+    lb = measuredLabels{i};
+    f = get_map_freq(freqMap, lb);
+    if isfinite(f)
+        labels{end+1} = lb; %#ok<AGROW>
+        freqs(end+1) = f; %#ok<AGROW>
+    end
+end
+if numel(freqs) < 2
+    return;
+end
+
+[lowFreq, idxLow] = min(freqs);
+[highFreq, idxHigh] = max(freqs);
+if ~isfinite(lowFreq) || ~isfinite(highFreq) || highFreq <= lowFreq
+    return;
+end
+
+info.lowLabel = labels{idxLow};
+info.highLabel = labels{idxHigh};
+info.lowFreqGHz = lowFreq;
+info.highFreqGHz = highFreq;
+
+bMin = get_cfg_numeric_with_default(odmrCfg, 'bSearchMinG', 0);
+bMax = get_cfg_numeric_with_default(odmrCfg, 'bSearchMaxG', 2000);
+if ~isfinite(bMin)
+    bMin = 0;
+end
+if ~isfinite(bMax) || bMax <= bMin
+    bMax = max(2000, bMin + 100);
+end
+
+obj = @(B) aligned_pair_cost(B, lowFreq, highFreq, phys);
+try
+    BoutG = fminbnd(obj, bMin, bMax);
+catch
+    return;
+end
+if ~isfinite(BoutG)
+    return;
+end
+
+[fM1, fP1] = solve_nv_resonances_full_matrix(BoutG, 1.0, phys);
+residualMHz = max(abs([fM1 - lowFreq, fP1 - highFreq])) * 1000;
+maxResidualMHz = get_cfg_numeric_with_default(odmrCfg, 'maxBBackoutResidualMHz', 30);
+ok = residualMHz <= maxResidualMHz;
+end
+
+function v = aligned_pair_cost(BG, lowFreqGHz, highFreqGHz, phys)
+[fM1, fP1] = solve_nv_resonances_full_matrix(BG, 1.0, phys);
+v = (fM1 - lowFreqGHz).^2 + (fP1 - highFreqGHz).^2;
+end
+
+function msg = build_precal_summary_text(freqMap, precal, labels, measuredLabels, phys, odmrCfg)
 lines = cell(1, numel(labels));
 for i = 1:numel(labels)
     label = labels{i};
@@ -1352,15 +2429,64 @@ for i = 1:numel(labels)
     fGHz = get_map_freq(freqMap, label);
     pi1 = get_map_freq(precal.sg1PiNs, label);
     pi2 = get_map_freq(precal.sg2PiNs, label);
-    if ~isfinite(fGHz) || ~isfinite(pi1)
+    p1 = get_map_freq(precal.sg1PowDbm, label);
+    p2 = get_map_freq(precal.sg2PowDbm, label);
+    if ~isfinite(fGHz)
         lines{i} = sprintf('%s: not measured', label);
+    elseif ~isfinite(pi1)
+        lines{i} = sprintf('%s: f=%.6f GHz, pi: not measured', label, fGHz);
+    elseif isfinite(pi2) && isfinite(p1) && isfinite(p2)
+        lines{i} = sprintf('%s: f=%.6f GHz, pi=%.1f ns @ %.2f dBm (SG1), %.1f ns @ %.2f dBm (SG2)', ...
+            label, fGHz, pi1, p1, pi2, p2);
     elseif isfinite(pi2)
         lines{i} = sprintf('%s: f=%.6f GHz, pi=%.1f ns (SG1), %.1f ns (SG2)', label, fGHz, pi1, pi2);
+    elseif isfinite(p1)
+        lines{i} = sprintf('%s: f=%.6f GHz, pi=%.1f ns @ %.2f dBm', label, fGHz, pi1, p1);
     else
         lines{i} = sprintf('%s: f=%.6f GHz, pi=%.1f ns', label, fGHz, pi1);
     end
 end
+[BFromOuterG, bOk, outerInfo] = estimate_aligned_b_from_outermost_measured(freqMap, measuredLabels, phys, odmrCfg);
+if bOk
+    lines{end+1} = sprintf('B(aligned from outermost)=%.3f G (%s %.6f GHz, %s %.6f GHz)', ...
+        BFromOuterG, outerInfo.lowLabel, outerInfo.lowFreqGHz, outerInfo.highLabel, outerInfo.highFreqGHz);
+end
 msg = strjoin(lines, sprintf('\n'));
+end
+
+function reset_v2_1_run_state(handlesAuto, cfg)
+global gmSEQ
+
+% Clear displayed status from the previous run.
+update_precal_summary_display(handlesAuto, cfg, '');
+if isfield(cfg.smart.ui.tags, 'display') && isfield(cfg.smart.ui.tags.display, 'roughT1')
+    set_display_control_string(handlesAuto, cfg.smart.ui.tags.display.roughT1, 'Rough T1: -- ms');
+end
+
+if isfield(cfg.smart.ui.tags, 'status') && isstruct(cfg.smart.ui.tags.status)
+    statusNames = fieldnames(cfg.smart.ui.tags.status);
+    for i = 1:numel(statusNames)
+        tag = cfg.smart.ui.tags.status.(statusNames{i});
+        set_display_control_string(handlesAuto, tag, '');
+    end
+end
+
+% Clear stale precal/fit cache fields from the previous run.
+if isstruct(gmSEQ)
+    clearFields = { ...
+        'SmartFreqMapGHz', ...
+        'RabiFitPi', 'RabiFitFreqMHz', ...
+        'T1FitT1', 'T1FitRelErr', 'T1FitBeta', 'T1FitModelUsed' ...
+    };
+    for i = 1:numel(clearFields)
+        f = clearFields{i};
+        if isfield(gmSEQ, f)
+            gmSEQ = rmfield(gmSEQ, f);
+        end
+    end
+end
+
+drawnow;
 end
 
 function update_precal_summary_display(handlesAuto, cfg, msg)

@@ -2,6 +2,7 @@ function cfg = config()
 % Smart T1 configuration for AutoRunSequences_v2_1.
 
 cfg = struct();
+scriptDir = fileparts(mfilename('fullpath'));
 
 cfg.paths.saveFolder = 'C:\Users\dilution_fridge_2\Desktop\T1_SemiAuto_Saves';
 
@@ -11,6 +12,9 @@ cfg.plotting.maxCtrToPlot = 24;
 cfg.plotting.default = struct('plotFunction', 'plotting.plot_data', 'liveFitFunction', '');
 cfg.plotting.rules = { ...
     'ODMR', 'plotting.plot_rabi_data', 'fitting.fit_esr'; ...
+    'PiCal', 'plotting.plot_rabi_data', ''; ...
+    'PiCal_SG2', 'plotting.plot_rabi_data', ''; ...
+    'CaliPi', 'plotting.plot_rabi_data', ''; ... % backward compatibility alias
     'Rabi', 'plotting.plot_rabi_data', 'fitting.fit_rabi'; ...
     'Rabi_SG2', 'plotting.plot_rabi_data', 'fitting.fit_rabi'; ...
     'T1_S00_S01_S10', 'plotting.plot_t1_data_method4', ''; ...
@@ -27,7 +31,7 @@ cfg.smart.physics.gammaMHzPerG = 2.8025;
 % ODMR window planner.
 cfg.smart.odmr = struct();
 cfg.smart.odmr.splitThresholdMHz = 200;
-cfg.smart.odmr.windowMarginMHz = 40;
+cfg.smart.odmr.windowMarginMHz = 60;
 cfg.smart.odmr.minPoints = 51;
 cfg.smart.odmr.maxPoints = 601;
 cfg.smart.odmr.pointsPerMHz = 2.0;
@@ -36,6 +40,11 @@ cfg.smart.odmr.maxRetriesPerWindow = 2;
 cfg.smart.odmr.retryExpandFactor = 1.6;
 cfg.smart.odmr.hardMinGHz = 0.7;
 cfg.smart.odmr.hardMaxGHz = 6;
+cfg.smart.odmr.refineBFromFirstWindow = true;
+cfg.smart.odmr.bSearchMinG = 0;
+cfg.smart.odmr.bSearchMaxG = 2000;
+cfg.smart.odmr.maxBBackoutResidualMHz = 30;
+cfg.smart.odmr.maxBInversionSpreadG = 200;
 
 % Rough-scan controls.
 cfg.smart.rough = struct();
@@ -86,14 +95,44 @@ cfg.smart.esrFit.minPoints = 5;          % nParam(4)+1
 % Precalibration powers.
 cfg.smart.power = struct();
 cfg.smart.power.odmr_dBm = -15;
+cfg.smart.power.odmr_p1_dBm = cfg.smart.power.odmr_dBm; % GUI/default ODMR power for *_p1 resonances
 cfg.smart.power.rabi_dBm = -10;
 cfg.smart.power.rabi_sg1_dBm = cfg.smart.power.rabi_dBm;
 cfg.smart.power.rabi_sg2_dBm = cfg.smart.power.rabi_dBm;
+cfg.smart.power.sq_p1_calibration_boost_dB = 5; % applied on top of GUI-set power for *_p1 calibration
 
 % Unified precalibration scan settings.
 cfg.smart.precal = struct();
 cfg.smart.precal.rabi = struct('start', 0, 'stop', 400, 'nPoints', 40, 'repeat', 5, 'average', 5);
 cfg.smart.precal.odmr = struct('repeat', 5, 'average', 5, 'pointsPerMHz', cfg.smart.odmr.pointsPerMHz);
+cfg.smart.precal.forceMeasureAllFreqs = true; % true => ODMR always sweeps all 4 resonance labels; Rabi remains target-driven
+cfg.smart.precal.calipi = struct();
+cfg.smart.precal.calipi.enabled = true;      % true => find MW power for target pi using PiCal/PiCal_SG2 runs
+cfg.smart.precal.calipi.targetPiNs = 100;     % desired pi (ns)
+cfg.smart.precal.calipi.powerStartDbm = -20; % sweep start
+cfg.smart.precal.calipi.powerStopDbm = 0;    % sweep stop
+cfg.smart.precal.calipi.powerNPoints = 9;    % number of tested powers
+cfg.smart.precal.calipi.maxSafePowerDbm = -1; % hard cap for PiCal fit/result power
+cfg.smart.precal.calipi.quadFitNPoints = 5;  % local quadratic fit window around minimum (>=3)
+cfg.smart.precal.calipi.useMemoryPrior = true;      % use memory/model to center PiCal power sweep
+cfg.smart.precal.calipi.memoryWindowHalfSpanDb = 4; % PiCal sweep window: [Ppred-halfSpan, Ppred+halfSpan]
+cfg.smart.precal.calipi.memoryFile = fullfile(scriptDir, 'calipi_memory.mat');
+cfg.smart.precal.calipi.maxMemoryRows = 400;
+cfg.smart.precal.calipi.defaultMemory = struct();
+cfg.smart.precal.calipi.defaultMemory.sg1 = [ ... % [freqGHz, powerdBm, piNs]
+    3.8260, -5.0,  99.5; ...
+    1.9290, -10.0, 80.3; ...
+    3.6995, -5.0,  86.0; ...
+    2.0549, -10.0, 78.7; ...
+    2.4110, -10.0, 99.5; ...
+    3.3430, -10.0, 115.0 ...
+];
+cfg.smart.precal.calipi.defaultMemory.sg2 = cfg.smart.precal.calipi.defaultMemory.sg1;
+cfg.smart.precal.pi_match = struct();
+cfg.smart.precal.pi_match.enabled = true;        % if one SG hits cap, tune the other SG to match pi-time
+cfg.smart.precal.pi_match.tolNs = 10;            % target |pi1-pi2| <= tolNs
+cfg.smart.precal.pi_match.maxIter = 3;           % max extra Rabi iterations on the non-capped SG
+cfg.smart.precal.pi_match.minSafePowerDbm = -40; % lower clamp for auto-adjusted SG power
 
 % UI tag map (if tags exist in .fig, they override defaults below).
 cfg.smart.ui = struct();
@@ -134,6 +173,7 @@ t.rough.stopFactor = 'edit_rough_stop_factor';
 
 % Precalibration powers.
 t.power.odmr = 'edit_odmr_power';
+t.power.odmrP1 = 'edit_odmr_p1_power';
 t.power.rabi = 'edit_rabi_power';
 t.power.rabiSg1 = 'edit_rabi_sg1_power';
 t.power.rabiSg2 = 'edit_rabi_sg2_power';
@@ -148,6 +188,11 @@ t.precal.rabi.average = 'edit_precal_rabi_average';
 t.precal.odmr.repeat = 'edit_precal_odmr_repeat';
 t.precal.odmr.average = 'edit_precal_odmr_average';
 t.precal.odmr.pointsPerMHz = 'edit_precal_odmr_points_per_mhz';
+t.precal.calipi.enable = 'chk_precal_find_power_for_pi';
+t.precal.calipi.targetPiNs = 'edit_precal_target_pi_ns';
+t.precal.calipi.powerStartDbm = 'edit_precal_power_start_dbm';
+t.precal.calipi.powerStopDbm = 'edit_precal_power_stop_dbm';
+t.precal.calipi.powerNPoints = 'edit_precal_power_npts';
 
 % Unified display fields.
 t.display.precalSummary = 'txt_precal_summary';

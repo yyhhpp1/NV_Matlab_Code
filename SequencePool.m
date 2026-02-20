@@ -15,6 +15,12 @@ switch varargin{1}
         Test_DAQ();
     case 'Test_Laser'
         Test_Laser();
+    case 'PiCal'
+        PiCal()
+    case 'PiCal_SG2'
+        PiCal_SG2()
+    case 'CaliPi' % backward compatibility alias
+        PiCal()
     case 'Rabi'
         Rabi();
     case 'Rabi_IQ'
@@ -202,6 +208,8 @@ StrL{numel(StrL)+1}='Rabi_SG2';
 StrL{numel(StrL)+1}='Rabi_composite';
 StrL{numel(StrL)+1}='Rabi_IQ';
 StrL{numel(StrL)+1}='Rabi_fix_MWDutyCycle';
+StrL{numel(StrL)+1}='PiCal';
+StrL{numel(StrL)+1}='PiCal_SG2';
 
 StrL{numel(StrL)+1}='Echo';
 StrL{numel(StrL)+1}='Echo_wDarkRef';

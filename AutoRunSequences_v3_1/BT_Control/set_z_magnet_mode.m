@@ -14,16 +14,16 @@ function [ok, message, info] = set_z_magnet_mode(ZkG, mode, cfg)
 %          .setUnitEachCall         (default true)
 %          .skipSecondRampIfTargetZero (default true)
 %          .waitPersistentBy        (default 'pers_query')
-%          .psOffBufferSec          (default 0, applied after each ramp stage)
+%          .psOffBufferSec          (default 10, applied after each ramp stage)
+%          .hsHeatUpMinBufferSec    (default 30, min wait after PS 1)
+%          .hsCoolDownMinBufferSec  (default 30, min wait after PS 0)
 %          .verbose                 (default false)
 %
 %   Internal fixed timing constants (not configurable via cfg):
 %       rampTimeoutSec = 1800
 %       zeroTimeoutSec = 1800
 %       heaterTimeoutSec = 120
-%       persistentTimeoutSec = 800
-%       psHeatupMinSec = 30
-%       psCooldownMinSec = 600
+%       persistentTimeoutSec = 300
 %
 % Transition sequence
 %   1) Query PERSistent? (current state awareness).
@@ -47,8 +47,6 @@ rampTimeoutSec = 1800;
 zeroTimeoutSec = 1800;
 heaterTimeoutSec = 120;
 persistentTimeoutSec = 800;
-psHeatupMinSec = 30;
-psCooldownMinSec = 600;
 
 info.startedAt = datestr(now, 'yyyy-mm-dd HH:MM:SS.FFF');
 info.targetZkG = ZkG;
@@ -57,8 +55,6 @@ info.finalModeRequested = '';
 info.endpoint = sprintf('%s:%d', cfg.ip, cfg.port);
 info.waitPersistentBy = char(cfg.waitPersistentBy);
 info.psOffBufferSec = cfg.psOffBufferSec;
-info.psHeatupMinSec = psHeatupMinSec;
-info.psCooldownMinSec = psCooldownMinSec;
 info.commands = cell(0, 1);
 info.responses = cell(0, 1);
 info.startPersistent = NaN;
@@ -68,6 +64,8 @@ info.targetRampIssued = false;
 info.holdReached = false;
 info.rampBufferAppliedCount = 0;
 info.rampBufferStages = cell(0, 1);
+info.hsBufferAppliedCount = 0;
+info.hsBufferStages = cell(0, 1);
 info.finalStateCode = NaN;
 info.finalStateText = '';
 info.errorQuery = '';
@@ -100,7 +98,7 @@ try
     % If starting from persistent mode, turn heater ON before field motion.
     if info.startPersistent
         write_cmd("PS 1");
-        wait_min_time(psHeatupMinSec, 'after PS 1 (pre-motion heat-up)');
+        apply_hs_buffer('heatup_from_persistent', cfg.hsHeatUpMinBufferSec);
         [okHeatOn, heatOnMsg] = wait_not_state(9, heaterTimeoutSec, 'persistent-switch heating');
         if ~okHeatOn
             message = heatOnMsg;
@@ -145,7 +143,7 @@ try
     % Final mode stage.
     if modeName == "driven"
         write_cmd("PS 1");
-        wait_min_time(psHeatupMinSec, 'after PS 1 (final driven heat-up)');
+        apply_hs_buffer('heatup_final_driven', cfg.hsHeatUpMinBufferSec);
         [okFinalHeat, finalHeatMsg] = wait_not_state(9, heaterTimeoutSec, 'final driven heater transition');
         if ~okFinalHeat
             message = finalHeatMsg;
@@ -160,7 +158,7 @@ try
         end
     else
         write_cmd("PS 0");
-        wait_min_time(psCooldownMinSec, 'after PS 0 (persistent cool-down)');
+        apply_hs_buffer('cooldown_to_persistent', cfg.hsCoolDownMinBufferSec);
         [okPers, persMsg] = wait_persistent(persistentTimeoutSec, cfg.waitPersistentBy);
         if ~okPers
             message = persMsg;
@@ -366,13 +364,14 @@ end
         info.rampBufferStages{end + 1, 1} = char(stageName); %#ok<AGROW>
     end
 
-    function wait_min_time(sec, stageName)
-        sec = max(0, double(sec));
-        if sec <= 0
+    function apply_hs_buffer(stageName, tSec)
+        if tSec <= 0
             return;
         end
-        log_msg(cfg, sprintf('Fixed wait %.6g s %s.', sec, stageName));
-        pause(sec);
+        log_msg(cfg, sprintf('HS min buffer wait %.6g s for %s.', tSec, stageName));
+        pause(tSec);
+        info.hsBufferAppliedCount = info.hsBufferAppliedCount + 1;
+        info.hsBufferStages{end + 1, 1} = char(stageName); %#ok<AGROW>
     end
 end
 
@@ -385,6 +384,8 @@ cfg = set_default(cfg, 'setUnitEachCall', true);
 cfg = set_default(cfg, 'skipSecondRampIfTargetZero', true);
 cfg = set_default(cfg, 'waitPersistentBy', 'pers_query');
 cfg = set_default(cfg, 'psOffBufferSec', 10);
+cfg = set_default(cfg, 'hsHeatUpMinBufferSec', 30);
+cfg = set_default(cfg, 'hsCoolDownMinBufferSec', 30);
 cfg = set_default(cfg, 'verbose', true);
 end
 
@@ -426,6 +427,16 @@ end
 if ~(isnumeric(cfg.psOffBufferSec) && isscalar(cfg.psOffBufferSec) && isfinite(cfg.psOffBufferSec) && cfg.psOffBufferSec >= 0)
     ok = false;
     errMsg = 'cfg.psOffBufferSec must be a numeric scalar >= 0.';
+    return;
+end
+if ~(isnumeric(cfg.hsHeatUpMinBufferSec) && isscalar(cfg.hsHeatUpMinBufferSec) && isfinite(cfg.hsHeatUpMinBufferSec) && cfg.hsHeatUpMinBufferSec >= 0)
+    ok = false;
+    errMsg = 'cfg.hsHeatUpMinBufferSec must be a numeric scalar >= 0.';
+    return;
+end
+if ~(isnumeric(cfg.hsCoolDownMinBufferSec) && isscalar(cfg.hsCoolDownMinBufferSec) && isfinite(cfg.hsCoolDownMinBufferSec) && cfg.hsCoolDownMinBufferSec >= 0)
+    ok = false;
+    errMsg = 'cfg.hsCoolDownMinBufferSec must be a numeric scalar >= 0.';
     return;
 end
 if lower(string(cfg.waitPersistentBy)) ~= "pers_query"

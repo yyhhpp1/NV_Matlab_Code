@@ -34,7 +34,7 @@ drawnow;
 
 gmSEQ.bRandom = 0;  % Shuffle the input, added by Weijie 04/20/2022
 
-if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
+if gSG.bfixedFreq % pulsed sequence (supports fixed-power and swept-power)
     CreateSavePath_Ave()
     
     %gmSEQ.bTomo = gmSEQ.Alternate;
@@ -127,6 +127,25 @@ if gSG.bfixedPow && gSG.bfixedFreq %pulsed seq
                 gmSEQ.m=gmSEQ.SweepParam(j); % Manually change the sweep range here.
                 if strcmp(gmSEQ.name, 'Special Cooling')
                     disp(['    gmSEQ.m = ', num2str(gmSEQ.m)]);
+                end
+
+                % Support power-swept pulsed sequences (e.g., PiCal/PiCal_SG2):
+                % when frequency is fixed but power is not fixed, apply the
+                % current sweep point to SG output power before running PB.
+                if ~gSG.bfixedPow && gSG.bfixedFreq
+                    if handles.useSG2.Value
+                        gSG2.Pow = gmSEQ.SweepParam(j);
+                        SignalGeneratorFunctionPool2('WritePow');
+                    else
+                        gSG.Pow = gmSEQ.SweepParam(j);
+                        SignalGeneratorFunctionPool('WritePow');
+                    end
+
+                    % Power sweep should be displayed directly in dBm.
+                    if strcmp(gmSEQ.name, 'PiCal') || strcmp(gmSEQ.name, 'PiCal_SG2') || strcmp(gmSEQ.name, 'CaliPi')
+                        gmSEQ.ScaleT = 1;
+                        gmSEQ.ScaleStr = 'dBm';
+                    end
                 end
                 
                 if gmSEQ.bTomo

@@ -43,18 +43,32 @@ No rough start/stop entries are needed. Rough scan uses each target's T1 range a
 ## Precalibration Panel
 
 - style: `checkbox`, tag: `chk_enable_precal`, label: `Enable precalibration`
-  - checked: run ODMR + Rabi precal
+  - checked: run ODMR + MW calibration precal
   - unchecked: skip precal and use main GUI values (`fixFreq`, `fixFreq2`, `DEERpi`) directly for T1
 - style: `edit`, tag: `edit_odmr_power`, label: `ODMR MW Power (dBm)`
-- style: `edit`, tag: `edit_rabi_power`, label: `Rabi MW Power (dBm, shared SG1/SG2)`
+- style: `edit`, tag: `edit_rabi_power`, label: `Base MW Power (dBm, shared SG1/SG2)`
+  - used as fallback when power calibration is disabled or fails
 
-Unified Rabi scan fields (used by both `Rabi` and `Rabi_SG2`):
+Unified pulse-time scan fields for calibration sequence (`PiCal`):
 
-- style: `edit`, tag: `edit_precal_rabi_start`, label: `Rabi Start`
-- style: `edit`, tag: `edit_precal_rabi_stop`, label: `Rabi Stop`
-- style: `edit`, tag: `edit_precal_rabi_npts`, label: `Rabi Npts`
-- style: `edit`, tag: `edit_precal_rabi_repeat`, label: `Rabi Repeat`
-- style: `edit`, tag: `edit_precal_rabi_average`, label: `Rabi Average`
+- style: `edit`, tag: `edit_precal_rabi_start`, label: `PiCal Time Start`
+- style: `edit`, tag: `edit_precal_rabi_stop`, label: `PiCal Time Stop`
+- style: `edit`, tag: `edit_precal_rabi_npts`, label: `PiCal Time Npts`
+- style: `edit`, tag: `edit_precal_rabi_repeat`, label: `PiCal Repeat`
+- style: `edit`, tag: `edit_precal_rabi_average`, label: `PiCal Average`
+
+Target-pi power-calibration controls:
+
+- style: `checkbox`, tag: `chk_precal_find_power_for_pi`, label: `Find MW Power For Target Pi`
+- style: `edit`, tag: `edit_precal_target_pi_ns`, label: `Target Pi (ns)`
+- style: `edit`, tag: `edit_precal_power_start_dbm`, label: `Power Start (dBm)`
+- style: `edit`, tag: `edit_precal_power_stop_dbm`, label: `Power Stop (dBm)`
+- style: `edit`, tag: `edit_precal_power_npts`, label: `Power Npts`
+
+How backend handles power sweep:
+
+- Runner supports MW-power sweep for fixed-frequency pulsed sequences (`PiCal`, `PiCal_SG2`).
+- Backend runs one `PiCal`/`PiCal_SG2` sweep over power at fixed pulse length (`Target Pi`), fits a local quadratic near the minimum to select power, then runs `Rabi`/`Rabi_SG2` at that power to extract final pi time.
 
 ODMR precal fields:
 
