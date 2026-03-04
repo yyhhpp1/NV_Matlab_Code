@@ -1,7 +1,11 @@
 function [ok, message, respStruct] = bf_tc_set_heater4(deviceIP, active, cfg)
 %BF_TC_SET_HEATER4 Update Bluefors Heater 4 state.
-%   ON payload (active=true): includes pid_mode=1, setpoint and PID values.
+%   ON payload (active=true): includes pid_mode, setpoint and PID values.
 %   OFF payload (active=false): sends heater_nr=4, active=false only.
+%
+% Optional cfg fields for active=true:
+%   .pidMode          integer (default 1)
+%   .controlAlgorithm integer (optional, omitted when absent)
 
 ok = false;
 message = '';
@@ -29,15 +33,33 @@ if active
         end
     end
 
+    pidModeVal = 1;
+    if isfield(cfg, 'pidMode') && ~isempty(cfg.pidMode)
+        if ~(isnumeric(cfg.pidMode) && isscalar(cfg.pidMode) && isfinite(cfg.pidMode) && mod(cfg.pidMode,1)==0)
+            message = 'cfg.pidMode must be an integer scalar.';
+            return;
+        end
+        pidModeVal = double(cfg.pidMode);
+    end
+
     payload = struct( ...
         'heater_nr', 4, ...
         'active', true, ...
-        'pid_mode', 1, ...
+        'pid_mode', pidModeVal, ...
         'setpoint', cfg.setpointK, ...
         'control_algorithm_settings', struct( ...
             'proportional', cfg.pidP, ...
             'integral', cfg.pidI, ...
             'derivative', cfg.pidD));
+
+    if isfield(cfg, 'controlAlgorithm') && ~isempty(cfg.controlAlgorithm)
+        if ~(isnumeric(cfg.controlAlgorithm) && isscalar(cfg.controlAlgorithm) && ...
+                isfinite(cfg.controlAlgorithm) && mod(cfg.controlAlgorithm,1)==0)
+            message = 'cfg.controlAlgorithm must be an integer scalar.';
+            return;
+        end
+        payload.control_algorithm = double(cfg.controlAlgorithm);
+    end
 else
     payload = struct('heater_nr', 4, 'active', false);
 end
@@ -83,4 +105,3 @@ catch ME
     message = sprintf('bf_tc_set_heater4 failed: %s', ME.message);
 end
 end
-

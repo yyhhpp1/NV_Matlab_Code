@@ -15,7 +15,10 @@ if isfield(cfg.smart, 't1fit')
     gmSEQ.T1FitCfg = cfg.smart.t1fit;
 end
 reset_v2_1_run_state(handlesAuto, cfg);
+init_analysis_export_state();
 ctx = build_execution_context(cfg, handlesAuto);
+ctx = apply_high_field_offaligned_policy(ctx, cfg);
+ctx = apply_zero_field_single_target_policy(ctx, cfg);
 if stop_requested(handlesAuto)
     return;
 end
@@ -39,11 +42,15 @@ if stop_requested(handlesAuto)
 end
 
 predicted = estimate_resonance_centers(ctx.estimatedB_G, cfg.smart.physics);
+currentEstimatedB_G = ctx.estimatedB_G;
 allLabels = {'aligned_m1', 'aligned_p1', 'off_m1', 'off_p1'};
 requiredLabels = collect_required_resonance_labels(ctx.targets);
 odmrLabels = requiredLabels;
 if isfield(ctx, 'precal') && isfield(ctx.precal, 'forceMeasureAllFreqs') && ctx.precal.forceMeasureAllFreqs
     odmrLabels = allLabels;
+end
+if should_disable_offaligned_measurement(ctx, cfg)
+    odmrLabels = filter_aligned_labels(odmrLabels);
 end
 
 freqMap = struct();
@@ -58,7 +65,9 @@ if ctx.precal.enabled
     iW = 0;
     refinedBUsed = false;
     while ~isempty(pendingLabels)
-        windows = plan_odmr_windows(pendingLabels, predicted, cfg.smart.odmr);
+        odmrCfgRuntime = cfg.smart.odmr;
+        odmrCfgRuntime.currentEstimatedB_G = currentEstimatedB_G;
+        windows = plan_odmr_windows(pendingLabels, predicted, odmrCfgRuntime);
         if isempty(windows)
             break;
         end
@@ -91,6 +100,7 @@ if ctx.precal.enabled
                 w, fitMap, predicted, ctx.estimatedB_G, cfg.smart.physics, cfg.smart.odmr);
             if bOk
                 predicted = estimate_resonance_centers(BRefinedG, cfg.smart.physics);
+                currentEstimatedB_G = BRefinedG;
                 disp(sprintf('[SmartT1] Refined B from first ODMR: %.3f G -> %.3f G (labels: %s)', ...
                     ctx.estimatedB_G, BRefinedG, strjoin(usedLabels, ', ')));
             else
@@ -104,6 +114,10 @@ if ctx.precal.enabled
 
     freqMap = fill_missing_freqs(freqMap, allLabels, predicted);
     gmSEQ.SmartFreqMapGHz = freqMap;
+    [bMeasured, bOk] = estimate_aligned_b_from_outermost_measured(freqMap, odmrLabels, cfg.smart.physics, cfg.smart.odmr);
+    if bOk
+        set_analysis_measured_b(bMeasured);
+    end
 
     for iL = 1:numel(requiredLabels)
         label = requiredLabels{iL};
@@ -226,6 +240,7 @@ for iT = 1:numel(ctx.targets)
     if stop_requested(handlesAuto)
         break;
     end
+    append_analysis_entry_for_target(target);
 
     if ctx.precal.enabled
         fDispM1 = get_map_freq(freqMap, labelM1);
@@ -346,6 +361,7 @@ for i = 1:numel(targets)
     targets(i).enabled = logical(read_ui_numeric(hAuto, tagSel, targets(i).enabled));
     targets(i).t1 = resolve_target_t1_params(targets(i), cfg.smart.ui.tags.t1.(targets(i).id), hAuto);
 end
+ctx.allTargets = targets;
 ctx.targets = targets([targets.enabled]);
 end
 
@@ -434,9 +450,9 @@ end
 bCandidates = [];
 for i = 1:numel(labels)
     label = labels{i};
-    fFitGHz = get_map_freq(fitMap, label);
-    fEstGHz = get_map_freq(predicted, label);
-    if ~isfinite(fFitGHz) || ~isfinite(fEstGHz)
+    fFitGHz = scalar_numeric_or_nan(get_map_freq(fitMap, label));
+    fEstGHz = scalar_numeric_or_nan(get_map_freq(predicted, label));
+    if ~(isfinite(fFitGHz) && isfinite(fEstGHz))
         continue;
     end
 
@@ -553,15 +569,176 @@ end
 labels = unique(labels, 'stable');
 end
 
+function ctxOut = apply_high_field_offaligned_policy(ctxIn, cfg)
+ctxOut = ctxIn;
+if ~should_disable_offaligned_measurement(ctxIn, cfg)
+    return;
+end
+if ~isfield(ctxIn, 'targets') || isempty(ctxIn.targets)
+    return;
+end
+
+keep = true(1, numel(ctxIn.targets));
+removed = {};
+for i = 1:numel(ctxIn.targets)
+    g = lower(normalize_to_char(safe_struct_field(ctxIn.targets(i), 'group', '')));
+    if contains(g, 'off')
+        keep(i) = false;
+        removed{end+1} = normalize_to_char(safe_struct_field(ctxIn.targets(i), 'id', sprintf('target_%d', i))); %#ok<AGROW>
+    end
+end
+
+if any(~keep)
+    ctxOut.targets = ctxIn.targets(keep);
+    cutoff = get_cfg_numeric_with_default(cfg.smart.odmr, 'disableOffAlignedAboveG', 600);
+    disp(sprintf('[SmartT1] High-field policy active (|B|>%.1f G): skipping off-aligned targets: %s', ...
+        cutoff, strjoin(removed, ', ')));
+end
+end
+
+function tf = should_disable_offaligned_measurement(ctx, cfg)
+tf = false;
+if ~isstruct(cfg) || ~isfield(cfg, 'smart') || ~isfield(cfg.smart, 'odmr')
+    return;
+end
+cutoff = get_cfg_numeric_with_default(cfg.smart.odmr, 'disableOffAlignedAboveG', 600);
+if ~isfinite(cutoff) || cutoff <= 0
+    return;
+end
+if ~isstruct(ctx) || ~isfield(ctx, 'estimatedB_G') || ~isfinite(ctx.estimatedB_G)
+    return;
+end
+tf = abs(ctx.estimatedB_G) > cutoff;
+end
+
+function labelsOut = filter_aligned_labels(labelsIn)
+labelsOut = {};
+if isempty(labelsIn)
+    return;
+end
+for i = 1:numel(labelsIn)
+    lb = normalize_to_char(labelsIn{i});
+    if startsWith(lower(lb), 'aligned_')
+        labelsOut{end+1} = lb; %#ok<AGROW>
+    end
+end
+labelsOut = unique(labelsOut, 'stable');
+end
+
+function ctxOut = apply_zero_field_single_target_policy(ctxIn, cfg)
+ctxOut = ctxIn;
+if ~is_zero_field_estimate(ctxIn)
+    return;
+end
+
+target = struct([]);
+if isfield(ctxIn, 'allTargets') && ~isempty(ctxIn.allTargets)
+    target = find_target_by_id(ctxIn.allTargets, 'aligned_sq_m1');
+end
+if isempty(target) && isfield(ctxIn, 'targets') && ~isempty(ctxIn.targets)
+    target = find_target_by_id(ctxIn.targets, 'aligned_sq_m1');
+end
+if isempty(target)
+    warning('SmartT1:ZeroFieldPolicyMissingTarget', ...
+        'B_est=0 policy requested, but aligned_sq_m1 target is unavailable.');
+    return;
+end
+
+ctxOut.targets = target;
+if isfield(ctxOut, 'precal') && isstruct(ctxOut.precal) && ...
+        isfield(ctxOut.precal, 'forceMeasureAllFreqs') && logical(ctxOut.precal.forceMeasureAllFreqs)
+    ctxOut.precal.forceMeasureAllFreqs = false;
+end
+
+disp('[SmartT1] Zero-field policy active (B_est=0): forcing only aligned SQ(0,-1).');
+end
+
+function tf = is_zero_field_estimate(ctx)
+tf = false;
+if ~isstruct(ctx) || ~isfield(ctx, 'estimatedB_G')
+    return;
+end
+B = scalar_numeric_or_nan(ctx.estimatedB_G);
+if ~isfinite(B)
+    return;
+end
+tf = abs(B) <= 1e-9;
+end
+
+function target = find_target_by_id(targets, id)
+target = struct([]);
+if isempty(targets)
+    return;
+end
+for i = 1:numel(targets)
+    if strcmp(normalize_to_char(targets(i).id), id)
+        target = targets(i);
+        return;
+    end
+end
+end
+
 function windows = plan_odmr_windows(labels, predicted, odmrCfg)
 if isempty(labels)
     windows = struct([]);
     return;
 end
+labels = unique(labels, 'stable');
+keepGroupsSeparate = isfield(odmrCfg, 'keepGroupsSeparate') && logical(odmrCfg.keepGroupsSeparate);
+if keepGroupsSeparate && isfield(odmrCfg, 'separateGroupsAboveG')
+    bSplit = scalar_numeric_or_nan(odmrCfg.separateGroupsAboveG);
+    bNow = NaN;
+    if isfield(odmrCfg, 'currentEstimatedB_G')
+        bNow = scalar_numeric_or_nan(odmrCfg.currentEstimatedB_G);
+    end
+    if isfinite(bSplit) && bSplit > 0 && isfinite(bNow) && abs(bNow) < bSplit
+        keepGroupsSeparate = false;
+    end
+end
 
-centers = zeros(1, numel(labels));
+if keepGroupsSeparate
+    alignedLabels = {};
+    offLabels = {};
+    otherLabels = {};
+    for i = 1:numel(labels)
+        lb = normalize_to_char(labels{i});
+        ll = lower(lb);
+        if startsWith(ll, 'aligned_')
+            alignedLabels{end+1} = lb; %#ok<AGROW>
+        elseif startsWith(ll, 'off_')
+            offLabels{end+1} = lb; %#ok<AGROW>
+        else
+            otherLabels{end+1} = lb; %#ok<AGROW>
+        end
+    end
+
+    windows = struct([]);
+    windows = [windows, build_cluster_windows(alignedLabels, predicted, odmrCfg)]; %#ok<AGROW>
+    windows = [windows, build_cluster_windows(offLabels, predicted, odmrCfg)]; %#ok<AGROW>
+    windows = [windows, build_cluster_windows(otherLabels, predicted, odmrCfg)]; %#ok<AGROW>
+else
+    windows = build_cluster_windows(labels, predicted, odmrCfg);
+end
+end
+
+function windows = build_cluster_windows(labels, predicted, odmrCfg)
+if isempty(labels)
+    windows = struct([]);
+    return;
+end
+labels = unique(labels, 'stable');
+
+centers = nan(1, numel(labels));
 for i = 1:numel(labels)
-    centers(i) = get_map_freq(predicted, labels{i});
+    centers(i) = scalar_numeric_or_nan(get_map_freq(predicted, labels{i}));
+end
+
+valid = isfinite(centers);
+labels = labels(valid);
+centers = centers(valid);
+if isempty(labels)
+    windows = struct([]);
+    return;
 end
 
 [centersSorted, idx] = sort(centers);
@@ -591,7 +768,7 @@ for i = 1:numel(clusters)
     windows(i).toGHz = f1;
     windows(i).labels = labelsSorted(c);
     windows(i).labelCentersGHz = cFreq;
-    windows(i).expectedPeakCount = numel(c);
+    windows(i).expectedPeakCount = estimate_effective_peak_count(cFreq, odmrCfg);
 end
 end
 
@@ -615,6 +792,11 @@ seq.Repeat = num2str(max(1, round(ctx.precal.odmr.repeat)));
 seq.Average = num2str(max(1, round(ctx.precal.odmr.average)));
 seq.useSG2 = 0;
 seq.bSweep2 = 0;
+
+% Runtime metadata for live ODMR fit display (not GUI control fields).
+seq.meta_odmrExpectedPeakCount = max(1, round(window.expectedPeakCount));
+seq.meta_odmrLabels = window.labels;
+seq.meta_odmrLabelCentersGHz = window.labelCentersGHz;
 end
 
 function odmrPow = choose_odmr_power_for_window(window, ctx, cfg)
@@ -732,22 +914,60 @@ end
 
 minSepGHz = odmrCfg.minPeakSepMHz / 1000;
 idx = select_minima_with_spacing(idx, ySmooth, x, minSepGHz, max(window.expectedPeakCount*4, 6));
-candFreq = sort(x(idx));
+candFreq = x(idx);
+candScore = ySmooth(idx); % lower = deeper minima
+[candFreq, ordCand] = sort(candFreq, 'ascend');
+candScore = candScore(ordCand);
 if isempty(candFreq)
     return;
 end
 
-used = false(1, numel(candFreq));
-for i = 1:numel(window.labels)
-    label = window.labels{i};
-    ref = get_map_freq(predicted, label);
-    avail = find(~used);
-    [~, rel] = min(abs(candFreq(avail) - ref));
-    pick = avail(rel);
-    fitMap.(label) = candFreq(pick);
-    used(pick) = true;
+labelRefs = build_label_reference_freqs(window, predicted);
+mergeTolGHz = get_odmr_ref_merge_tol_ghz(odmrCfg);
+[labelGroup, groupRefs] = group_reference_centers(labelRefs, mergeTolGHz);
+nNeed = numel(groupRefs);
+maxAssignErrGHz = get_odmr_max_assign_error_ghz(odmrCfg, window);
+
+if numel(candFreq) >= nNeed
+    [assignedGroupFreq, assignOk] = assign_peaks_to_labels_monotone(candFreq, candScore, groupRefs, maxAssignErrGHz);
+    if assignOk
+        for i = 1:numel(window.labels)
+            fitMap.(window.labels{i}) = assignedGroupFreq(labelGroup(i));
+        end
+        ok = true;
+        return;
+    end
 end
-ok = true;
+
+% Fallback: greedy assignment for available peaks only.
+used = false(1, numel(candFreq));
+nAssigned = 0;
+assignedGroupFreq = nan(1, nNeed);
+for i = 1:nNeed
+    ref = groupRefs(i);
+    avail = find(~used);
+    if isempty(avail)
+        break;
+    end
+    dfAvail = abs(candFreq(avail) - ref);
+    [dfBest, rel] = min(dfAvail);
+    if ~isfinite(dfBest) || dfBest > maxAssignErrGHz
+        continue;
+    end
+    pick = avail(rel);
+    assignedGroupFreq(i) = candFreq(pick);
+    used(pick) = true;
+    nAssigned = nAssigned + 1;
+end
+
+for i = 1:numel(window.labels)
+    g = labelGroup(i);
+    if g >= 1 && g <= nNeed && isfinite(assignedGroupFreq(g))
+        fitMap.(window.labels{i}) = assignedGroupFreq(g);
+    end
+end
+
+ok = (nAssigned == nNeed);
 end
 
 function [fGHz, ok] = fit_single_odmr_lorentz_center_ghz(x, y, window)
@@ -814,6 +1034,189 @@ for i = 1:numel(idxSorted)
 end
 if isempty(idxOut)
     idxOut = idxIn(1:min(numel(idxIn), maxKeep));
+end
+end
+
+function refs = build_label_reference_freqs(window, predicted)
+n = numel(window.labels);
+refs = nan(1, n);
+for i = 1:n
+    refs(i) = get_map_freq(predicted, window.labels{i});
+end
+
+if isfield(window, 'labelCentersGHz') && numel(window.labelCentersGHz) == n
+    c = double(window.labelCentersGHz(:)).';
+    miss = ~isfinite(refs);
+    refs(miss) = c(miss);
+end
+
+if any(~isfinite(refs))
+    if all(~isfinite(refs))
+        refs = linspace(window.fromGHz, window.toGHz, n);
+    else
+        finiteIdx = find(isfinite(refs));
+        refs = interp1(finiteIdx, refs(finiteIdx), 1:n, 'linear', 'extrap');
+    end
+end
+refs = refs(:).';
+end
+
+function [assignedFreq, ok] = assign_peaks_to_labels_monotone(candFreq, candScore, refs, maxAssignErrGHz)
+% Solve ordered peak-to-label assignment:
+% choose one strictly increasing peak per label to minimize total cost.
+assignedFreq = nan(size(refs));
+ok = false;
+
+K = numel(refs);
+M = numel(candFreq);
+if M < K || K == 0
+    return;
+end
+
+% Normalize depth score for tie-breaking (lower y = better minima).
+score = candScore(:);
+if any(isfinite(score))
+    sMin = min(score(isfinite(score)));
+    sMax = max(score(isfinite(score)));
+    if sMax > sMin
+        scoreNorm = (score - sMin) ./ (sMax - sMin);
+    else
+        scoreNorm = zeros(size(score));
+    end
+else
+    scoreNorm = zeros(size(score));
+end
+
+% DP state: dp(i+1, j+1) -> min cost using first i candidates for j labels.
+dp = inf(M + 1, K + 1);
+parent = zeros(M + 1, K + 1); % 0=skip, 1=take
+dp(:, 1) = 0;
+
+for i = 1:M
+    for j = 0:K
+        % Skip candidate i.
+        if dp(i, j + 1) < dp(i + 1, j + 1)
+            dp(i + 1, j + 1) = dp(i, j + 1);
+            parent(i + 1, j + 1) = 0;
+        end
+
+        % Take candidate i as label j (1-based label index => j+1 state).
+        if j >= 1 && isfinite(dp(i, j))
+            dfMHz = abs(candFreq(i) - refs(j)) * 1000;
+            if isfinite(maxAssignErrGHz) && maxAssignErrGHz > 0 && ...
+                    abs(candFreq(i) - refs(j)) > maxAssignErrGHz
+                continue;
+            end
+            cost = dfMHz + 0.01 * scoreNorm(i); % frequency dominates; depth breaks ties
+            if dp(i, j) + cost < dp(i + 1, j + 1)
+                dp(i + 1, j + 1) = dp(i, j) + cost;
+                parent(i + 1, j + 1) = 1;
+            end
+        end
+    end
+end
+
+if ~isfinite(dp(M + 1, K + 1))
+    return;
+end
+
+selIdx = zeros(1, K);
+i = M + 1;
+j = K + 1;
+while i > 1 && j > 1
+    if parent(i, j) == 1
+        selIdx(j - 1) = i - 1;
+        i = i - 1;
+        j = j - 1;
+    else
+        i = i - 1;
+    end
+end
+if any(selIdx == 0)
+    return;
+end
+
+assignedFreq = candFreq(selIdx);
+ok = all(isfinite(assignedFreq));
+end
+
+function maxErrGHz = get_odmr_max_assign_error_ghz(odmrCfg, window)
+if isstruct(odmrCfg) && isfield(odmrCfg, 'maxAssignErrorMHz') && isfinite(odmrCfg.maxAssignErrorMHz) ...
+        && odmrCfg.maxAssignErrorMHz > 0
+    maxErrGHz = odmrCfg.maxAssignErrorMHz / 1000;
+else
+    % Default: at least 50 MHz, capped by half-window span and margin-based scale.
+    spanGHz = max(window.toGHz - window.fromGHz, 0);
+    marginGHz = 0.12; % 120 MHz
+    maxErrGHz = max(0.05, min(marginGHz, max(spanGHz/2, 0.05)));
+end
+end
+
+function tolGHz = get_odmr_ref_merge_tol_ghz(odmrCfg)
+if isstruct(odmrCfg) && isfield(odmrCfg, 'refMergeTolMHz') && ...
+        isfinite(odmrCfg.refMergeTolMHz) && odmrCfg.refMergeTolMHz > 0
+    tolGHz = odmrCfg.refMergeTolMHz / 1000;
+elseif isstruct(odmrCfg) && isfield(odmrCfg, 'minPeakSepMHz') && ...
+        isfinite(odmrCfg.minPeakSepMHz) && odmrCfg.minPeakSepMHz > 0
+    tolGHz = odmrCfg.minPeakSepMHz / 1000;
+else
+    tolGHz = 0.010; % 10 MHz fallback
+end
+end
+
+function [groupId, groupCenters] = group_reference_centers(refs, tolGHz)
+refs = double(refs(:)).';
+n = numel(refs);
+groupId = nan(1, n);
+groupCenters = [];
+if n == 0
+    return;
+end
+if ~isfinite(tolGHz) || tolGHz <= 0
+    tolGHz = 1e-6;
+end
+
+valid = isfinite(refs);
+if ~any(valid)
+    return;
+end
+
+refsValid = refs(valid);
+[refsSort, ord] = sort(refsValid, 'ascend');
+cid = 0;
+tmpGroup = zeros(size(refsSort));
+tmpCenter = [];
+for i = 1:numel(refsSort)
+    if i == 1 || abs(refsSort(i) - refsSort(i-1)) > tolGHz
+        cid = cid + 1;
+        tmpCenter(cid) = refsSort(i); %#ok<AGROW>
+        tmpGroup(i) = cid;
+    else
+        tmpGroup(i) = cid;
+        members = refsSort(tmpGroup == cid);
+        tmpCenter(cid) = mean(members);
+    end
+end
+
+% map sorted valid indices back to original indices
+validIdx = find(valid);
+for i = 1:numel(ord)
+    orig = validIdx(ord(i));
+    groupId(orig) = tmpGroup(i);
+end
+groupCenters = tmpCenter(:).';
+end
+
+function nEff = estimate_effective_peak_count(refCentersGHz, odmrCfg)
+nEff = 1;
+if nargin < 1 || isempty(refCentersGHz)
+    return;
+end
+[~, c] = group_reference_centers(refCentersGHz, get_odmr_ref_merge_tol_ghz(odmrCfg));
+if isempty(c)
+    nEff = 1;
+else
+    nEff = max(1, numel(c));
 end
 end
 
@@ -961,8 +1364,15 @@ end
 function powerDbm = pick_power_from_pical_quadratic(pathName, label, freqGHz, basePow, targetPiNs, ctx, hMain, hAuto, hObject, eventdata, cfg)
 powerDbm = NaN;
 safeMax = get_numeric_field_with_default(ctx.precal.calipi, 'maxSafePowerDbm', inf);
+safeMin = get_numeric_field_with_default(ctx.precal.calipi, 'minSafePowerDbm', -40);
 quadN = max(3, round(get_numeric_field_with_default(ctx.precal.calipi, 'quadFitNPoints', 5)));
 pRef = NaN;
+boundaryRescanEnabled = logical(get_numeric_field_with_default(ctx.precal.calipi, 'boundaryRescanEnabled', 1));
+boundaryRescanMaxIter = max(0, round(get_numeric_field_with_default(ctx.precal.calipi, 'boundaryRescanMaxIter', 2)));
+boundaryEdgeFrac = get_numeric_field_with_default(ctx.precal.calipi, 'boundaryEdgeFrac', 0.2);
+if ~isfinite(boundaryEdgeFrac) || boundaryEdgeFrac <= 0 || boundaryEdgeFrac >= 0.5
+    boundaryEdgeFrac = 0.2;
+end
 
 pStart = get_numeric_field_with_default(ctx.precal.calipi, 'powerStartDbm', basePow);
 pStop = get_numeric_field_with_default(ctx.precal.calipi, 'powerStopDbm', basePow);
@@ -984,10 +1394,13 @@ end
 pStart = apply_p1_calibration_power_boost(pStart, label, cfg);
 pStop = apply_p1_calibration_power_boost(pStop, label, cfg);
 
+pStart = enforce_power_floor_cap(pStart, safeMin, 'PiCal sweep start');
 pStart = enforce_power_safety_cap(pStart, safeMax, 'PiCal sweep start');
+pStop = enforce_power_floor_cap(pStop, safeMin, 'PiCal sweep stop');
 pStop = enforce_power_safety_cap(pStop, safeMax, 'PiCal sweep stop');
 if nPow <= 1 || abs(pStop - pStart) < eps
     pStart = apply_p1_calibration_power_boost(basePow, label, cfg);
+    pStart = enforce_power_floor_cap(pStart, safeMin, 'PiCal single power');
     pStart = enforce_power_safety_cap(pStart, safeMax, 'PiCal single power');
     pStop = pStart;
     nPow = 1;
@@ -998,18 +1411,64 @@ if strcmp(pathName, 'sg2')
 else
     seqName = 'PiCal';
 end
+scanAttempt = 0;
+xPow = [];
+yContrast = [];
+while true
+    scanAttempt = scanAttempt + 1;
     seq = build_pical_power_sweep_sequence(seqName, pathName, freqGHz, pStart, pStop, nPow, targetPiNs, ctx);
-run_one_sequence(seq, hMain, hAuto, hObject, eventdata, cfg, ...
-    sprintf(' [%s %s %s @ %.6fGHz P:[%.2f, %.2f] dBm]', seqName, upper(pathName), label, freqGHz, pStart, pStop));
-if stop_requested(hAuto)
-    return;
+    run_one_sequence(seq, hMain, hAuto, hObject, eventdata, cfg, ...
+        sprintf(' [%s %s %s @ %.6fGHz P:[%.2f, %.2f] dBm, scan %d]', ...
+        seqName, upper(pathName), label, freqGHz, pStart, pStop, scanAttempt));
+    if stop_requested(hAuto)
+        return;
+    end
+
+    [xPow, yContrast] = extract_rabi_like_contrast_from_current_data();
+    if numel(xPow) < 3
+        break;
+    end
+
+    if ~(boundaryRescanEnabled && nPow >= 3 && scanAttempt <= boundaryRescanMaxIter)
+        break;
+    end
+
+    [isBoundary, side, iMin, edgePts] = pical_minimum_is_near_boundary(xPow, yContrast, boundaryEdgeFrac);
+    if ~isBoundary || ~isfinite(iMin)
+        break;
+    end
+
+    span = pStop - pStart;
+    if ~isfinite(span) || span <= 0
+        break;
+    end
+    center = xPow(iMin);
+    pNewStart = center - span / 2;
+    pNewStop = center + span / 2;
+    pNewStart = enforce_power_floor_cap(pNewStart, safeMin, 'PiCal recentered sweep start');
+    pNewStart = enforce_power_safety_cap(pNewStart, safeMax, 'PiCal recentered sweep start');
+    pNewStop = enforce_power_floor_cap(pNewStop, safeMin, 'PiCal recentered sweep stop');
+    pNewStop = enforce_power_safety_cap(pNewStop, safeMax, 'PiCal recentered sweep stop');
+
+    if pNewStop <= pNewStart + eps
+        break;
+    end
+    if abs(pNewStart - pStart) < 1e-9 && abs(pNewStop - pStop) < 1e-9
+        break;
+    end
+
+    disp(sprintf('[SmartT1] PiCal boundary min (%s, edgePts=%d): recenter sweep [%.2f, %.2f] -> [%.2f, %.2f] dBm around %.2f dBm', ...
+        side, edgePts, pStart, pStop, pNewStart, pNewStop, center));
+    pStart = pNewStart;
+    pStop = pNewStop;
+    pRef = center;
 end
 
-[xPow, yContrast] = extract_rabi_like_contrast_from_current_data();
 if numel(xPow) < 3
     warning('SmartT1:PiCalDataTooSmall', ...
         'PiCal data too small for quadratic fit (%s/%s @ %.6f GHz).', pathName, label, freqGHz);
     powerDbm = apply_p1_calibration_power_boost(basePow, label, cfg);
+    powerDbm = enforce_power_floor_cap(powerDbm, safeMin, 'PiCal fallback base power');
     powerDbm = enforce_power_safety_cap(powerDbm, safeMax, 'PiCal fallback base power');
     return;
 end
@@ -1023,10 +1482,31 @@ if ~fitOk || ~isfinite(pFit)
     pFit = xPow(iMin);
 end
 pFit = min(max(pFit, min(xPow)), max(xPow));
+pFit = enforce_power_floor_cap(pFit, safeMin, 'PiCal fitted power');
 pFit = enforce_power_safety_cap(pFit, safeMax, 'PiCal fitted power');
 powerDbm = pFit;
 disp(sprintf('[SmartT1] PiCal fitted power for %s/%s at %.6f GHz: %.2f dBm', ...
     pathName, label, freqGHz, powerDbm));
+end
+
+function [isBoundary, side, iMin, edgePts] = pical_minimum_is_near_boundary(xPow, yContrast, edgeFrac)
+isBoundary = false;
+side = 'none';
+iMin = NaN;
+edgePts = 1;
+if numel(xPow) < 3 || isempty(yContrast)
+    return;
+end
+[~, iMin] = min(yContrast);
+edgeFrac = min(max(edgeFrac, 0), 0.49);
+edgePts = max(1, ceil(edgeFrac * (numel(xPow) - 1)));
+if iMin <= edgePts
+    isBoundary = true;
+    side = 'low';
+elseif iMin >= (numel(xPow) - edgePts + 1)
+    isBoundary = true;
+    side = 'high';
+end
 end
 
 function [piNs, rabiFreqMHz] = run_rabi_at_fixed_power(pathName, label, freqGHz, powerDbm, ctx, hMain, hAuto, hObject, eventdata, cfg)
@@ -1150,6 +1630,14 @@ pOut = pIn;
 if isfinite(maxSafe) && pOut > maxSafe
     warning('SmartT1:PowerSafetyCap', '%s capped from %.2f dBm to %.2f dBm.', whatLabel, pOut, maxSafe);
     pOut = maxSafe;
+end
+end
+
+function pOut = enforce_power_floor_cap(pIn, minSafe, whatLabel)
+pOut = pIn;
+if isfinite(minSafe) && pOut < minSafe
+    warning('SmartT1:PowerFloorCap', '%s raised from %.2f dBm to %.2f dBm.', whatLabel, pOut, minSafe);
+    pOut = minSafe;
 end
 end
 
@@ -1584,11 +2072,32 @@ for iTry = 1:max(1, ctx.rough.maxRetries)
     roughInfo.t1RoughMs = t1Ms;
     roughInfo.fitRelErr = relErr;
     roughInfo.edgeRatio = edgeRatio;
-    if isfinite(t1Ms)
-        update_rough_t1_display(hAuto, cfg, t1Ms);
-    elseif isfinite(edgeRatio)
-        update_rough_ratio_display(hAuto, cfg, edgeRatio);
+
+    % Display policy:
+    % - Prefer current-try-only rough metric for UI feedback per iteration.
+    % - Fall back to combined metric only when current-try fit is unavailable.
+    t1MsDisplay = NaN;
+    edgeRatioDisplay = NaN;
+    if strcmpi(ctx.rough.stopEstimator, 'edge_ratio')
+        if numel(curData.y) >= 2 && isfinite(curData.y(1)) && isfinite(curData.y(end))
+            edgeRatioDisplay = abs(curData.y(end)) / max(abs(curData.y(1)), eps);
+        end
+    else
+        [t1MsDisplay, ~] = estimate_t1_from_xy(curData.xMs, curData.y, ctx.rough, cfg.smart.t1fit);
     end
+    if ~isfinite(t1MsDisplay)
+        t1MsDisplay = t1Ms;
+    end
+    if ~isfinite(edgeRatioDisplay)
+        edgeRatioDisplay = edgeRatio;
+    end
+
+    if isfinite(t1MsDisplay)
+        update_rough_t1_display(hAuto, cfg, t1MsDisplay, iTry);
+    elseif isfinite(edgeRatioDisplay)
+        update_rough_ratio_display(hAuto, cfg, edgeRatioDisplay, iTry);
+    end
+    drawnow;
     if strcmpi(ctx.rough.stopEstimator, 'edge_ratio')
         if isfinite(edgeRatio) && edgeRatio <= ctx.rough.ratioThreshold
             break;
@@ -1596,6 +2105,18 @@ for iTry = 1:max(1, ctx.rough.maxRetries)
     elseif isfinite(t1Ms)
         if strcmpi(ctx.rough.stopPolicy, 'first_good') && relErr <= ctx.rough.fitRelErrThreshold
             break;
+        end
+        % In max_retries mode, stop early if the CURRENT rough stop is already valid.
+        if strcmpi(ctx.rough.stopPolicy, 'max_retries')
+            stopNow = rangeRough(2);
+            stopMinNow = start0 + ctx.rough.minSpanFactor * t1Ms * 1e6;
+            stopMaxNow = start0 + ctx.rough.maxSpanFactor * t1Ms * 1e6;
+            if stopNow >= stopMinNow && stopNow <= stopMaxNow
+                disp(sprintf(['[SmartT1] Rough stop accepted early for %s at try %d: ', ...
+                    'stop=%.4f ns in [%.4f, %.4f] ns (T1=%.4f ms).'], ...
+                    target.id, iTry, stopNow, stopMinNow, stopMaxNow, t1Ms));
+                break;
+            end
         end
     end
 
@@ -1668,6 +2189,65 @@ if ~strcmp(reason, 'within_range')
     disp(sprintf(['[SmartT1] Stop correction for %s (%s): start=%.4f, stop %.4f -> %.4f, ', ...
         'T1rough=%.4fms, nPts=%d'], ...
         target.id, reason, start0, stop0, newStop, roughInfo.t1RoughMs, nPts));
+end
+end
+
+function [t1Ms, relErr] = estimate_t1_from_xy(xMs, y, roughCfg, t1FitCfg)
+t1Ms = NaN;
+relErr = inf;
+
+if nargin < 1 || isempty(xMs) || nargin < 2 || isempty(y)
+    return;
+end
+if nargin < 3 || ~isstruct(roughCfg)
+    roughCfg = struct('stopEstimator', 'single_exp');
+end
+if nargin < 4 || ~isstruct(t1FitCfg)
+    t1FitCfg = struct();
+end
+
+xFit = xMs(:);
+yFit = y(:);
+valid = isfinite(xFit) & isfinite(yFit);
+xFit = xFit(valid);
+yFit = yFit(valid);
+if numel(xFit) < 6
+    return;
+end
+
+fitModel = 'single_exp';
+if strcmpi(roughCfg.stopEstimator, 'stretched_div_n')
+    fitModel = 'stretched_exp';
+end
+[popt, perr] = run_t1_fit_with_model(xFit, yFit, fitModel, t1FitCfg);
+
+rate = popt(1);
+if ~(isfinite(rate) && rate > 0)
+    return;
+end
+
+baseT1Ms = 1 / rate;
+relBase = perr(1) / max(abs(rate), eps);
+if strcmpi(roughCfg.stopEstimator, 'stretched_div_n')
+    n = NaN;
+    nErr = NaN;
+    if numel(popt) >= 3 && isfinite(popt(3))
+        n = popt(3);
+    end
+    if numel(perr) >= 3 && isfinite(perr(3))
+        nErr = perr(3);
+    end
+    if isfinite(n) && n > 0
+        t1Ms = baseT1Ms / n;
+        relN = 0;
+        if isfinite(nErr)
+            relN = nErr / max(abs(n), eps);
+        end
+        relErr = sqrt(relBase.^2 + relN.^2);
+    end
+else
+    t1Ms = baseT1Ms;
+    relErr = relBase;
 end
 end
 
@@ -2055,6 +2635,30 @@ gmSEQ.AutoStopT1ByRelErr = autoStopEnabled && isTrueT1 && ~isRough;
 gmSEQ.AutoStopT1RelErrThreshold = autoStopThr;
 gmSEQ.AutoStopT1MinAverage = autoStopMinAvg;
 
+% Push optional ODMR live-fit metadata into gmSEQ for fitting.fit_esr().
+if isfield(seq, 'meta_odmrExpectedPeakCount')
+    gmSEQ.ESRFitExpectedPeakCount = max(1, round(normalize_to_numeric(seq.meta_odmrExpectedPeakCount, 1)));
+else
+    gmSEQ.ESRFitExpectedPeakCount = 1;
+end
+if isfield(seq, 'meta_odmrLabels') && iscell(seq.meta_odmrLabels)
+    gmSEQ.ESRFitWindowLabels = seq.meta_odmrLabels;
+else
+    gmSEQ.ESRFitWindowLabels = {};
+end
+if isfield(seq, 'meta_odmrLabelCentersGHz')
+    gmSEQ.ESRFitLabelCentersGHz = double(seq.meta_odmrLabelCentersGHz(:)).';
+else
+    gmSEQ.ESRFitLabelCentersGHz = [];
+end
+
+% Internal runtime metadata is not a main-GUI control.
+for metaField = {'meta_odmrExpectedPeakCount', 'meta_odmrLabels', 'meta_odmrLabelCentersGHz'}
+    if isfield(seq, metaField{1})
+        seq = rmfield(seq, metaField{1});
+    end
+end
+
 apply_sequence_to_main_gui(seq, hMain);
 if stop_requested(hAuto)
     return;
@@ -2234,10 +2838,6 @@ if isempty(mainFig) || ~isgraphics(mainFig, 'figure')
 end
 drawnow;
 imwrite(getframe(mainFig).cdata, imagePath);
-
-% Also save AutoRun v2.1 GUI snapshot alongside each sequence snapshot.
-autoImagePath = strrep(imagePath, '.png', '_AutoGUI_v2_1.png');
-save_auto_gui_snapshot(handlesAuto, autoImagePath);
 end
 
 function save_end_of_run_snapshots(handlesMain, handlesAuto, cfg)
@@ -2250,23 +2850,19 @@ if ~exist(saveFolder, 'dir')
     mkdir(saveFolder);
 end
 
-try
-    mainFig = resolve_figure_handle(handlesMain, {'figure1', 'output'});
-    if ~isempty(mainFig) && isgraphics(mainFig, 'figure')
-        drawnow;
-        frameMain = getframe(mainFig);
-        if isfield(frameMain, 'cdata') && ~isempty(frameMain.cdata)
-            imwrite(frameMain.cdata, fullfile(saveFolder, 'MainGUI_Final.png'));
-        end
-    end
-catch ME
-    warning('SmartT1:FinalMainGuiSaveFailed', 'Final main GUI save failed: %s', ME.message);
-end
+% Main GUI is already saved after each sequence in save_main_figure().
+% Skip end-of-run main GUI save to avoid duplicate final snapshots.
 
 try
     save_auto_gui_snapshot(handlesAuto, fullfile(saveFolder, 'AutoGUI_v2_1_Final.png'));
 catch ME
     warning('SmartT1:FinalAutoGuiSaveFailed', 'Final auto GUI save failed: %s', ME.message);
+end
+
+try
+    write_analysis_add_entry_snippet(saveFolder);
+catch ME
+    warning('SmartT1:AnalysisSnippetSaveFailed', 'Analysis snippet save failed: %s', ME.message);
 end
 end
 
@@ -2362,10 +2958,15 @@ if isempty(measuredLabels)
     return;
 end
 
+alignedOnly = filter_aligned_labels(measuredLabels);
+if isempty(alignedOnly)
+    return;
+end
+
 labels = {};
 freqs = [];
-for i = 1:numel(measuredLabels)
-    lb = measuredLabels{i};
+for i = 1:numel(alignedOnly)
+    lb = alignedOnly{i};
     f = get_map_freq(freqMap, lb);
     if isfinite(f)
         labels{end+1} = lb; %#ok<AGROW>
@@ -2489,6 +3090,178 @@ end
 drawnow;
 end
 
+function init_analysis_export_state()
+global gmSEQ
+gmSEQ.AnalysisEntries = struct('date', {}, 'nArg', {}, 'group', {}, 'sequence', {}, 'spin', {}, 'saveString', {});
+gmSEQ.AnalysisMeasuredB = NaN;
+gmSEQ.AnalysisDate = current_date_string();
+gmSEQ.AnalysisSaveString = '';
+end
+
+function set_analysis_measured_b(BG)
+global gmSEQ
+if isfinite(BG)
+    gmSEQ.AnalysisMeasuredB = BG;
+end
+end
+
+function append_analysis_entry_for_target(target)
+global gmSEQ gSaveDataAve
+if ~isstruct(target) || ~isfield(target, 'transition')
+    return;
+end
+
+[seqName, spinLabel, ok] = map_transition_to_analysis_tokens(target.transition);
+if ~ok
+    return;
+end
+
+groupName = map_group_to_analysis_token(safe_struct_field(target, 'group', ''));
+nArg = extract_ave_number_from_run_file(gSaveDataAve);
+if ~isfinite(nArg)
+    % Missing Ave_xxx token -> skip this entry.
+    return;
+end
+
+entry = struct();
+entry.date = current_date_string();
+entry.nArg = nArg;
+entry.group = groupName;
+entry.sequence = seqName;
+entry.spin = spinLabel;
+entry.saveString = extract_save_string_stem(gSaveDataAve);
+gmSEQ.AnalysisSaveString = entry.saveString;
+
+if ~isfield(gmSEQ, 'AnalysisEntries') || ~isstruct(gmSEQ.AnalysisEntries)
+    gmSEQ.AnalysisEntries = entry;
+else
+    gmSEQ.AnalysisEntries(end+1) = entry; %#ok<AGROW>
+end
+
+function out = extract_save_string_stem(gSaveDataAve)
+out = '';
+if nargin < 1 || isempty(gSaveDataAve) || ~isstruct(gSaveDataAve) || ~isfield(gSaveDataAve, 'file')
+    return;
+end
+raw = normalize_to_char(gSaveDataAve.file);
+if isempty(raw)
+    return;
+end
+[~, stem, ~] = fileparts(raw);
+out = normalize_to_char(stem);
+end
+
+function nArg = extract_ave_number_from_run_file(gSaveDataAve)
+nArg = NaN;
+if nargin < 1 || isempty(gSaveDataAve) || ~isstruct(gSaveDataAve) || ~isfield(gSaveDataAve, 'file')
+    return;
+end
+fileStr = normalize_to_char(gSaveDataAve.file);
+if isempty(fileStr)
+    return;
+end
+
+% Parse "...Ave_xxx..." token (case-insensitive); use last match if multiple.
+tok = regexp(fileStr, '(?i)Ave[_-]?(\d+)', 'tokens');
+if isempty(tok)
+    return;
+end
+try
+    nArg = str2double(tok{end}{1});
+    if ~isfinite(nArg)
+        nArg = NaN;
+    else
+        nArg = round(nArg);
+    end
+catch
+    nArg = NaN;
+end
+end
+end
+
+function write_analysis_add_entry_snippet(saveFolder)
+global gmSEQ
+if ~isfield(gmSEQ, 'AnalysisEntries') || isempty(gmSEQ.AnalysisEntries)
+    return;
+end
+if nargin < 1 || isempty(saveFolder)
+    saveFolder = pwd;
+end
+if ~exist(saveFolder, 'dir')
+    mkdir(saveFolder);
+end
+
+outFile = fullfile(saveFolder, 'analysis_add_entry_snippet.txt');
+fid = fopen(outFile, 'w');
+if fid < 0
+    warning('SmartT1:AnalysisSnippetOpenFailed', 'Cannot open analysis snippet file: %s', outFile);
+    return;
+end
+cleaner = onCleanup(@() fclose(fid)); %#ok<NASGU>
+
+if isfield(gmSEQ, 'AnalysisMeasuredB') && isfinite(gmSEQ.AnalysisMeasuredB)
+    fprintf(fid, 'B = %.6f;\n', gmSEQ.AnalysisMeasuredB);
+else
+    fprintf(fid, 'B = NaN; %% measured B unavailable\n');
+end
+
+entries = gmSEQ.AnalysisEntries;
+for i = 1:numel(entries)
+    e = entries(i);
+    if ~isfield(e, 'sequence') || isempty(e.sequence) || ...
+            ~isfield(e, 'spin') || isempty(e.spin)
+        continue;
+    end
+    dStr = safe_struct_field(e, 'date', current_date_string());
+    nArg = round(safe_struct_field(e, 'nArg', 0));
+    gStr = safe_struct_field(e, 'group', 'Aligned');
+    seqStr = e.sequence;
+    spinStr = e.spin;
+    fprintf(fid, 'data.add_entry(''%s'', %d, B, T, ''%s'', ''%s'', ''%s'');\n', ...
+        dStr, nArg, gStr, seqStr, spinStr);
+end
+end
+
+function [seqName, spinLabel, ok] = map_transition_to_analysis_tokens(transition)
+seqName = '';
+spinLabel = '';
+ok = true;
+switch normalize_to_char(transition)
+    case 'SQ_0_TO_M1'
+        seqName = 'T1_S00_S01_S10';
+        spinLabel = '0m1';
+    case 'SQ_0_TO_P1'
+        seqName = 'T1_S00_S01_S10';
+        spinLabel = '0p1';
+    case 'DQ_M1_TO_P1'
+        seqName = 'T1_S11_S1m1';
+        spinLabel = 'm1p1';
+    otherwise
+        ok = false;
+end
+end
+
+function groupName = map_group_to_analysis_token(groupIn)
+g = lower(normalize_to_char(groupIn));
+if contains(g, 'off')
+    groupName = 'OffAligned';
+else
+    groupName = 'Aligned';
+end
+end
+
+function out = current_date_string()
+v = datevec(now);
+out = sprintf('%d-%d-%d', v(1), v(2), v(3));
+end
+
+function out = safe_struct_field(s, fieldName, defaultValue)
+out = defaultValue;
+if isstruct(s) && isfield(s, fieldName)
+    out = s.(fieldName);
+end
+end
+
 function update_precal_summary_display(handlesAuto, cfg, msg)
 if ~isfield(cfg.smart.ui.tags, 'display') || ...
         ~isfield(cfg.smart.ui.tags.display, 'precalSummary')
@@ -2498,22 +3271,30 @@ tag = cfg.smart.ui.tags.display.precalSummary;
 set_display_control_string(handlesAuto, tag, msg);
 end
 
-function update_rough_t1_display(handlesAuto, cfg, roughT1Ms)
+function update_rough_t1_display(handlesAuto, cfg, roughT1Ms, iTry)
 if ~isfield(cfg.smart.ui.tags, 'display') || ...
         ~isfield(cfg.smart.ui.tags.display, 'roughT1')
     return;
 end
-msg = sprintf('Rough T1: %.4f ms', roughT1Ms);
+if nargin >= 4 && isfinite(iTry) && iTry >= 1
+    msg = sprintf('Rough T1 (try %d): %.4f ms', round(iTry), roughT1Ms);
+else
+    msg = sprintf('Rough T1: %.4f ms', roughT1Ms);
+end
 tag = cfg.smart.ui.tags.display.roughT1;
 set_display_control_string(handlesAuto, tag, msg);
 end
 
-function update_rough_ratio_display(handlesAuto, cfg, edgeRatio)
+function update_rough_ratio_display(handlesAuto, cfg, edgeRatio, iTry)
 if ~isfield(cfg.smart.ui.tags, 'display') || ...
         ~isfield(cfg.smart.ui.tags.display, 'roughT1')
     return;
 end
-msg = sprintf('Rough ratio: %.4f', edgeRatio);
+if nargin >= 4 && isfinite(iTry) && iTry >= 1
+    msg = sprintf('Rough ratio (try %d): %.4f', round(iTry), edgeRatio);
+else
+    msg = sprintf('Rough ratio: %.4f', edgeRatio);
+end
 tag = cfg.smart.ui.tags.display.roughT1;
 set_display_control_string(handlesAuto, tag, msg);
 end
@@ -2653,6 +3434,37 @@ function out = get_map_freq(s, fieldName)
 if isfield(s, fieldName)
     out = s.(fieldName);
 else
+    out = NaN;
+end
+end
+
+function out = scalar_numeric_or_nan(v)
+% Convert possibly empty/non-scalar/non-numeric input into one numeric scalar.
+out = NaN;
+if isempty(v)
+    return;
+end
+if isnumeric(v) || islogical(v)
+    vv = double(v(:));
+    vv = vv(isfinite(vv));
+    if ~isempty(vv)
+        out = vv(1);
+    end
+    return;
+end
+if ischar(v) || isstring(v)
+    tmp = str2double(char(string(v)));
+    if isfinite(tmp)
+        out = tmp;
+    end
+    return;
+end
+try
+    tmp = str2double(char(string(v)));
+    if isfinite(tmp)
+        out = tmp;
+    end
+catch
     out = NaN;
 end
 end

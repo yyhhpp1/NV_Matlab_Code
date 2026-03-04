@@ -11,7 +11,12 @@ Standalone high-level Z-magnet control (not integrated with v3.1 queue runner).
 - `set_temperature_safe.m`
 - `bf_tc_read_latest_channel.m`
 - `bf_tc_set_heater4.m`
+- `bf_tc_read_heater.m`
+- `bf_tc_set_heater4_verified.m`
+- `autotune_pid_temperature_range.m`
+- `overnight_stabilize_temperature.m`
 - `mag_z_gate_precheck.m`
+- `temperature_communication.md` (temperature comm details: read/set T, PID, heater)
 
 ## Usage
 
@@ -42,6 +47,29 @@ tcfg = struct( ...
     'verbose', true);
 [okT, msgT, infoT] = set_temperature_safe(4.2, tcfg);
 
+% PID autotune over range [Tmin Tmax] using nPoints.
+acfg = struct( ...
+    'tcIp', '192.168.0.145', ...
+    'pidBounds', struct('Pmin', 0, 'Pmax', 50, 'Imin', 0, 'Imax', 50, 'Dmin', 0, 'Dmax', 50), ...
+    'initialPid', struct('P', 1.0, 'I', 0.1, 'D', 0.0), ...
+    'pidControlMode', 'step', ...           % 'conventional' or 'step'
+    'conventionalControlAlgorithm', 1, ...
+    'stepControlAlgorithm', 2, ...
+    'stepCoeffScale', 100, ...
+    'verbose', true);
+[okA, msgA, outA] = autotune_pid_temperature_range([3.8 4.2], 3, acfg);
+disp(outA.runFolder);
+
+% Overnight constant-temperature stabilization (conventional mode).
+ocfg = struct( ...
+    'tcIp', '192.168.0.145', ...
+    'initialPid', struct('P', 0.05, 'I', 250, 'D', 0), ...   % K,Ti,Td
+    'pidBounds', struct('Pmin', 0, 'Pmax', 1, 'Imin', 1, 'Imax', 2000, 'Dmin', 0, 'Dmax', 100), ...
+    'durationSec', 10*3600, ...
+    'verbose', true);
+[okO, msgO, outO] = overnight_stabilize_temperature(0.02, ocfg);
+disp(outO.runFolder);
+
 % Minimal B queue (targets in kG):
 cfgQ = struct( ...
     'hFigAuto', hFigAuto, ...      % T1_SemiAuto_ParamInput_v2_1 figure handle
@@ -62,14 +90,18 @@ request_stop_b_field_queue(struct('hFigAuto', hFigAuto));
 - Endpoint: `192.168.0.101:7185`
 - Mode input: `'driven'` or `'persistent'` (final mode after motion)
 - Units forced to `kG` (`CONF:FIELD:UNITS 0`) each call by default
-- Zero-first behavior is always enabled
+- Zero-first behavior is configurable by final mode:
+  - `zeroFirstDriven` (default `true`)
+  - `zeroFirstPersistent` (default `true`)
 
 ## Behavior Summary
 
 1. Queries `PERSistent?` to determine starting mode.
 2. If starting persistent, sends `PS 1`, waits `hsHeatUpMinBufferSec` (default 30 s), then checks heater transition.
-3. Sends `ZERO` and waits `STATE? == 8`.
-4. Ramps to target and waits `STATE? == 2` (unless target is `0` and duplicate second ramp is skipped).
+3. Zero stage is mode-configurable:
+   - if enabled for final mode, sends `ZERO` and waits `STATE? == 8`
+   - if disabled, skips `ZERO` and ramps directly to target
+4. Ramps to target and waits `STATE? == 2` (unless target is `0`, second-ramp skip is enabled, and zero-first stage was executed).
 5. Applies buffer wait (`psOffBufferSec`) after each completed ramp stage:
    - after down-ramp to zero (`STATE? == 8`)
    - after up-ramp to target (`STATE? == 2`, when executed)
@@ -81,10 +113,12 @@ request_stop_b_field_queue(struct('hFigAuto', hFigAuto));
 ## Extra Config Fields
 
 - `skipSecondRampIfTargetZero` (default: `true`)
+- `zeroFirstDriven` (default: `true`)
+- `zeroFirstPersistent` (default: `true`)
 - `waitPersistentBy` (default: `'pers_query'`)
-- `psOffBufferSec` (default: `10`, applied after every completed ramp stage)
+- `psOffBufferSec` (default: `20`, applied after every completed ramp stage)
 - `hsHeatUpMinBufferSec` (default: `30`, minimum wait after `PS 1`)
-- `hsCoolDownMinBufferSec` (default: `30`, minimum wait after `PS 0`)
+- `hsCoolDownMinBufferSec` (default: `600`, minimum wait after `PS 0`)
 
 ## Fixed Internal Settings
 

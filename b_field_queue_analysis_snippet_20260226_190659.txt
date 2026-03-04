@@ -1,0 +1,78 @@
+% Minimal B queue analysis snippet
+% Generated at: 2026-02-26 21:40:36.673
+
+B = 20.884769;
+data.add_entry('2026-2-26', 372, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 7, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 30.917575;
+data.add_entry('2026-2-26', 375, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 10, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 40.939637;
+data.add_entry('2026-2-26', 378, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 13, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 50.955491;
+data.add_entry('2026-2-26', 381, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 16, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 60.967434;
+data.add_entry('2026-2-26', 384, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 19, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 70.976754;
+data.add_entry('2026-2-26', 387, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 22, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 80.984230;
+data.add_entry('2026-2-26', 390, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 25, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 90.273900;
+data.add_entry('2026-2-26', 393, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 28, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 100.504362;
+data.add_entry('2026-2-26', 396, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 31, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 120.568070;
+data.add_entry('2026-2-26', 399, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 34, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 140.231557;
+data.add_entry('2026-2-26', 402, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 37, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 160.163462;
+data.add_entry('2026-2-26', 405, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 40, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 180.129716;
+data.add_entry('2026-2-26', 408, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 43, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 200.012180;
+data.add_entry('2026-2-26', 411, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 46, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 220.016045;
+data.add_entry('2026-2-26', 414, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 49, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 239.895811;
+data.add_entry('2026-2-26', 417, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 52, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 259.830710;
+data.add_entry('2026-2-26', 420, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 55, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 279.728265;
+data.add_entry('2026-2-26', 423, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 58, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');
+
+B = 299.736577;
+data.add_entry('2026-2-26', 426, B, T, 'Aligned', 'T1_S00_S01_S10', '0m1');
+data.add_entry('2026-2-26', 61, B, T, 'Aligned', 'T1_S11_S1m1', 'm1p1');

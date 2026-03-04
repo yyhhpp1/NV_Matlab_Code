@@ -18,8 +18,13 @@
   - Delegates execution to `t1_semi_auto_program` from `v2.1`.
   - Intended location for future pre/post automation hooks.
 - `+v3_1/`
-  - Queue backend architecture (campaign/job model, run loop, stop controls,
-    placeholder T/B API, queue state/log generation).
+  - Active minimal queue backends:
+    - `open_b_queue_minimal_gui`, `run_b_queue_minimal`
+    - `open_tb_queue_minimal_gui`, `run_tb_queue_minimal`
+    - stop/clear helpers and placeholder set/wait APIs.
+- `legacy_t1_queue_v3_1/`
+  - Archived `T1_SemiAuto_Queue_v3_1` campaign/job queue implementation and helpers.
+  - Not part of active v3.1 workflow.
 - `instruction_v3_1.md`
   - Functional spec for v3.1 behavior and policies.
 - `gui_element.md`
@@ -40,24 +45,6 @@ Do not launch `T1_SemiAuto_ParamInput_v2_1` directly when you want `v3.1` behavi
 
 - If `v2.1` is updated, `v3.1` inherits those changes automatically because it calls into `v2.1` at runtime.
 - Only add files here when you intentionally want `v3.1`-specific behavior.
-
-## Backend Quick Start
-
-Minimal architecture-level (no GUI) usage:
-
-```matlab
-addpath('AutoRunSequences_v3_1');
-campaign = v3_1.new_campaign();
-
-job = v3_1.new_job('name','B0T0','B',100,'T',300);
-job.profile.snapshot = v3_1.capture_profile_snapshot(handlesAuto); % optional
-campaign = v3_1.add_job(campaign, job);
-
-runtimeCtx = struct();
-runtimeCtx.executeV21 = false;  % architecture dry-run by default
-
-[campaign, report] = v3_1.run_campaign(campaign, runtimeCtx);
-```
 
 ## Minimal B-Queue (Today)
 

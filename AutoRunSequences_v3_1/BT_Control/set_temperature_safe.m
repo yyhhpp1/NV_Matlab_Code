@@ -12,6 +12,11 @@ function [ok, message, info] = set_temperature_safe(TtargetK, cfg)
 %   commRetryBackoffSec (default 0.5)
 %   magPort (default 7185)
 %   magTimeoutSec (default 3)
+%   tcConnectTimeoutSec (default 20)
+%   tcResponseTimeoutSec (default 30)
+%   stopCheckEnabled (default false)
+%   stopAppDataKey (default 'BT_CONTROL_STOP_B_QUEUE')
+%   hFigAuto (default [])
 %   verbose (default false)
 %
 % Fixed IDs in this v1 module:
@@ -50,6 +55,14 @@ info.final = struct('T8_K', NaN, 'T8_time', '', 'T3_K', NaN, 'T3_time', '');
 if ~valid
     message = errMsg;
     info.abortReason = errMsg;
+    info.endedAt = now_stamp();
+    return;
+end
+
+[stopNow, stopWhy] = is_stop_requested_local(cfg);
+if stopNow
+    message = sprintf('Stop requested before temperature change: %s', stopWhy);
+    info.abortReason = message;
     info.endedAt = now_stamp();
     return;
 end
@@ -100,6 +113,16 @@ info.heaterOnIssued = true;
 tStart = tic;
 tInTol = NaN;
 while toc(tStart) <= cfg.maxWaitSec
+    [stopNow, stopWhy] = is_stop_requested_local(cfg);
+    if stopNow
+        [~, offMsg] = heater_off_with_retry(cfg.tcIp, cfg);
+        info.heaterOffIssued = true;
+        message = sprintf('Stop requested during temperature stabilization. Heater OFF. %s (%s)', offMsg, stopWhy);
+        info.abortReason = message;
+        info.endedAt = now_stamp();
+        return;
+    end
+
     [okT8, T8, t8, msgT8] = read_channel_with_retry(cfg.tcIp, 8, cfg, 'readCh8Failures');
     if ~okT8
         [~, offMsg] = heater_off_with_retry(cfg.tcIp, cfg);
@@ -152,7 +175,15 @@ while toc(tStart) <= cfg.maxWaitSec
         tInTol = NaN;
     end
 
-    pause(max(0.01, cfg.pollSec));
+    [stopDuringSleep, stopWhySleep] = sleep_with_stop_check(max(0.01, cfg.pollSec), cfg);
+    if stopDuringSleep
+        [~, offMsg] = heater_off_with_retry(cfg.tcIp, cfg);
+        info.heaterOffIssued = true;
+        message = sprintf('Stop requested during temperature wait. Heater OFF. %s (%s)', offMsg, stopWhySleep);
+        info.abortReason = message;
+        info.endedAt = now_stamp();
+        return;
+    end
 end
 
 [~, offMsg] = heater_off_with_retry(cfg.tcIp, cfg);
@@ -167,7 +198,15 @@ info.endedAt = now_stamp();
         tStr = '';
         errRead = 'unknown';
         for k = 1:cfgLocal.commRetryCount
-            [ok1, t1, tdt, msg1] = bf_tc_read_latest_channel(tcIp, ch, cfgLocal.lookbackMin);
+            [stopNowLocal, stopWhyLocal] = is_stop_requested_local(cfgLocal);
+            if stopNowLocal
+                errRead = sprintf('Stop requested: %s', stopWhyLocal);
+                return;
+            end
+            readCfg = struct( ...
+                'connectTimeoutSec', cfgLocal.tcConnectTimeoutSec, ...
+                'responseTimeoutSec', cfgLocal.tcResponseTimeoutSec);
+            [ok1, t1, tdt, msg1] = bf_tc_read_latest_channel(tcIp, ch, cfgLocal.lookbackMin, readCfg);
             if ok1
                 okRead = true;
                 TK = t1;
@@ -182,7 +221,11 @@ info.endedAt = now_stamp();
                     ch, k, cfgLocal.commRetryCount, msg1);
             end
             if k < cfgLocal.commRetryCount
-                pause(max(0, cfgLocal.commRetryBackoffSec));
+                [stopBackoff, stopWhyBackoff] = sleep_with_stop_check(max(0, cfgLocal.commRetryBackoffSec), cfgLocal);
+                if stopBackoff
+                    errRead = sprintf('Stop requested: %s', stopWhyBackoff);
+                    return;
+                end
             end
         end
     end
@@ -192,6 +235,11 @@ info.endedAt = now_stamp();
         msgOn = 'unknown';
         hcfg = struct('setpointK', targetK, 'pidP', cfgLocal.pidP, 'pidI', cfgLocal.pidI, 'pidD', cfgLocal.pidD);
         for k = 1:cfgLocal.commRetryCount
+            [stopNowLocal, stopWhyLocal] = is_stop_requested_local(cfgLocal);
+            if stopNowLocal
+                msgOn = sprintf('Stop requested: %s', stopWhyLocal);
+                return;
+            end
             [okH, msgH] = bf_tc_set_heater4(tcIp, true, hcfg);
             if okH
                 okOnLocal = true;
@@ -201,7 +249,11 @@ info.endedAt = now_stamp();
             info.retryStats.heaterOnFailures = info.retryStats.heaterOnFailures + 1;
             msgOn = msgH;
             if k < cfgLocal.commRetryCount
-                pause(max(0, cfgLocal.commRetryBackoffSec));
+                [stopBackoff, stopWhyBackoff] = sleep_with_stop_check(max(0, cfgLocal.commRetryBackoffSec), cfgLocal);
+                if stopBackoff
+                    msgOn = sprintf('Stop requested: %s', stopWhyBackoff);
+                    return;
+                end
             end
         end
     end
@@ -223,6 +275,55 @@ info.endedAt = now_stamp();
             end
         end
     end
+
+    function [stopNowLocal, stopWhyLocal] = is_stop_requested_local(cfgLocal)
+        stopNowLocal = false;
+        stopWhyLocal = '';
+        if ~isfield(cfgLocal, 'stopCheckEnabled') || ~logical(cfgLocal.stopCheckEnabled)
+            return;
+        end
+        try
+            latched = getappdata(0, cfgLocal.stopAppDataKey);
+        catch
+            latched = false;
+        end
+        if ~isempty(latched) && logical(latched)
+            stopNowLocal = true;
+            stopWhyLocal = 'stop latch set';
+            return;
+        end
+        try
+            hFig = cfgLocal.hFigAuto;
+            if ~isempty(hFig) && (ishandle(hFig) || isgraphics(hFig))
+                hAutoLocal = guidata(hFig);
+                if isstruct(hAutoLocal) && isfield(hAutoLocal, 'pushbutton_stopProg') && isgraphics(hAutoLocal.pushbutton_stopProg, 'uicontrol')
+                    ud = get(hAutoLocal.pushbutton_stopProg, 'UserData');
+                    if ~isempty(ud) && logical(ud)
+                        stopNowLocal = true;
+                        stopWhyLocal = 'v2.1 stop button';
+                    end
+                end
+            end
+        catch
+        end
+    end
+
+    function [stopNowLocal, stopWhyLocal] = sleep_with_stop_check(sec, cfgLocal)
+        stopNowLocal = false;
+        stopWhyLocal = '';
+        if sec <= 0
+            return;
+        end
+        t0 = tic;
+        while toc(t0) < sec
+            [stopNowLocal, stopWhyLocal] = is_stop_requested_local(cfgLocal);
+            if stopNowLocal
+                return;
+            end
+            remSec = sec - toc(t0);
+            pause(min(0.1, max(0.01, remSec)));
+        end
+    end
 end
 
 function cfg = apply_defaults(cfg)
@@ -231,6 +332,11 @@ cfg = set_default(cfg, 'commRetryCount', 3);
 cfg = set_default(cfg, 'commRetryBackoffSec', 0.5);
 cfg = set_default(cfg, 'magPort', 7185);
 cfg = set_default(cfg, 'magTimeoutSec', 3);
+cfg = set_default(cfg, 'tcConnectTimeoutSec', 20);
+cfg = set_default(cfg, 'tcResponseTimeoutSec', 30);
+cfg = set_default(cfg, 'stopCheckEnabled', false);
+cfg = set_default(cfg, 'stopAppDataKey', 'BT_CONTROL_STOP_B_QUEUE');
+cfg = set_default(cfg, 'hFigAuto', []);
 cfg = set_default(cfg, 'verbose', false);
 end
 
@@ -254,7 +360,7 @@ if ~(isnumeric(TtargetK) && isscalar(TtargetK) && isfinite(TtargetK))
     errMsg = 'TtargetK must be a finite numeric scalar.';
     return;
 end
-numFields = {'T_safe_max','T_tol','holdSec','maxWaitSec','pollSec','pidP','pidI','pidD','lookbackMin','commRetryCount','commRetryBackoffSec','magPort','magTimeoutSec'};
+numFields = {'T_safe_max','T_tol','holdSec','maxWaitSec','pollSec','pidP','pidI','pidD','lookbackMin','commRetryCount','commRetryBackoffSec','magPort','magTimeoutSec','tcConnectTimeoutSec','tcResponseTimeoutSec'};
 for i = 1:numel(numFields)
     v = cfg.(numFields{i});
     if ~(isnumeric(v) && isscalar(v) && isfinite(v))
@@ -270,10 +376,17 @@ if cfg.commRetryCount < 1 || mod(cfg.commRetryCount, 1) ~= 0
     errMsg = 'cfg.commRetryCount must be an integer >= 1.';
     return;
 end
+if cfg.tcConnectTimeoutSec <= 0 || cfg.tcResponseTimeoutSec <= 0
+    errMsg = 'cfg.tcConnectTimeoutSec and cfg.tcResponseTimeoutSec must be > 0.';
+    return;
+end
+if ~(isscalar(cfg.stopCheckEnabled) && (islogical(cfg.stopCheckEnabled) || isnumeric(cfg.stopCheckEnabled)))
+    errMsg = 'cfg.stopCheckEnabled must be a logical/numeric scalar.';
+    return;
+end
 ok = true;
 end
 
 function s = now_stamp()
 s = datestr(now, 'yyyy-mm-dd HH:MM:SS.FFF');
 end
-

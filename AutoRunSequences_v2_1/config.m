@@ -45,6 +45,11 @@ cfg.smart.odmr.bSearchMinG = 0;
 cfg.smart.odmr.bSearchMaxG = 2000;
 cfg.smart.odmr.maxBBackoutResidualMHz = 30;
 cfg.smart.odmr.maxBInversionSpreadG = 200;
+cfg.smart.odmr.disableOffAlignedAboveG = 600; % when |B| exceeds this, skip off-aligned measurements
+cfg.smart.odmr.keepGroupsSeparate = true;      % avoid mixed aligned/off label assignment in one ODMR fit
+cfg.smart.odmr.separateGroupsAboveG = 250;     % only enforce keepGroupsSeparate above this |B| (low-field keeps merged windows)
+cfg.smart.odmr.maxAssignErrorMHz = 120;        % reject peak-to-label assignment if too far from predicted reference
+cfg.smart.odmr.refMergeTolMHz = 15;            % treat label refs closer than this as one effective peak
 
 % Rough-scan controls.
 cfg.smart.rough = struct();
@@ -113,9 +118,13 @@ cfg.smart.precal.calipi.powerStartDbm = -20; % sweep start
 cfg.smart.precal.calipi.powerStopDbm = 0;    % sweep stop
 cfg.smart.precal.calipi.powerNPoints = 9;    % number of tested powers
 cfg.smart.precal.calipi.maxSafePowerDbm = -1; % hard cap for PiCal fit/result power
+cfg.smart.precal.calipi.minSafePowerDbm = -40; % lower bound for PiCal scan/fitted power
 cfg.smart.precal.calipi.quadFitNPoints = 5;  % local quadratic fit window around minimum (>=3)
 cfg.smart.precal.calipi.useMemoryPrior = true;      % use memory/model to center PiCal power sweep
 cfg.smart.precal.calipi.memoryWindowHalfSpanDb = 4; % PiCal sweep window: [Ppred-halfSpan, Ppred+halfSpan]
+cfg.smart.precal.calipi.boundaryRescanEnabled = true; % if min is near edge, recenter and rescan
+cfg.smart.precal.calipi.boundaryRescanMaxIter = 2;    % max recenter-rescan rounds
+cfg.smart.precal.calipi.boundaryEdgeFrac = 0.2;       % edge zone fraction for boundary detection
 cfg.smart.precal.calipi.memoryFile = fullfile(scriptDir, 'calipi_memory.mat');
 cfg.smart.precal.calipi.maxMemoryRows = 400;
 cfg.smart.precal.calipi.defaultMemory = struct();

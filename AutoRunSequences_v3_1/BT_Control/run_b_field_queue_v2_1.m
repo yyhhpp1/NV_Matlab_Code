@@ -14,6 +14,8 @@ function out = run_b_field_queue_v2_1(targetBkGList, cfg)
 %       .stopAppDataKey    appdata key for stop latch (default 'BT_CONTROL_STOP_B_QUEUE')
 %       .writeStartLog     write v2.1 start log CSV (default true)
 %       .startLogPath      CSV path (default: b_field_queue_start_log_*.csv in pwd)
+%       .writeAnalysisSnippet write analysis snippet TXT (default true)
+%       .analysisSnippetPath TXT path (default: b_field_queue_analysis_snippet_*.txt in pwd)
 %       .verbose           print queue logs (default true)
 %
 % Output
@@ -68,6 +70,15 @@ rows = repmat(struct( ...
     'v21StartedAt', '', ...
     'status', '', ...
     'message', '', ...
+    'analysisRows', repmat(struct( ...
+        'date', '', ...
+        'nArg', NaN, ...
+        'group', '', ...
+        'sequence', '', ...
+        'spin', '', ...
+        'B', NaN, ...
+        'BMeasured', false, ...
+        'saveString', ''), 0, 1), ...
     'magnetInfo', struct()), 0, 1);
 
 out = struct();
@@ -79,6 +90,7 @@ out.targetsBkG = targetBkGList;
 out.mode = cfg.mode;
 out.rows = rows;
 out.startLogPath = '';
+out.analysisSnippetPath = '';
 
 if cfg.writeStartLog
     [okLog, startLogPath, logErr] = prepare_start_log(cfg);
@@ -91,6 +103,17 @@ if cfg.writeStartLog
     out.startLogPath = startLogPath;
 end
 
+if cfg.writeAnalysisSnippet
+    [okSnip, snippetPath, snipErr] = prepare_analysis_snippet(cfg);
+    if ~okSnip
+        out.status = 'failed';
+        out.stopReason = snipErr;
+        out.finishedAt = datestr(now, 'yyyy-mm-dd HH:MM:SS.FFF');
+        return;
+    end
+    out.analysisSnippetPath = snippetPath;
+end
+
 for i = 1:numel(targetBkGList)
     BkG = targetBkGList(i);
     row = struct( ...
@@ -100,6 +123,15 @@ for i = 1:numel(targetBkGList)
         'v21StartedAt', '', ...
         'status', 'running', ...
         'message', '', ...
+        'analysisRows', repmat(struct( ...
+            'date', '', ...
+            'nArg', NaN, ...
+            'group', '', ...
+            'sequence', '', ...
+            'spin', '', ...
+            'B', NaN, ...
+            'BMeasured', false, ...
+            'saveString', ''), 0, 1), ...
         'magnetInfo', struct());
 
     [stopNow, stopWhy] = is_stop_requested(cfg, cfg.hFigAuto);
@@ -188,11 +220,25 @@ for i = 1:numel(targetBkGList)
 
     row.status = 'success';
     row.message = 'Completed';
+    row.analysisRows = capture_v2_analysis_rows(row.bEstimateG);
     out.rows(end + 1, 1) = row; %#ok<AGROW>
+
+    if cfg.writeAnalysisSnippet && ~isempty(out.analysisSnippetPath)
+        [okSnip, snipErr] = write_analysis_snippet(out.analysisSnippetPath, out.rows);
+        if ~okSnip
+            log_msg(cfg, sprintf('Analysis snippet update failed: %s', snipErr));
+        end
+    end
 end
 
 if strcmp(out.status, 'running')
     out.status = 'finished';
+end
+if cfg.writeAnalysisSnippet && ~isempty(out.analysisSnippetPath)
+    [okSnip, snipErr] = write_analysis_snippet(out.analysisSnippetPath, out.rows);
+    if ~okSnip
+        log_msg(cfg, sprintf('Final analysis snippet update failed: %s', snipErr));
+    end
 end
 out.finishedAt = datestr(now, 'yyyy-mm-dd HH:MM:SS.FFF');
 end
@@ -207,6 +253,8 @@ cfg = set_default(cfg, 'resetStopLatch', true);
 cfg = set_default(cfg, 'stopAppDataKey', 'BT_CONTROL_STOP_B_QUEUE');
 cfg = set_default(cfg, 'writeStartLog', true);
 cfg = set_default(cfg, 'startLogPath', '');
+cfg = set_default(cfg, 'writeAnalysisSnippet', true);
+cfg = set_default(cfg, 'analysisSnippetPath', '');
 cfg = set_default(cfg, 'verbose', true);
 end
 
@@ -284,4 +332,200 @@ end
 cleanupObj = onCleanup(@() fclose(fid)); %#ok<NASGU>
 fprintf(fid, '%d,%.12g,%.12g,"%s","%s"\n', index, targetBkG, bEstimateG, v21StartedAt, char(mode));
 ok = true;
+end
+
+function [ok, snippetPath, errMsg] = prepare_analysis_snippet(cfg)
+ok = false;
+errMsg = '';
+snippetPath = cfg.analysisSnippetPath;
+if isempty(snippetPath)
+    snippetPath = fullfile(pwd, sprintf('b_field_queue_analysis_snippet_%s.txt', datestr(now, 'yyyymmdd_HHMMSS')));
+end
+
+[folderPath, ~, ~] = fileparts(snippetPath);
+if ~isempty(folderPath) && ~isfolder(folderPath)
+    [mkOk, mkMsg, mkId] = mkdir(folderPath);
+    if ~mkOk
+        errMsg = sprintf('Cannot create snippet folder "%s": %s (%s)', folderPath, mkMsg, mkId);
+        return;
+    end
+end
+
+[ok, errMsg] = write_analysis_snippet(snippetPath, struct([]));
+end
+
+function [ok, errMsg] = write_analysis_snippet(snippetPath, rows)
+ok = false;
+errMsg = '';
+
+[fid, msg] = fopen(snippetPath, 'w');
+if fid < 0
+    errMsg = sprintf('Cannot open snippet "%s": %s', snippetPath, msg);
+    return;
+end
+cleanupObj = onCleanup(@() fclose(fid)); %#ok<NASGU>
+
+fprintf(fid, '%% Minimal B queue analysis snippet\n');
+fprintf(fid, '%% Generated at: %s\n\n', datestr(now, 'yyyy-mm-dd HH:MM:SS.FFF'));
+
+entries = collect_all_analysis_entries(rows);
+if isempty(entries)
+    fprintf(fid, '%% No entries yet.\n');
+    ok = true;
+    return;
+end
+
+lastB = NaN;
+for i = 1:numel(entries)
+    e = entries(i);
+    if i == 1 || ~(isfinite(lastB) && isfinite(e.B) && abs(lastB - e.B) < 1e-12)
+        if i > 1
+            fprintf(fid, '\n');
+        end
+        if isfinite(e.B)
+            fprintf(fid, 'B = %.6f;\n', e.B);
+        else
+            fprintf(fid, 'B = NaN;\n');
+        end
+        lastB = e.B;
+    end
+
+    fprintf(fid, 'data.add_entry(''%s'', %d, B, T, ''%s'', ''%s'', ''%s'');\n', ...
+        escape_single_quotes(e.date), round(e.nArg), ...
+        escape_single_quotes(e.group), escape_single_quotes(e.sequence), escape_single_quotes(e.spin));
+end
+
+ok = true;
+end
+
+function entries = collect_all_analysis_entries(rows)
+entries = repmat(struct( ...
+    'date', '', ...
+    'nArg', NaN, ...
+    'group', '', ...
+    'sequence', '', ...
+    'spin', '', ...
+    'B', NaN, ...
+    'rowIndex', NaN, ...
+    'entryIndex', NaN), 0, 1);
+
+if nargin < 1 || isempty(rows)
+    return;
+end
+
+for iRow = 1:numel(rows)
+    r = rows(iRow);
+    if ~isstruct(r) || ~isfield(r, 'analysisRows') || isempty(r.analysisRows)
+        continue;
+    end
+    for iE = 1:numel(r.analysisRows)
+        a = r.analysisRows(iE);
+        if ~is_valid_analysis_entry(a)
+            continue;
+        end
+        e = struct();
+        e.date = char(string(a.date));
+        e.nArg = double(a.nArg);
+        e.group = char(string(a.group));
+        e.sequence = char(string(a.sequence));
+        e.spin = char(string(a.spin));
+        e.B = double(a.B);
+        e.rowIndex = iRow;
+        e.entryIndex = iE;
+        entries(end + 1, 1) = e; %#ok<AGROW>
+    end
+end
+end
+
+function tf = is_valid_analysis_entry(a)
+tf = isstruct(a) && ...
+    isfield(a, 'date') && ~isempty(char(string(a.date))) && ...
+    isfield(a, 'nArg') && isfinite(double(a.nArg)) && ...
+    isfield(a, 'group') && ~isempty(char(string(a.group))) && ...
+    isfield(a, 'sequence') && ~isempty(char(string(a.sequence))) && ...
+    isfield(a, 'spin') && ~isempty(char(string(a.spin))) && ...
+    isfield(a, 'B') && isfinite(double(a.B));
+end
+
+function rows = capture_v2_analysis_rows(defaultB)
+rows = repmat(struct( ...
+    'date', '', ...
+    'nArg', NaN, ...
+    'group', '', ...
+    'sequence', '', ...
+    'spin', '', ...
+    'B', NaN, ...
+    'BMeasured', false, ...
+    'saveString', ''), 0, 1);
+
+global gmSEQ gSaveDataAve
+if ~isstruct(gmSEQ) || ~isfield(gmSEQ, 'AnalysisEntries') || isempty(gmSEQ.AnalysisEntries)
+    return;
+end
+
+bVal = defaultB;
+bMeasured = false;
+if isfield(gmSEQ, 'AnalysisMeasuredB') && isfinite(gmSEQ.AnalysisMeasuredB)
+    bVal = double(gmSEQ.AnalysisMeasuredB);
+    bMeasured = true;
+end
+
+entries = gmSEQ.AnalysisEntries;
+for i = 1:numel(entries)
+    e = entries(i);
+    if ~isstruct(e) || ~isfield(e, 'nArg') || ~isfield(e, 'sequence') || ~isfield(e, 'spin')
+        continue;
+    end
+    nArg = double(e.nArg);
+    if ~isfinite(nArg)
+        continue;
+    end
+
+    r = struct();
+    if isfield(e, 'date')
+        r.date = char(string(e.date));
+    else
+        r.date = '';
+    end
+    if isfield(e, 'group')
+        r.group = char(string(e.group));
+    else
+        r.group = 'Aligned';
+    end
+    r.nArg = round(nArg);
+    r.sequence = char(string(e.sequence));
+    r.spin = char(string(e.spin));
+    r.B = bVal;
+    r.BMeasured = bMeasured;
+    if isfield(e, 'saveString')
+        r.saveString = normalize_save_string_stem(e.saveString);
+    elseif isfield(gmSEQ, 'AnalysisSaveString')
+        r.saveString = normalize_save_string_stem(gmSEQ.AnalysisSaveString);
+    else
+        r.saveString = normalize_save_string_stem(safe_struct_field(gSaveDataAve, 'file', ''));
+    end
+    rows(end + 1, 1) = r; %#ok<AGROW>
+end
+end
+
+function out = normalize_save_string_stem(rawIn)
+raw = char(string(rawIn));
+if isempty(raw)
+    out = '';
+    return;
+end
+[~, stem, ~] = fileparts(raw);
+out = char(string(stem));
+end
+
+function out = safe_struct_field(s, fieldName, fallback)
+out = fallback;
+if isstruct(s) && isfield(s, fieldName)
+    out = s.(fieldName);
+end
+end
+
+function out = escape_single_quotes(in)
+out = char(string(in));
+out = strrep(out, '''', '''''');
 end

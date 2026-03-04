@@ -12,6 +12,8 @@ function out = run_b_queue_minimal(targetBkGList, runtimeCtx)
 %       .bEstimateScale B_estimate [G] = targetBkG * scale (default 1000)
 %       .writeStartLog  write v2.1 start log CSV (default true)
 %       .startLogPath   explicit CSV path (default empty => auto name)
+%       .writeAnalysisSnippet write queue analysis snippet TXT (default true)
+%       .analysisSnippetPath  explicit snippet TXT path (default empty => auto name)
 %       .stopAppDataKey stop latch key (default 'BT_CONTROL_STOP_B_QUEUE')
 %       .verbose        default true
 %
@@ -35,6 +37,8 @@ cfg.resetStopLatch = true;
 cfg.stopAppDataKey = runtimeCtx.stopAppDataKey;
 cfg.writeStartLog = runtimeCtx.writeStartLog;
 cfg.startLogPath = runtimeCtx.startLogPath;
+cfg.writeAnalysisSnippet = runtimeCtx.writeAnalysisSnippet;
+cfg.analysisSnippetPath = runtimeCtx.analysisSnippetPath;
 cfg.verbose = runtimeCtx.verbose;
 
 out = run_b_field_queue_v2_1(targetBkGList, cfg);
@@ -48,6 +52,8 @@ runtimeCtx = set_default(runtimeCtx, 'magnetCfg', struct());
 runtimeCtx = set_default(runtimeCtx, 'bEstimateScale', 1000);
 runtimeCtx = set_default(runtimeCtx, 'writeStartLog', true);
 runtimeCtx = set_default(runtimeCtx, 'startLogPath', '');
+runtimeCtx = set_default(runtimeCtx, 'writeAnalysisSnippet', true);
+runtimeCtx = set_default(runtimeCtx, 'analysisSnippetPath', '');
 runtimeCtx = set_default(runtimeCtx, 'stopAppDataKey', 'BT_CONTROL_STOP_B_QUEUE');
 runtimeCtx = set_default(runtimeCtx, 'verbose', true);
 end

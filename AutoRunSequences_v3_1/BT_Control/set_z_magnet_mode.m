@@ -13,6 +13,8 @@ function [ok, message, info] = set_z_magnet_mode(ZkG, mode, cfg)
 %          .pollSec                 (default 0.25)
 %          .setUnitEachCall         (default true)
 %          .skipSecondRampIfTargetZero (default true)
+%          .zeroFirstDriven         (default true)
+%          .zeroFirstPersistent     (default true)
 %          .waitPersistentBy        (default 'pers_query')
 %          .psOffBufferSec          (default 10, applied after each ramp stage)
 %          .hsHeatUpMinBufferSec    (default 30, min wait after PS 1)
@@ -28,8 +30,10 @@ function [ok, message, info] = set_z_magnet_mode(ZkG, mode, cfg)
 % Transition sequence
 %   1) Query PERSistent? (current state awareness).
 %   2) If currently persistent, send PS 1 and wait heating transition.
-%   3) Send ZERO and wait STATE? == 8.
-%   4) Ramp to target (or skip second ramp if target==0 and configured).
+%   3) Optional zero-first stage:
+%      - if enabled for the requested final mode, send ZERO and wait STATE? == 8.
+%      - if disabled, skip ZERO and ramp directly to target.
+%   4) Ramp to target (or skip second ramp if target==0 and configured after ZERO stage).
 %   5) End in requested final mode:
 %      - driven: ensure PS 1
 %      - persistent: PS 0 then wait PERSistent? == 1
@@ -60,6 +64,10 @@ info.responses = cell(0, 1);
 info.startPersistent = NaN;
 info.endPersistent = NaN;
 info.zeroCompleted = false;
+info.zeroFirstApplied = false;
+info.zeroFirstSkipped = false;
+info.zeroFirstByMode = struct('driven', logical(cfg.zeroFirstDriven), ...
+    'persistent', logical(cfg.zeroFirstPersistent));
 info.targetRampIssued = false;
 info.holdReached = false;
 info.rampBufferAppliedCount = 0;
@@ -111,19 +119,26 @@ try
         write_cmd("CONF:FIELD:UNITS 0"); % 0 = kG
     end
 
-    % Zero-first stage (ZERO keeps target setpoint unchanged).
-    write_cmd("ZERO");
-    [okZero, zeroMsg] = wait_state(8, zeroTimeoutSec, 'zero current (STATE=8)');
-    if ~okZero
-        message = zeroMsg;
-        finish_info();
-        return;
+    doZeroFirst = should_do_zero_first(modeName, cfg);
+    if doZeroFirst
+        % Zero-first stage (ZERO keeps target setpoint unchanged).
+        write_cmd("ZERO");
+        [okZero, zeroMsg] = wait_state(8, zeroTimeoutSec, 'zero current (STATE=8)');
+        if ~okZero
+            message = zeroMsg;
+            finish_info();
+            return;
+        end
+        info.zeroCompleted = true;
+        info.zeroFirstApplied = true;
+        apply_ramp_buffer('down_to_zero');
+    else
+        info.zeroFirstSkipped = true;
+        log_msg(cfg, sprintf('Skipping ZERO stage for mode=%s by cfg policy.', modeName));
     end
-    info.zeroCompleted = true;
-    apply_ramp_buffer('down_to_zero');
 
     % Target stage.
-    skipSecondRamp = (ZkG == 0) && cfg.skipSecondRampIfTargetZero;
+    skipSecondRamp = (ZkG == 0) && cfg.skipSecondRampIfTargetZero && doZeroFirst;
     if ~skipSecondRamp
         write_cmd(sprintf("CONFigure:FIELD:TARGet %g", ZkG));
         write_cmd("RAMP");
@@ -177,7 +192,13 @@ try
     info.errorQuery = read_error();
 
     ok = true;
-    message = sprintf('Z magnet transitioned via zero-first path to %.6g kG and ended in %s mode.', ZkG, modeName);
+    if info.zeroFirstApplied
+        pathLabel = 'zero-first';
+    else
+        pathLabel = 'direct-ramp';
+    end
+    message = sprintf('Z magnet transitioned via %s path to %.6g kG and ended in %s mode.', ...
+        pathLabel, ZkG, modeName);
     finish_info();
 catch ME
     message = sprintf('set_z_magnet_mode failed: %s', ME.message);
@@ -379,13 +400,15 @@ function cfg = apply_defaults(cfg)
 cfg = set_default(cfg, 'ip', '192.168.0.101');
 cfg = set_default(cfg, 'port', 7185);
 cfg = set_default(cfg, 'timeoutSec', 3);
-cfg = set_default(cfg, 'pollSec', 1);
+cfg = set_default(cfg, 'pollSec', 10);
 cfg = set_default(cfg, 'setUnitEachCall', true);
 cfg = set_default(cfg, 'skipSecondRampIfTargetZero', true);
+cfg = set_default(cfg, 'zeroFirstDriven', false);
+cfg = set_default(cfg, 'zeroFirstPersistent', true);
 cfg = set_default(cfg, 'waitPersistentBy', 'pers_query');
-cfg = set_default(cfg, 'psOffBufferSec', 10);
+cfg = set_default(cfg, 'psOffBufferSec', 20);
 cfg = set_default(cfg, 'hsHeatUpMinBufferSec', 30);
-cfg = set_default(cfg, 'hsCoolDownMinBufferSec', 30);
+cfg = set_default(cfg, 'hsCoolDownMinBufferSec', 600);
 cfg = set_default(cfg, 'verbose', true);
 end
 
@@ -422,6 +445,18 @@ if ~((islogical(cfg.skipSecondRampIfTargetZero) || isnumeric(cfg.skipSecondRampI
         && isscalar(cfg.skipSecondRampIfTargetZero))
     ok = false;
     errMsg = 'cfg.skipSecondRampIfTargetZero must be logical/numeric scalar.';
+    return;
+end
+if ~((islogical(cfg.zeroFirstDriven) || isnumeric(cfg.zeroFirstDriven)) ...
+        && isscalar(cfg.zeroFirstDriven))
+    ok = false;
+    errMsg = 'cfg.zeroFirstDriven must be logical/numeric scalar.';
+    return;
+end
+if ~((islogical(cfg.zeroFirstPersistent) || isnumeric(cfg.zeroFirstPersistent)) ...
+        && isscalar(cfg.zeroFirstPersistent))
+    ok = false;
+    errMsg = 'cfg.zeroFirstPersistent must be logical/numeric scalar.';
     return;
 end
 if ~(isnumeric(cfg.psOffBufferSec) && isscalar(cfg.psOffBufferSec) && isfinite(cfg.psOffBufferSec) && cfg.psOffBufferSec >= 0)
@@ -499,6 +534,14 @@ switch double(code)
         name = 'EXTERNAL_RAMPDOWN';
     otherwise
         name = sprintf('STATE_%d', code);
+end
+end
+
+function tf = should_do_zero_first(modeName, cfg)
+if modeName == "driven"
+    tf = logical(cfg.zeroFirstDriven);
+else
+    tf = logical(cfg.zeroFirstPersistent);
 end
 end
 

@@ -1,5 +1,6 @@
 function [ok, info, message] = mag_z_gate_precheck(magIp, cfg)
-%MAG_Z_GATE_PRECHECK Check Z-magnet safety gate: PS==0 and STATE==8.
+%MAG_Z_GATE_PRECHECK Check Z-magnet safety gate.
+% Default policy: require STATE==8 only (PS is logged but not gated).
 %
 %   [ok, info, message] = mag_z_gate_precheck(magIp)
 %   [ok, info, message] = mag_z_gate_precheck(magIp, cfg)
@@ -7,6 +8,7 @@ function [ok, info, message] = mag_z_gate_precheck(magIp, cfg)
 % Optional cfg:
 %   .port      (default 7185)
 %   .timeoutSec (default 3)
+%   .requirePsZero (default false)
 
 ok = false;
 message = '';
@@ -17,6 +19,7 @@ if nargin < 2 || isempty(cfg)
 end
 if ~isfield(cfg, 'port') || isempty(cfg.port), cfg.port = 7185; end
 if ~isfield(cfg, 'timeoutSec') || isempty(cfg.timeoutSec), cfg.timeoutSec = 3; end
+if ~isfield(cfg, 'requirePsZero') || isempty(cfg.requirePsZero), cfg.requirePsZero = false; end
 
 if ~(isnumeric(cfg.port) && isscalar(cfg.port) && isfinite(cfg.port) && cfg.port > 0)
     message = 'cfg.port must be a positive numeric scalar.';
@@ -47,14 +50,26 @@ try
 
     info.ps = ps;
     info.state = st;
-    info.ok = (ps == 0 && st == 8);
+    if logical(cfg.requirePsZero)
+        info.ok = (ps == 0 && st == 8);
+    else
+        info.ok = (st == 8);
+    end
     info.checkedAt = now_stamp();
 
     if info.ok
         ok = true;
-        message = 'Magnet gate OK (PS=0, STATE=8).';
+        if logical(cfg.requirePsZero)
+            message = sprintf('Magnet gate OK (PS=%d, STATE=%d; strict PS gate ON).', ps, st);
+        else
+            message = sprintf('Magnet gate OK (STATE=%d; PS=%d ignored by policy).', st, ps);
+        end
     else
-        message = sprintf('Magnet gate failed (PS=%d, STATE=%d). Required PS=0 and STATE=8.', ps, st);
+        if logical(cfg.requirePsZero)
+            message = sprintf('Magnet gate failed (PS=%d, STATE=%d). Required PS=0 and STATE=8.', ps, st);
+        else
+            message = sprintf('Magnet gate failed (PS=%d, STATE=%d). Required STATE=8.', ps, st);
+        end
     end
 catch ME
     message = sprintf('mag_z_gate_precheck failed: %s', ME.message);
@@ -83,4 +98,3 @@ end
 function s = now_stamp()
 s = datestr(now, 'yyyy-mm-dd HH:MM:SS.FFF');
 end
-

@@ -1,6 +1,10 @@
-function [ok, T_K, tOut, message, respData] = bf_tc_read_latest_channel(deviceIP, channelNr, lookbackMin)
+function [ok, T_K, tOut, message, respData] = bf_tc_read_latest_channel(deviceIP, channelNr, lookbackMin, readCfg)
 %BF_TC_READ_LATEST_CHANNEL Read newest temperature point from Bluefors TC.
 %   Uses POST /channel/historical-data and returns the latest sample.
+%
+% Optional readCfg:
+%   .connectTimeoutSec  (default 20)
+%   .responseTimeoutSec (default 30)
 
 ok = false;
 T_K = NaN;
@@ -10,6 +14,15 @@ respData = struct();
 
 if nargin < 3 || isempty(lookbackMin)
     lookbackMin = 5;
+end
+if nargin < 4 || isempty(readCfg) || ~isstruct(readCfg)
+    readCfg = struct();
+end
+if ~isfield(readCfg, 'connectTimeoutSec') || isempty(readCfg.connectTimeoutSec)
+    readCfg.connectTimeoutSec = 20;
+end
+if ~isfield(readCfg, 'responseTimeoutSec') || isempty(readCfg.responseTimeoutSec)
+    readCfg.responseTimeoutSec = 30;
 end
 
 if ~(isnumeric(channelNr) && isscalar(channelNr) && isfinite(channelNr))
@@ -29,20 +42,66 @@ try
 
     url = sprintf('http://%s:5001/channel/historical-data', deviceIP);
 
-    import matlab.net.*
-    import matlab.net.http.*
-    import matlab.net.http.io.*
+    d = [];
+    try
+        % Primary path: webwrite timeout is broadly supported and simpler.
+        wopt = weboptions( ...
+            'MediaType', 'application/json', ...
+            'Timeout', readCfg.responseTimeoutSec, ...
+            'HeaderFields', {'Accept','application/json'});
+        d = webwrite(url, payload, wopt);
+    catch MEweb
+        % Fallback path: matlab.net.http API with explicit connect/response timeouts.
+        import matlab.net.*
+        import matlab.net.http.*
+        import matlab.net.http.io.*
+        req = RequestMessage('post', ...
+            HeaderField('Accept','application/json'), ...
+            JSONProvider(payload));
 
-    resp = RequestMessage('post', ...
-        HeaderField('Accept','application/json'), ...
-        JSONProvider(payload)).send(URI(url));
+        opts = [];
+        try
+            opts = HTTPOptions('ConnectTimeout', readCfg.connectTimeoutSec, ...
+                'ResponseTimeout', readCfg.responseTimeoutSec);
+        catch
+            try
+                opts = HTTPOptions('ConnectTimeout', readCfg.connectTimeoutSec);
+            catch
+                opts = [];
+            end
+        end
 
-    if resp.StatusCode ~= StatusCode.OK
-        message = sprintf('HTTP error %d %s', double(resp.StatusCode), string(resp.StatusLine.ReasonPhrase));
-        return;
+        if isempty(opts)
+            resp = req.send(URI(url));
+        else
+            resp = req.send(URI(url), opts);
+        end
+
+        if resp.StatusCode ~= StatusCode.OK
+            message = sprintf('HTTP error %d %s', double(resp.StatusCode), string(resp.StatusLine.ReasonPhrase));
+            return;
+        end
+        d = resp.Body.Data;
+        respData = d;
+        % Keep fallback exception context only for debugging if needed.
+        if isempty(d)
+            rethrow(MEweb);
+        end
     end
 
-    d = resp.Body.Data;
+    if isempty(d)
+        message = 'Empty response payload from Bluefors endpoint.';
+        return;
+    end
+    if ischar(d) || isstring(d)
+        try
+            d = jsondecode(char(d));
+        catch
+            message = 'Bluefors response is text but not valid JSON.';
+            return;
+        end
+    end
+
     respData = d;
 
     if ~isfield(d, 'status') || ~strcmpi(string(d.status), 'OK')
@@ -67,7 +126,7 @@ try
     ok = true;
     message = 'OK';
 catch ME
-    message = sprintf('bf_tc_read_latest_channel failed: %s', ME.message);
+    message = sprintf('bf_tc_read_latest_channel failed (connectTimeout=%.6gs responseTimeout=%.6gs): %s', ...
+        readCfg.connectTimeoutSec, readCfg.responseTimeoutSec, ME.message);
 end
 end
-
