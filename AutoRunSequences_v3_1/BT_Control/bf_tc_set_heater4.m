@@ -6,6 +6,10 @@ function [ok, message, respStruct] = bf_tc_set_heater4(deviceIP, active, cfg)
 % Optional cfg fields for active=true:
 %   .pidMode          integer (default 1)
 %   .controlAlgorithm integer (optional, omitted when absent)
+%
+% Optional timeout fields for both active=true/false:
+%   .connectTimeoutSec  (default 20)
+%   .responseTimeoutSec (default 30)
 
 ok = false;
 message = '';
@@ -13,6 +17,12 @@ respStruct = struct();
 
 if nargin < 3 || isempty(cfg)
     cfg = struct();
+end
+if ~isfield(cfg, 'connectTimeoutSec') || isempty(cfg.connectTimeoutSec)
+    cfg.connectTimeoutSec = 20;
+end
+if ~isfield(cfg, 'responseTimeoutSec') || isempty(cfg.responseTimeoutSec)
+    cfg.responseTimeoutSec = 30;
 end
 
 if ~(islogical(active) || isnumeric(active))
@@ -69,9 +79,27 @@ try
     import matlab.net.http.*
     import matlab.net.http.io.*
 
-    resp = RequestMessage('post', ...
+    req = RequestMessage('post', ...
         HeaderField('Accept','application/json'), ...
-        JSONProvider(payload)).send(URI(url));
+        JSONProvider(payload));
+
+    opts = [];
+    try
+        opts = HTTPOptions('ConnectTimeout', cfg.connectTimeoutSec, ...
+            'ResponseTimeout', cfg.responseTimeoutSec);
+    catch
+        try
+            opts = HTTPOptions('ConnectTimeout', cfg.connectTimeoutSec);
+        catch
+            opts = [];
+        end
+    end
+
+    if isempty(opts)
+        resp = req.send(URI(url));
+    else
+        resp = req.send(URI(url), opts);
+    end
 
     if resp.StatusCode ~= StatusCode.OK
         bodyTxt = '<unavailable>';
@@ -102,6 +130,7 @@ try
     ok = true;
     message = 'OK';
 catch ME
-    message = sprintf('bf_tc_set_heater4 failed: %s', ME.message);
+    message = sprintf('bf_tc_set_heater4 failed (connectTimeout=%.6gs responseTimeout=%.6gs): %s', ...
+        cfg.connectTimeoutSec, cfg.responseTimeoutSec, ME.message);
 end
 end

@@ -2931,7 +2931,7 @@ function multiScanStart_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.multiScanStop.UserData = 0;
-ImageFunctionPool('multiScan',hObject, eventdata, handles);
+ImageFunctionPool('multiScanXYCL_ZOL',hObject, eventdata, handles); %multiScanXYCL_ZOL, multiScan
 
 
 % --- Executes on button press in multiScanStop.

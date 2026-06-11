@@ -31,6 +31,10 @@ switch varargin{1}
         Rabi_Raman();
     case 'Rabi_SG2'
         Rabi_SG2();
+    case 'Rabi_SG3'
+        Rabi_SG3();
+    case 'Rabi_1m1'
+        Rabi_1m1();
     case 'Rabi_composite'
         Rabi_composite();
     case 'f_PiCali'
@@ -111,12 +115,26 @@ switch varargin{1}
         T1();
     case 'T1_S00_S01'
         T1_S00_S01();
+    case 'T1_Sij_all'
+        T1_Sij_all();
+    case 'T1_SQ_5_curves'
+        T1_SQ_5_curves();
+    case 'T1_DQ_4_curves'
+        T1_DQ_4_curves();
     case 'T1_S00_S01_fdc'
         T1_S00_S01_fdc();
     case 'T1_S00_S01_S10'
         T1_S00_S01_S10();
+    case 'T1_S00_S01_S10_spectator_noise'
+        T1_S00_S01_S10_spectator_noise();
+    case 'T1_S00_S01_S10_shelving'
+        T1_S00_S01_S10_shelving();
     case 'T1_S11_S1m1'
         T1_S11_S1m1();
+    case 'T1_S11_S1m1_shelving'
+        T1_S11_S1m1_shelving();
+    case 'T1_S11_S1m1_drive_1m1'
+        T1_S11_S1m1_drive_1m1();
     case 'T1_S00_S01_S10_S11'
         T1_S00_S01_S10_S11();
     case 'T1_S00_S01_S10_S11_darkRef'
@@ -141,6 +159,8 @@ switch varargin{1}
         ODMR();
     case 'ODMR_sweep'
         ODMR_sweep()
+    case 'ODMR_1m1'
+        ODMR_1m1()
     case 'PBDictionary'
         varargout{1}=PBDictionary(varargin{2});
     case 'CtrDur'
@@ -202,9 +222,13 @@ StrL{numel(StrL)+1}='--------------------SRS--------------------';
 StrL{numel(StrL)+1}='ESR';
 StrL{numel(StrL)+1}='ODMR';
 StrL{numel(StrL)+1}='ODMR_sweep';
+StrL{numel(StrL)+1}='ODMR_1m1';
+
 
 StrL{numel(StrL)+1}='Rabi';
 StrL{numel(StrL)+1}='Rabi_SG2';
+StrL{numel(StrL)+1}='Rabi_SG3';
+StrL{numel(StrL)+1}='Rabi_1m1';
 StrL{numel(StrL)+1}='Rabi_composite';
 StrL{numel(StrL)+1}='Rabi_IQ';
 StrL{numel(StrL)+1}='Rabi_fix_MWDutyCycle';
@@ -222,10 +246,17 @@ StrL{numel(StrL)+1}='XY8_N_wDarkRef';
 StrL{numel(StrL)+1}='XY8_N_tomo1';
 
 StrL{numel(StrL)+1}='--------------------T1--------------------';
+StrL{numel(StrL)+1}='T1_Sij_all';
+StrL{numel(StrL)+1}='T1_SQ_5_curves';
+StrL{numel(StrL)+1}='T1_DQ_4_curves';
 StrL{numel(StrL)+1}='T1_S00_S01';
 StrL{numel(StrL)+1}='T1_S00_S01_fdc';
 StrL{numel(StrL)+1}='T1_S00_S01_S10';
+StrL{numel(StrL)+1}='T1_S00_S01_S10_spectator_noise';
+StrL{numel(StrL)+1}='T1_S00_S01_S10_shelving';
 StrL{numel(StrL)+1}='T1_S11_S1m1';
+StrL{numel(StrL)+1}='T1_S11_S1m1_shelving';
+StrL{numel(StrL)+1}='T1_S11_S1m1_drive_1m1';
 StrL{numel(StrL)+1}='T1_Test_Charge';
 StrL{numel(StrL)+1}='T1_charge_calib';
 StrL{numel(StrL)+1}='T1_S00_S10_Sm10';
@@ -1018,6 +1049,61 @@ DT=[20 20];
 ConstructSeq(T,DT)
 
 ApplyDelays();
+
+% 
+% function T1_S10_S01_fdc
+% %fdc stands for fixed duty cycle
+% global gmSEQ gSG
+% gSG.bfixedPow=1;
+% gSG.bfixedFreq=1;
+% gSG.bMod='LOL';
+% gSG.bModSrc='External';
+% 
+% [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
+% 
+% 
+% arr = gmSEQ.SweepParam;
+% max_index = length(arr);
+% m = gmSEQ.m;
+% index_m = find(arr ==m); %find the index of the current t
+% index_n = 1 + max_index - index_m; %find the index of the differential t
+% n = arr(index_n); %find the differential t
+% 
+% d = 1000; %AfterLaser
+% u = 1000; %AfterPulse
+% i = gmSEQ.readout; 
+% r = gmSEQ.CtrGateDur;
+% p = gmSEQ.pi;
+% 
+% To = arr(end)+arr(1);
+% 
+% %%%%% Variable sequence length%%%%%%
+% 
+% gmSEQ.CHN(1).PBN=PBDictionary('ctr0');
+% gmSEQ.CHN(1).NRise=8;
+% T=[d,i-2*r,d+p+u+m,i-2*r,d,i-2*r,d+p+u+n,i-2*r];
+% DT=[r,r,r,r,r,r,r,r];
+% ConstructSeq(T,DT)
+% 
+% gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('GreenAOM');
+% gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=4;
+% T=[d,d+p+u+m,d,d+p+u+n];
+% DT=[i,i,i,i];
+% ConstructSeq(T,DT)
+% 
+% gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('MWSwitch');
+% gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+% T=[d+i+d+p+u+m+i+d+i+d+n];
+% DT=[p];
+% ConstructSeq(T,DT)
+% 
+% gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN=PBDictionary('dummy1');
+% gmSEQ.CHN(numel(gmSEQ.CHN)).NRise=2;
+% T=[0 (d+p+u)*2+i*4+d*2+m+n-r];
+% DT=[20 20];
+% ConstructSeq(T,DT)
+% 
+% ApplyDelays();
 
 function T1_S00_S01_S10_S11_fdc
 global gmSEQ gSG

@@ -2,7 +2,7 @@ function Ramsey
 global gmSEQ gSG
 gSG.bfixedPow=1;
 gSG.bfixedFreq=1;
-gSG.bMod='IQ';
+gSG.bMod='None';
 gSG.bModSrc='External';
 
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
@@ -16,12 +16,12 @@ n = arr(index_n); %find the differential t
 n=m;
 
 q = 20; %iq time
-pre_init_wait = 5000;
+pre_init_wait = gmSEQ.post_init_wait + gmSEQ.post_MW_wait;
 init_dur = gmSEQ.readout;
 readout_dur = gmSEQ.CtrGateDur;
-post_init_wait = 1000;
-pi_half = gmSEQ.pi/2;
-post_MWseq_wait = 1000;
+post_init_wait = gmSEQ.post_init_wait;
+pi_half = gmSEQ.halfpi;
+post_MWseq_wait = gmSEQ.post_MW_wait;
 
 T_green_1_start = pre_init_wait;
 T_green_2_start = T_green_1_start + init_dur + post_init_wait + pi_half*2 + post_MWseq_wait + m;
@@ -48,25 +48,25 @@ T=[T_green_1_start+init_dur+post_init_wait,...
     m,...
     pre_init_wait+init_dur*2+post_init_wait+post_MWseq_wait,...
     n]; 
-DT=[pi_half,pi_half,pi_half,pi_half];    
+DT=[pi_half,gmSEQ.DEERt,pi_half,pi_half];    
 ConstructSeq(T,DT)
 
-gmSEQ.CHN(4).PBN=PBDictionary('+X');
-gmSEQ.CHN(4).NRise=3;
-T=[T_green_1_start+init_dur+post_init_wait-q,...
-    m-2*q,...
-    pre_init_wait+init_dur*2+post_init_wait-2*q+post_MWseq_wait]; 
-DT=[pi_half+2*q,pi_half+2*q,pi_half+2*q];    
-ConstructSeq(T,DT)
+% gmSEQ.CHN(4).PBN=PBDictionary('+X');
+% gmSEQ.CHN(4).NRise=3;
+% T=[T_green_1_start+init_dur+post_init_wait-q,...
+%     m-2*q,...
+%     pre_init_wait+init_dur*2+post_init_wait-2*q+post_MWseq_wait]; 
+% DT=[pi_half+2*q,pi_half+2*q,pi_half+2*q];    
+% ConstructSeq(T,DT)
+% 
+% gmSEQ.CHN(5).PBN=PBDictionary('-X');
+% gmSEQ.CHN(5).NRise=1;
+% T=[T_green_4_start-pi_half-q-post_MWseq_wait]; 
+% DT=[pi_half+2*q];    
+% ConstructSeq(T,DT)
 
-gmSEQ.CHN(5).PBN=PBDictionary('-X');
-gmSEQ.CHN(5).NRise=1;
-T=[T_green_4_start-pi_half-q-post_MWseq_wait]; 
-DT=[pi_half+2*q];    
-ConstructSeq(T,DT)
-
-gmSEQ.CHN(6).PBN=PBDictionary('dummy1');
-gmSEQ.CHN(6).NRise=2;
+gmSEQ.CHN(4).PBN=PBDictionary('dummy1');
+gmSEQ.CHN(4).NRise=2;
 T=[0,T_green_4_start-20+post_MWseq_wait]; 
 DT=[20,20];    
 ConstructSeq(T,DT)

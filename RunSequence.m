@@ -90,6 +90,17 @@ if gSG.bfixedFreq % pulsed sequence (supports fixed-power and swept-power)
         SignalGeneratorFunctionPool2('RFOnOff');
     end
     
+    SignalGeneratorFunctionPool3('SetMod');
+    SignalGeneratorFunctionPool3('WritePow');
+    SignalGeneratorFunctionPool3('WriteFreq');
+    if startsWith(gmSEQ.name, 'f_')
+        gSG3.bOn = 0;
+    else
+        gSG3.bOn = 1;
+    end
+    SignalGeneratorFunctionPool3('RFOnOff');
+    
+    
     CreateCaliLog(hObject, eventdata, handles);
     
     if gmSEQ.bRandom
@@ -139,6 +150,8 @@ if gSG.bfixedFreq % pulsed sequence (supports fixed-power and swept-power)
                     else
                         gSG.Pow = gmSEQ.SweepParam(j);
                         SignalGeneratorFunctionPool('WritePow');
+                        gSG3.Pow = gmSEQ.SweepParam(j);
+                        SignalGeneratorFunctionPool3('WritePow');
                     end
 
                     % Power sweep should be displayed directly in dBm.
@@ -263,14 +276,14 @@ if gSG.bfixedFreq % pulsed sequence (supports fixed-power and swept-power)
                 
                 % save a backup of the data here in case matlab crashes
                 TemporarySave(BackupFile);
-                if gmSEQ.ctrN<=20 %do not plot if too many counter gates              
+                if gmSEQ.ctrN<=30 %do not plot if too many counter gates              
                     if strcmp(gmSEQ.name, 'T1_S00_S01_S10_S11_darkRef')
                         PlotT1Data(handles,raw_j)
                     elseif strcmp(gmSEQ.name, 'T1_S00_S01_S10_S11_S1m1')
                         PlotT1Data_method2(handles,raw_j)
-                    elseif strcmp(gmSEQ.name, 'T1_S11_S1m1')
+                    elseif strcmp(gmSEQ.name, 'T1_S11_S1m1')||strcmp(gmSEQ.name, 'T1_S11_S1m1_shelving')||strcmp(gmSEQ.name, 'T1_S11_S1m1_drive_1m1')
                         PlotT1Data_method3(handles,raw_j)
-                    elseif strcmp(gmSEQ.name, 'T1_S00_S01_S10')
+                    elseif strcmp(gmSEQ.name, 'T1_S00_S01_S10')||strcmp(gmSEQ.name, 'T1_S00_S01_S10_spectator_noise')||strcmp(gmSEQ.name, 'T1_S00_S01_S10_shelving')
                         PlotT1Data_method4(handles,raw_j)
                     elseif strcmp(gmSEQ.name, 'T1_S00_S10_Sm10')   % average the three curves to get charge decay
                         PlotT1DataAveCharge(handles,raw_j)  
@@ -278,11 +291,13 @@ if gSG.bfixedFreq % pulsed sequence (supports fixed-power and swept-power)
 %                         PlotT1DataAveChargeFDC(handles,raw_j)
                     elseif strcmp(gmSEQ.name, 'T1_charge_calib')
                         PlotT1DataOnlyCharge(handles,raw_j)
-                    elseif strcmp(gmSEQ.name, 'Rabi')||strcmp(gmSEQ.name, 'Rabi_SG2')||strcmp(gmSEQ.name, 'Rabi_composite')
+                    elseif strcmp(gmSEQ.name, 'Rabi')||strcmp(gmSEQ.name, 'Rabi_1m1')||strcmp(gmSEQ.name, 'Rabi_SG2')||strcmp(gmSEQ.name, 'Rabi_SG3')||strcmp(gmSEQ.name, 'Rabi_composite')
                         PlotRabiData(handles,raw_j)
                         if get(handles.bShowLegend,'Value')
                             FitRabi(handles);
                         end
+                    elseif strcmp(gmSEQ.name, 'T1_Sij_all')
+                        PlotT1Data_9curves(handles, raw_j)
                     else
                         PlotData(handles,raw_j);
                     end
@@ -318,6 +333,7 @@ if gSG.bfixedFreq % pulsed sequence (supports fixed-power and swept-power)
         KillAllTasks; %kill all niDAQ tasks
         set(handles.runningText,'string','Error!')
         gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
+        gSG3.bOn=0; SignalGeneratorFunctionPool3('RFOnOff');
         if handles.useSG2.Value; gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff'); end
         fpga.stop_program();
         Set_FPGA_GUI_buttons(handles, 'on')
@@ -424,6 +440,7 @@ elseif isfield(gmSEQ,'bLiO')   % activates for ESR
     gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
     
 elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
+    % TODO: fix it for ODMR_1m1
     CreateSavePath_Ave()
     
     gmSEQ.refCounts=Track('Init');
@@ -435,6 +452,33 @@ elseif gSG.bfixedPow && ~gSG.bfixedFreq % for ODMR
        gSG.bOn = 1;
     end
     SignalGeneratorFunctionPool('RFOnOff');
+    
+    %%%%%%%%%%%%%%%%%%%
+    
+    if handles.useSG2.Value
+        SignalGeneratorFunctionPool2('SetMod');
+        SignalGeneratorFunctionPool2('WritePow');
+        SignalGeneratorFunctionPool2('WriteFreq');
+        if startsWith(gmSEQ.name, 'f_')
+            gSG2.bOn = 0;
+        else
+            gSG2.bOn = 1;
+        end
+        SignalGeneratorFunctionPool2('RFOnOff');
+    end
+    
+    SignalGeneratorFunctionPool3('SetMod');
+    SignalGeneratorFunctionPool3('WritePow');
+    SignalGeneratorFunctionPool3('WriteFreq');
+    if startsWith(gmSEQ.name, 'f_')
+        gSG3.bOn = 0;
+    else
+        gSG3.bOn = 1;
+    end
+    SignalGeneratorFunctionPool3('RFOnOff');
+    
+    %%%%%%%%%%
+    
     gmSEQ.SweepParam=gmSEQ.SweepParam*1e9;
     CreateCaliLog(hObject, eventdata, handles);
     
@@ -548,7 +592,7 @@ end
 
 gSG.bOn=0; SignalGeneratorFunctionPool('RFOnOff');
 if handles.useSG2.Value; gSG2.bOn=0; SignalGeneratorFunctionPool2('RFOnOff'); end
-% gSG3.bOn=0; SignalGeneratorFunctionPool3('RFOnOff');
+gSG3.bOn=0; SignalGeneratorFunctionPool3('RFOnOff');
 
 % The following stop is just for test, added by Weijie 07/30/2022
 % chaseFunctionPool('stopChase', gmSEQ.MWAWG)
@@ -797,12 +841,13 @@ if ~isfield(gmSEQ,'bLiO')&&gmSEQ.ctrN~=1 % Do not plot ESR
                 sig_D = signal(4,:);
                 
                 [data, data_err] = ContrastDiff(ref_B, ref_D,sig_B, sig_D, gmSEQ.iAverage);
-            elseif strcmp(gmSEQ.name,'Echo')
+            elseif strcmp(gmSEQ.name,'Echo')|| strcmp(gmSEQ.name,'Ramsey')
                 ref_B = signal(1,:);
                 ref_D = signal(3,:);
                 sig_B = signal(2,:);
                 sig_D = signal(4,:); 
-                [data, data_err] = ContrastDiff(ref_B, ref_D,sig_B, sig_D, gmSEQ.iAverage);
+                data = (sig_B - sig_D)*2./(ref_B + ref_D);
+                data_err = data*0;
             elseif strcmp(gmSEQ.name,'Echo_wDarkRef')
                 ref_B = signal(3,:);
                 ref_D = signal(1,:);

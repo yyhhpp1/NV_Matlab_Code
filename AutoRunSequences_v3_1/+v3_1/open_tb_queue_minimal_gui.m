@@ -99,6 +99,12 @@ ui.editMagPort = uicontrol(hFig, 'Style', 'edit', 'Position', [960 306 100 22], 
 % v2.1 binding
 uicontrol(hFig, 'Style', 'text', 'Position', [20 276 260 18], ...
     'HorizontalAlignment', 'left', 'String', 'v2.1 GUI handle (required):');
+ui.chkTestModeNoBT = uicontrol(hFig, 'Style', 'checkbox', ...
+    'Position', [300 276 360 20], 'Value', 0, ...
+    'String', 'Test mode: skip B/T hardware control');
+ui.chkSkipFirstMagControl = uicontrol(hFig, 'Style', 'checkbox', ...
+    'Position', [680 276 380 20], 'Value', 0, ...
+    'String', 'Skip first magnet check/control after Run');
 ui.editHandle = uicontrol(hFig, 'Style', 'edit', 'Position', [20 252 120 22], ...
     'HorizontalAlignment', 'left', 'String', '');
 ui.btnBindHandle = uicontrol(hFig, 'Style', 'pushbutton', ...
@@ -269,6 +275,12 @@ set(state.ui.txtStatus, 'String', 'Status: Running...');
 drawnow;
 
 append_log(hFig, sprintf('Run started: %d T steps.', numel(state.queueSteps)));
+if isfield(runtimeCtx, 'testModeNoBT') && logical(runtimeCtx.testModeNoBT)
+    append_log(hFig, 'Test mode is ON: skipping temperature and magnet hardware control.');
+end
+if isfield(runtimeCtx, 'skipFirstMagControl') && logical(runtimeCtx.skipFirstMagControl)
+    append_log(hFig, 'Skip-first-magnet is ON: first B point will run without magnet control.');
+end
 try
     out = v3_1.run_tb_queue_minimal(state.queueSteps, runtimeCtx);
     state = guidata(hFig);
@@ -284,6 +296,15 @@ try
     end
     if (strcmpi(out.status, 'failed') || strcmpi(out.status, 'stopped')) && ~isempty(stopReason)
         append_log(hFig, sprintf('Reason: %s', stopReason));
+    end
+    if isstruct(out) && isfield(out, 'notionSpoolPath') && ~isempty(out.notionSpoolPath)
+        append_log(hFig, sprintf('Notion spool: %s', out.notionSpoolPath));
+    end
+    if isstruct(out) && isfield(out, 'notionQueueLogPath') && ~isempty(out.notionQueueLogPath)
+        append_log(hFig, sprintf('Notion queue log: %s', out.notionQueueLogPath));
+    end
+    if isstruct(out) && isfield(out, 'notionUploadLogPath') && ~isempty(out.notionUploadLogPath)
+        append_log(hFig, sprintf('Notion upload log (external): %s', out.notionUploadLogPath));
     end
     assignin('base', 'v3_1_tb_queue_last_out', out);
 catch ME
@@ -385,6 +406,14 @@ runtimeCtx.stopAppDataKey = 'BT_CONTROL_STOP_B_QUEUE';
 runtimeCtx.writeStartLog = false;
 runtimeCtx.writeAnalysisSnippet = false;
 runtimeCtx.verbose = true;
+runtimeCtx.testModeNoBT = get_checkbox_value_safe(state.ui, 'chkTestModeNoBT', false);
+runtimeCtx.skipFirstMagControl = get_checkbox_value_safe(state.ui, 'chkSkipFirstMagControl', false);
+runtimeCtx.tempHistoryCfg = struct( ...
+    'enabled', true, ...
+    'channels', [3 8], ...
+    'lookbackHours', 0.5, ...
+    'estUtcOffsetHours', -5, ...
+    'savePlotPng', true);
 
 ok = true;
 end
@@ -599,6 +628,8 @@ savedState.values.editHold = get_string_safe(state.ui, 'editHold', '30');
 savedState.values.editMaxWait = get_string_safe(state.ui, 'editMaxWait', '1800');
 savedState.values.editPoll = get_string_safe(state.ui, 'editPoll', '1');
 savedState.values.editMagPort = get_string_safe(state.ui, 'editMagPort', '7185');
+savedState.values.chkTestModeNoBT = get_checkbox_value_safe(state.ui, 'chkTestModeNoBT', false);
+savedState.values.chkSkipFirstMagControl = get_checkbox_value_safe(state.ui, 'chkSkipFirstMagControl', false);
 savedState.values.editHandle = get_string_safe(state.ui, 'editHandle', '');
 savedState.savedAt = datestr(now, 'yyyy-mm-dd HH:MM:SS.FFF');
 
@@ -659,6 +690,8 @@ if isfield(savedState, 'values') && isstruct(savedState.values)
     set_if_present(state.ui, 'editMaxWait', get_struct_field(v, 'editMaxWait', '1800'));
     set_if_present(state.ui, 'editPoll', get_struct_field(v, 'editPoll', '1'));
     set_if_present(state.ui, 'editMagPort', get_struct_field(v, 'editMagPort', '7185'));
+    set_checkbox_if_present(state.ui, 'chkTestModeNoBT', get_struct_field(v, 'chkTestModeNoBT', false));
+    set_checkbox_if_present(state.ui, 'chkSkipFirstMagControl', get_struct_field(v, 'chkSkipFirstMagControl', false));
     set_if_present(state.ui, 'editHandle', get_struct_field(v, 'editHandle', ''));
 end
 

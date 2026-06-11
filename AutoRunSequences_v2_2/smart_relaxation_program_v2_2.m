@@ -19,6 +19,8 @@ init_analysis_export_state();
 ctx = build_execution_context(cfg, handlesAuto);
 ctx = apply_high_field_offaligned_policy(ctx, cfg);
 ctx = apply_zero_field_single_target_policy(ctx, cfg);
+ctx = apply_mw_delivery_range_policy(ctx, cfg);
+ctx = apply_sij_all_override_policy(ctx);
 if stop_requested(handlesAuto)
     return;
 end
@@ -34,6 +36,12 @@ else
 end
 init_report_export_state(cfg);
 append_run_decision_event('run_save_folder', sprintf('Using run save folder: %s', cfg.runtime.runSaveFolder));
+if isfield(ctx, 'mwDeliverySkipped') && ~isempty(ctx.mwDeliverySkipped)
+    append_run_decision_event('mw_delivery_range', sprintf('Skipped targets: %s', strjoin(ctx.mwDeliverySkipped, '; ')));
+end
+if is_sij_all_enabled(ctx)
+    append_run_decision_event('sij_all_override', sprintf('Running T1_Sij_all groups: %s', summarize_target_ids(ctx.targets)));
+end
 cleanupSave = onCleanup(@() save_end_of_run_snapshots(handlesMain, handlesAuto, cfg)); %#ok<NASGU>
 
 if isempty(ctx.targets)
@@ -284,6 +292,38 @@ for iT = 1:numel(ctx.targets)
         end
     end
 
+    if is_sij_all_target(target, ctxTarget)
+        [finalRange, roughInfo] = determine_sij_all_final_range( ...
+            target, fSg1, fSg2, piSg1, piSg2, ctxTarget, handlesMain, handlesAuto, hObject, eventdata, cfg);
+        if stop_requested(handlesAuto)
+            break;
+        end
+        append_run_decision_event('final_range', summarize_sij_all_range_decision(target.id, finalRange, roughInfo));
+        finalSeq = build_sij_all_sequence(target, finalRange, fSg1, fSg2, piSg1, piSg2, ctxTarget, roughInfo);
+        finalSeq = apply_late_time_points_to_sequence(finalSeq, finalRange, roughInfo, ctxTarget);
+        run_one_sequence(finalSeq, handlesMain, handlesAuto, hObject, eventdata, cfg, ...
+            sprintf(' [T1 Sij-all %s]', target.id));
+        if stop_requested(handlesAuto)
+            break;
+        end
+        append_analysis_entry_for_sij_all(target);
+
+        if ctxTarget.precal.enabled
+            fDispM1 = get_map_freq(freqMap, labelM1);
+            fDispP1 = get_map_freq(freqMap, labelP1);
+        else
+            fDispM1 = fSg1;
+            fDispP1 = fSg2;
+        end
+        statusText = sprintf(['T1 Sij-all %s: f_m1=%.6fGHz f_p1=%.6fGHz | ', ...
+            'SG1 pi=%.1fns P=%.2fdBm | SG2 pi=%.1fns P=%.2fdBm | %s'], ...
+            target.id, fDispM1, fDispP1, piSg1, ctxTarget.power.rabi_sg1_dBm, ...
+            piSg2, ctxTarget.power.rabi_sg2_dBm, summarize_sij_all_rough_tail(roughInfo));
+        disp(['[SmartT1] ' statusText]);
+        update_target_status_display(handlesAuto, cfg, target.id, statusText);
+        continue;
+    end
+
     enabledFamilies = active_measurement_families(ctxTarget);
     for iFam = 1:numel(enabledFamilies)
         family = enabledFamilies{iFam};
@@ -298,6 +338,7 @@ for iT = 1:numel(ctx.targets)
         end
         append_run_decision_event('final_range', summarize_final_range_decision(familyCfg.displayName, target.id, finalRange, roughInfo));
         finalSeq = build_family_sequence(family, target, finalRange, fSg1, fSg2, piSg1, piSg2, ctxTarget);
+        finalSeq = apply_late_time_points_to_sequence(finalSeq, finalRange, roughInfo, ctxTarget);
         run_one_sequence(finalSeq, handlesMain, handlesAuto, hObject, eventdata, cfg, ...
             sprintf(' [%s %s]', familyCfg.displayName, target.id));
         if stop_requested(handlesAuto)
@@ -334,9 +375,18 @@ end
 function ctx = build_execution_context(cfg, hAuto)
 ctx = struct();
 ctx.measurements = cfg.smart.measurements;
+if isfield(cfg.smart, 'sijAll') && isstruct(cfg.smart.sijAll)
+    ctx.sijAll = cfg.smart.sijAll;
+else
+    ctx.sijAll = struct('enabled', false, 'sequenceName', 'T1_Sij_all');
+end
+if isfield(cfg.smart.ui.tags, 'measure') && isfield(cfg.smart.ui.tags.measure, 't1SijAll')
+    ctx.sijAll.enabled = logical(read_ui_numeric(hAuto, cfg.smart.ui.tags.measure.t1SijAll, ctx.sijAll.enabled));
+end
 ctx.estimatedB_G = read_ui_numeric(hAuto, cfg.smart.ui.tags.input.estimatedB, ...
     read_ui_numeric(hAuto, 'setB', cfg.smart.defaultEstimatedB_G));
 ctx.nonuniform = logical(read_ui_numeric(hAuto, cfg.smart.ui.tags.input.nonuniform, 0));
+ctx.addLateTimePoints = logical(read_ui_numeric(hAuto, cfg.smart.ui.tags.input.addLateTimePoints, 0));
 
 ctx.rough = cfg.smart.rough;
 ctx.rough.enabled = logical(read_ui_numeric(hAuto, cfg.smart.ui.tags.rough.enable, ctx.rough.enabled));
@@ -436,6 +486,15 @@ if isfield(cfg.smart.ui.tags, 'measure')
             ctx.measurements.(fam).enabled = logical(read_ui_numeric(hAuto, ...
                 cfg.smart.ui.tags.measure.(fam), ctx.measurements.(fam).enabled));
         end
+    end
+end
+if is_sij_all_enabled(ctx)
+    ctx.measurements.t1.enabled = true;
+    if isfield(ctx.measurements, 't2')
+        ctx.measurements.t2.enabled = false;
+    end
+    if isfield(ctx.measurements, 't2star')
+        ctx.measurements.t2star.enabled = false;
     end
 end
 ctx.allTargets = targets;
@@ -763,6 +822,243 @@ for i = 1:numel(targets)
 end
 end
 
+function ctxOut = apply_mw_delivery_range_policy(ctxIn, cfg)
+ctxOut = ctxIn;
+if ~isfield(ctxIn, 'targets') || isempty(ctxIn.targets)
+    return;
+end
+if ~isfield(cfg.smart, 'mwDelivery') || ~isstruct(cfg.smart.mwDelivery)
+    return;
+end
+
+minGHz = get_cfg_numeric_with_default(cfg.smart.mwDelivery, 'minGHz', 0.7);
+maxGHz = get_cfg_numeric_with_default(cfg.smart.mwDelivery, 'maxGHz', 6.0);
+if ~(isfinite(minGHz) && isfinite(maxGHz) && maxGHz > minGHz)
+    return;
+end
+
+predicted = estimate_resonance_centers(ctxIn.estimatedB_G, cfg.smart.physics);
+keep = true(1, numel(ctxIn.targets));
+removed = {};
+for i = 1:numel(ctxIn.targets)
+    target = ctxIn.targets(i);
+    [ok, reason] = target_within_mw_delivery_range(target, predicted, minGHz, maxGHz);
+    if ~ok
+        keep(i) = false;
+        removed{end + 1} = sprintf('%s (%s)', ...
+            normalize_to_char(safe_struct_field(target, 'id', sprintf('target_%d', i))), reason); %#ok<AGROW>
+    end
+end
+
+if any(~keep)
+    ctxOut.targets = ctxIn.targets(keep);
+    msg = sprintf('MW delivery range policy [%.3g, %.3g] GHz skipped: %s', ...
+        minGHz, maxGHz, strjoin(removed, '; '));
+    disp(['[SmartT1] ' msg]);
+    ctxOut.mwDeliverySkipped = removed;
+end
+end
+
+function [ok, reason] = target_within_mw_delivery_range(target, predicted, minGHz, maxGHz)
+ok = true;
+reason = '';
+[~, ~, labelM1, labelP1] = resolve_target_freqs(target, predicted);
+fM1 = get_map_freq(predicted, labelM1);
+fP1 = get_map_freq(predicted, labelP1);
+
+switch normalize_to_char(safe_struct_field(target, 'transition', ''))
+    case 'SQ_0_TO_M1'
+        ok = freq_in_delivery_range(fM1, minGHz, maxGHz);
+        if ~ok
+            reason = sprintf('0->-1 %.6g GHz outside range', fM1);
+        end
+    case 'SQ_0_TO_P1'
+        ok = freq_in_delivery_range(fP1, minGHz, maxGHz);
+        if ~ok
+            reason = sprintf('0->+1 %.6g GHz outside range', fP1);
+        end
+    case 'DQ_M1_TO_P1'
+        okM1 = freq_in_delivery_range(fM1, minGHz, maxGHz);
+        okP1 = freq_in_delivery_range(fP1, minGHz, maxGHz);
+        ok = okM1 && okP1;
+        if ~ok
+            parts = {};
+            if ~okM1
+                parts{end + 1} = sprintf('0->-1 %.6g GHz outside range', fM1); %#ok<AGROW>
+            end
+            if ~okP1
+                parts{end + 1} = sprintf('0->+1 %.6g GHz outside range', fP1); %#ok<AGROW>
+            end
+            reason = strjoin(parts, ', ');
+        end
+end
+end
+
+function ok = freq_in_delivery_range(freqGHz, minGHz, maxGHz)
+ok = isfinite(freqGHz) && freqGHz >= minGHz && freqGHz <= maxGHz;
+end
+
+function ctxOut = apply_sij_all_override_policy(ctxIn)
+ctxOut = ctxIn;
+if ~is_sij_all_enabled(ctxIn)
+    return;
+end
+
+ctxOut.measurements.t1.enabled = true;
+if isfield(ctxOut.measurements, 't2')
+    ctxOut.measurements.t2.enabled = false;
+end
+if isfield(ctxOut.measurements, 't2star')
+    ctxOut.measurements.t2star.enabled = false;
+end
+srcTargets = struct([]);
+if isfield(ctxIn, 'targets') && ~isempty(ctxIn.targets)
+    srcTargets = ctxIn.targets;
+end
+if isempty(srcTargets)
+    ctxOut.targets = srcTargets;
+    return;
+end
+srcTargets = ensure_target_field(srcTargets, 'isSijAll', false);
+
+groups = {'aligned', 'off_aligned'};
+targetsOut = struct([]);
+for i = 1:numel(groups)
+    groupName = groups{i};
+    groupTargets = filter_targets_by_group(srcTargets, groupName);
+    if isempty(groupTargets)
+        continue;
+    end
+    if group_supports_sij_all(groupTargets)
+        baseTarget = choose_sij_all_base_target(groupTargets);
+        sijTarget = baseTarget;
+        if strcmp(groupName, 'aligned')
+            sijTarget.id = 'aligned_sij_all';
+        else
+            sijTarget.id = 'off_sij_all';
+        end
+        sijTarget.group = groupName;
+        sijTarget.transition = 'DQ_M1_TO_P1';
+        sijTarget.enabled = true;
+        sijTarget.isSijAll = true;
+        targetsOut = append_target_compatible(targetsOut, sijTarget);
+    else
+        for j = 1:numel(groupTargets)
+            targetsOut = append_target_compatible(targetsOut, groupTargets(j));
+        end
+    end
+end
+
+ctxOut.targets = targetsOut;
+if isfield(ctxOut, 'precal') && isstruct(ctxOut.precal)
+    ctxOut.precal.enabled = true;
+    ctxOut.precal.forceMeasureAllFreqs = true;
+end
+
+if ~isempty(targetsOut)
+    labels = cell(1, numel(targetsOut));
+    for i = 1:numel(targetsOut)
+        labels{i} = targetsOut(i).id;
+    end
+    disp(sprintf('[SmartT1] T1 Sij-all override active: running %s only.', strjoin(labels, ', ')));
+    append_run_decision_event('sij_all_override', sprintf('Running T1_Sij_all groups: %s', strjoin(labels, ', ')));
+end
+end
+
+function tf = is_sij_all_enabled(ctx)
+tf = isstruct(ctx) && isfield(ctx, 'sijAll') && isstruct(ctx.sijAll) && ...
+    isfield(ctx.sijAll, 'enabled') && logical(ctx.sijAll.enabled);
+end
+
+function targets = ensure_target_field(targets, fieldName, value)
+if isempty(targets) || isfield(targets, fieldName)
+    return;
+end
+for i = 1:numel(targets)
+    targets(i).(fieldName) = value;
+end
+end
+
+function out = append_target_compatible(out, target)
+if isempty(out)
+    out = target;
+    return;
+end
+outFields = fieldnames(out);
+targetFields = fieldnames(target);
+missingInTarget = setdiff(outFields, targetFields);
+for i = 1:numel(missingInTarget)
+    target.(missingInTarget{i}) = [];
+end
+missingInOut = setdiff(targetFields, outFields);
+for i = 1:numel(missingInOut)
+    [out.(missingInOut{i})] = deal([]);
+end
+out(end + 1, 1) = target;
+end
+
+function out = filter_targets_by_group(targets, groupName)
+out = targets([]);
+for i = 1:numel(targets)
+    if strcmp(normalize_group_name(safe_struct_field(targets(i), 'group', '')), normalize_group_name(groupName))
+        out(end + 1) = targets(i); %#ok<AGROW>
+    end
+end
+end
+
+function target = choose_sij_all_base_target(groupTargets)
+target = groupTargets(1);
+preferredTransitions = {'SQ_0_TO_M1', 'DQ_M1_TO_P1', 'SQ_0_TO_P1'};
+for i = 1:numel(preferredTransitions)
+    for j = 1:numel(groupTargets)
+        if strcmp(normalize_to_char(groupTargets(j).transition), preferredTransitions{i})
+            target = groupTargets(j);
+            return;
+        end
+    end
+end
+end
+
+function tf = group_supports_sij_all(groupTargets)
+tf = false;
+hasM1 = false;
+hasP1 = false;
+for i = 1:numel(groupTargets)
+    tr = normalize_to_char(safe_struct_field(groupTargets(i), 'transition', ''));
+    if strcmp(tr, 'DQ_M1_TO_P1')
+        tf = true;
+        return;
+    end
+    if strcmp(tr, 'SQ_0_TO_M1')
+        hasM1 = true;
+    elseif strcmp(tr, 'SQ_0_TO_P1')
+        hasP1 = true;
+    end
+end
+tf = hasM1 && hasP1;
+end
+
+function txt = summarize_target_ids(targets)
+if isempty(targets)
+    txt = '';
+    return;
+end
+parts = cell(1, numel(targets));
+for i = 1:numel(targets)
+    parts{i} = normalize_to_char(safe_struct_field(targets(i), 'id', sprintf('target_%d', i)));
+end
+txt = strjoin(parts, ', ');
+end
+
+function out = normalize_group_name(groupName)
+g = lower(normalize_to_char(groupName));
+if contains(g, 'off')
+    out = 'off_aligned';
+else
+    out = 'aligned';
+end
+end
+
 function windows = plan_odmr_windows(labels, predicted, odmrCfg)
 if isempty(labels)
     windows = struct([]);
@@ -888,6 +1184,7 @@ seq.Repeat = num2str(max(1, round(ctx.precal.odmr.repeat)));
 seq.Average = num2str(max(1, round(ctx.precal.odmr.average)));
 seq.useSG2 = 0;
 seq.bSweep2 = 0;
+seq.bSweep3 = 0;
 
 % Runtime metadata for live ODMR fit display (not GUI control fields).
 seq.meta_odmrExpectedPeakCount = max(1, round(window.expectedPeakCount));
@@ -1885,6 +2182,7 @@ seq.SweepNPoints = num2str(max(1, round(nPow)));
 seq.Repeat = num2str(max(1, round(ctx.precal.rabi.repeat)));
 seq.Average = num2str(max(1, round(ctx.precal.rabi.average)));
 seq.bSweep2 = 0;
+seq.bSweep3 = 0;
 if isfinite(targetPiNs) && targetPiNs > 0
     seq.pi = num2str(targetPiNs, '%.0f');
 end
@@ -2189,6 +2487,7 @@ seq.SweepNPoints = num2str(max(3, round(ctx.precal.rabi.nPoints)));
 seq.Repeat = num2str(max(1, round(ctx.precal.rabi.repeat)));
 seq.Average = num2str(max(1, round(ctx.precal.rabi.average)));
 seq.bSweep2 = 0;
+seq.bSweep3 = 0;
 if strcmp(pathName, 'sg2')
     seq.useSG2 = 1;
     seq.fixPow2 = num2str(powerDbm);
@@ -3204,6 +3503,114 @@ end
     targetFamily, fSg1, fSg2, piSg1, piSg2, ctxFamily, hMain, hAuto, hObject, eventdata, cfg);
 end
 
+function tf = is_sij_all_target(target, ctx)
+tf = is_sij_all_enabled(ctx) && isstruct(target) && isfield(target, 'isSijAll') && logical(target.isSijAll);
+end
+
+function [finalRange, roughInfo] = determine_sij_all_final_range(target, fSg1, fSg2, piSg1, piSg2, ctx, hMain, hAuto, hObject, eventdata, cfg)
+roughInfo = struct('t1RoughMs', NaN, 'fitRelErr', NaN, 'edgeRatio', NaN, ...
+    'nRuns', 0, 'stopEstimator', ctx.rough.stopEstimator, ...
+    'sq', struct(), 'dq', struct(), 'chosen', '', ...
+    'tSQm1Ms', NaN, 'tDQMs', NaN, 'sijAllIntervals', struct('enabled', false));
+
+sqTarget = target;
+sqTarget.id = [target.id '_sq_rough'];
+sqTarget.transition = 'SQ_0_TO_M1';
+sqTarget.runFamilyId = 't1';
+sqTarget.runFamilyDisplay = 'T1_SQ';
+
+dqTarget = target;
+dqTarget.id = [target.id '_dq_rough'];
+dqTarget.transition = 'DQ_M1_TO_P1';
+dqTarget.runFamilyId = 't1';
+dqTarget.runFamilyDisplay = 'T1_DQ';
+
+[rangeSQ, infoSQ] = determine_t1_final_range( ...
+    sqTarget, fSg1, fSg2, piSg1, piSg2, ctx, hMain, hAuto, hObject, eventdata, cfg);
+roughInfo.sq = infoSQ;
+if stop_requested(hAuto)
+    finalRange = rangeSQ;
+    return;
+end
+
+[rangeDQ, infoDQ] = determine_t1_final_range( ...
+    dqTarget, fSg1, fSg2, piSg1, piSg2, ctx, hMain, hAuto, hObject, eventdata, cfg);
+roughInfo.dq = infoDQ;
+if stop_requested(hAuto)
+    finalRange = rangeDQ;
+    return;
+end
+
+tSQ = safe_struct_field(infoSQ, 't1RoughMs', NaN);
+tDQ = safe_struct_field(infoDQ, 't1RoughMs', NaN);
+roughInfo.tSQm1Ms = tSQ;
+roughInfo.tDQMs = tDQ;
+roughInfo.sijAllIntervals = build_sij_all_interval_plan_from_rough(tSQ, tDQ);
+if isfinite(tSQ) && isfinite(tDQ)
+    if tDQ >= tSQ
+        finalRange = rangeDQ;
+        roughInfo.t1RoughMs = tDQ;
+        roughInfo.fitRelErr = safe_struct_field(infoDQ, 'fitRelErr', NaN);
+        roughInfo.edgeRatio = safe_struct_field(infoDQ, 'edgeRatio', NaN);
+        roughInfo.nRuns = safe_struct_field(infoSQ, 'nRuns', 0) + safe_struct_field(infoDQ, 'nRuns', 0);
+        roughInfo.chosen = 'DQ';
+    else
+        finalRange = rangeSQ;
+        roughInfo.t1RoughMs = tSQ;
+        roughInfo.fitRelErr = safe_struct_field(infoSQ, 'fitRelErr', NaN);
+        roughInfo.edgeRatio = safe_struct_field(infoSQ, 'edgeRatio', NaN);
+        roughInfo.nRuns = safe_struct_field(infoSQ, 'nRuns', 0) + safe_struct_field(infoDQ, 'nRuns', 0);
+        roughInfo.chosen = 'SQ';
+    end
+elseif isfinite(tDQ)
+    finalRange = rangeDQ;
+    roughInfo.t1RoughMs = tDQ;
+    roughInfo.fitRelErr = safe_struct_field(infoDQ, 'fitRelErr', NaN);
+    roughInfo.edgeRatio = safe_struct_field(infoDQ, 'edgeRatio', NaN);
+    roughInfo.nRuns = safe_struct_field(infoSQ, 'nRuns', 0) + safe_struct_field(infoDQ, 'nRuns', 0);
+    roughInfo.chosen = 'DQ';
+elseif isfinite(tSQ)
+    finalRange = rangeSQ;
+    roughInfo.t1RoughMs = tSQ;
+    roughInfo.fitRelErr = safe_struct_field(infoSQ, 'fitRelErr', NaN);
+    roughInfo.edgeRatio = safe_struct_field(infoSQ, 'edgeRatio', NaN);
+    roughInfo.nRuns = safe_struct_field(infoSQ, 'nRuns', 0) + safe_struct_field(infoDQ, 'nRuns', 0);
+    roughInfo.chosen = 'SQ';
+else
+    spanSQ = abs(rangeSQ(2) - rangeSQ(1));
+    spanDQ = abs(rangeDQ(2) - rangeDQ(1));
+    if spanDQ >= spanSQ
+        finalRange = rangeDQ;
+        roughInfo.chosen = 'DQ_range';
+    else
+        finalRange = rangeSQ;
+        roughInfo.chosen = 'SQ_range';
+    end
+    roughInfo.nRuns = safe_struct_field(infoSQ, 'nRuns', 0) + safe_struct_field(infoDQ, 'nRuns', 0);
+end
+
+disp(sprintf('[SmartT1] T1 Sij-all rough choice for %s: SQ=%.4f ms, DQ=%.4f ms, chosen=%s.', ...
+    target.id, tSQ, tDQ, roughInfo.chosen));
+append_run_decision_event('sij_all_rough_choice', sprintf('%s SQ=%.6g ms DQ=%.6g ms chosen=%s', ...
+    target.id, tSQ, tDQ, roughInfo.chosen));
+end
+
+function plan = build_sij_all_interval_plan_from_rough(tSQm1Ms, tDQMs)
+plan = struct('enabled', false, 'tFastNs', NaN, 'tSlowNs', NaN, ...
+    'tMidNs', NaN, 'tEndNs', NaN);
+if ~(isfinite(tSQm1Ms) && tSQm1Ms > 0 && isfinite(tDQMs) && tDQMs > 0)
+    return;
+end
+
+tFastNs = min(tSQm1Ms, tDQMs) * 1e6;
+tSlowNs = max(tSQm1Ms, tDQMs) * 1e6;
+plan.enabled = true;
+plan.tFastNs = tFastNs;
+plan.tSlowNs = tSlowNs;
+plan.tMidNs = min(5 * tFastNs, tSlowNs);
+plan.tEndNs = 5 * tSlowNs;
+end
+
 function seq = build_family_sequence(family, target, range, fSg1, fSg2, piSg1, piSg2, ctx)
 tStart = range(1);
 tStop = range(2);
@@ -3283,6 +3690,273 @@ else
     seq.TO1 = num2str(tStop);
     seq.SweepNPoints = num2str(n);
 end
+end
+
+function seq = build_sij_all_sequence(target, range, fSg1, fSg2, piSg1, piSg2, ctx, roughInfo)
+if nargin < 8 || ~isstruct(roughInfo)
+    roughInfo = struct();
+end
+tStart = range(1);
+tStop = range(2);
+params = target.t1;
+n = max(3, round(params.nPoints));
+n1 = n;
+n2 = 0;
+split = tStart + (tStop - tStart)/4;
+[powLabelSg1, powLabelSg2] = get_t1_power_labels(target);
+threeIntervalPlan = safe_struct_field(roughInfo, 'sijAllIntervals', struct('enabled', false));
+
+if ctx.nonuniform
+    n1 = max(2, ceil(n/2));
+    n2 = max(1, floor(n/2));
+    targetSpan = round_span_to_1000(tStop - tStart);
+    [splitSolve, stopSolve, okSolve] = solve_nonuniform_span_grid(tStart, targetSpan, n1, n2, split);
+    if okSolve
+        split = splitSolve;
+        tStop = stopSolve;
+    else
+        [split, tStop] = align_nonuniform_grid(tStart, split, tStop, n1, n2);
+        tStop = tStart + round_span_to_1000(tStop - tStart);
+    end
+    [split, tStop, nudged] = force_integer_grid_nonuniform(tStart, split, tStop, n1, n2);
+    if nudged
+        disp(sprintf(['[SmartT1] Sij-all grid adjusted for integer points: ', ...
+            'start=%.0f, split=%.0f, stop=%.0f, n1=%d, n2=%d'], ...
+            round(tStart), round(split), round(tStop), n1, n2));
+    end
+else
+    tStop = align_stop_to_integer_points(tStart, tStop, n);
+end
+
+seq = struct();
+seq.name = safe_struct_field(ctx.sijAll, 'sequenceName', 'T1_Sij_all');
+seq.useSG2 = 1;
+if ctx.precal.enabled
+    cfgLocal = power_boost_cfg_from_ctx(ctx);
+    powSg1 = apply_p1_calibration_power_boost(ctx.power.rabi_sg1_dBm, powLabelSg1, cfgLocal);
+    powSg2 = apply_p1_calibration_power_boost(ctx.power.rabi_sg2_dBm, powLabelSg2, cfgLocal);
+    seq.fixPow = num2str(powSg1);
+    seq.fixFreq = num2str(fSg1, '%.8f');
+    seq.fixPow2 = num2str(powSg2);
+    seq.fixFreq2 = num2str(fSg2, '%.8f');
+    if isfinite(piSg1) && piSg1 > 0
+        seq.pi = num2str(piSg1, '%.0f');
+        seq.halfpi = num2str(piSg1 / 2, '%.0f');
+        seq.DEERt = num2str(1.5 * piSg1, '%.0f');
+    end
+    if isfinite(piSg2) && piSg2 > 0
+        seq.DEERpi = num2str(piSg2, '%.0f');
+    else
+        seq.DEERpi = num2str(100, '%.0f');
+    end
+end
+
+seq.Repeat = num2str(max(1, round(params.repeat)));
+seq.Average = num2str(max(1, round(params.average)));
+[seq, threeIntervalApplied] = apply_sij_all_three_interval_sweep(seq, target, threeIntervalPlan, ctx);
+if threeIntervalApplied
+    return;
+end
+if ctx.nonuniform
+    seq.bSweep2 = 1;
+    seq.FROM1 = num2str(tStart);
+    seq.TO1 = num2str(split);
+    seq.SweepNPoints = num2str(n1);
+    seq.FROM2 = num2str(split);
+    seq.TO2 = num2str(tStop);
+    seq.SweepNPoints2 = num2str(n2);
+else
+    seq.bSweep2 = 0;
+    seq.FROM1 = num2str(tStart);
+    seq.TO1 = num2str(tStop);
+    seq.SweepNPoints = num2str(n);
+end
+end
+
+function [seq, applied] = apply_sij_all_three_interval_sweep(seq, target, plan, ctx)
+applied = false;
+if ~isstruct(plan) || ~isfield(plan, 'enabled') || ~logical(plan.enabled)
+    return;
+end
+if ~isstruct(target)
+    return;
+end
+
+n1 = max(2, round(safe_struct_field(ctx.sijAll, 'firstIntervalNPoints', 8)));
+n2 = max(2, round(safe_struct_field(ctx.sijAll, 'secondIntervalNPoints', 6)));
+n3MinDefault = safe_struct_field(ctx.sijAll, 'thirdIntervalNPoints', 4);
+n3Min = max(1, round(safe_struct_field(ctx.sijAll, 'thirdIntervalMinNPoints', n3MinDefault)));
+[from1, to1, from2, to2, from3, to3, customPts, n3, ok] = ...
+    compute_sij_all_integer_three_interval_sweep(plan, n1, n2, n3Min);
+if ~ok
+    return;
+end
+
+seq.bSweep2 = 1;
+seq.FROM1 = num2str(from1, '%.12g');
+seq.TO1 = num2str(to1, '%.12g');
+seq.SweepNPoints = num2str(n1);
+seq.FROM2 = num2str(from2, '%.12g');
+seq.TO2 = num2str(to2, '%.12g');
+seq.SweepNPoints2 = num2str(n2);
+seq.bSweep3 = 1;
+seq.bSweep3log = 0;
+seq.FROM3 = num2str(from3, '%.12g');
+seq.TO3 = num2str(to3, '%.12g');
+seq.SweepNPoints3 = num2str(n3);
+seq.SmartCustomSweepParam = customPts;
+
+append_run_decision_event('sij_all_three_interval', sprintf([ ...
+    '%s FROM1=%.12g TO1=%.12g N1=%d FROM2=%.12g TO2=%.12g N2=%d ', ...
+    'FROM3=%.12g TO3=%.12g N3=%d'], ...
+    normalize_to_char(safe_struct_field(seq, 'name', 'T1_Sij_all')), ...
+    from1, to1, n1, from2, to2, n2, from3, to3, n3));
+applied = true;
+end
+
+function [from1, to1, from2, to2, from3, to3, customPts, n3, ok] = compute_sij_all_integer_three_interval_sweep(plan, n1, n2, n3Min)
+from1 = 1000;
+to1 = NaN;
+from2 = NaN;
+to2 = NaN;
+from3 = NaN;
+to3 = NaN;
+customPts = [];
+n3 = max(1, round(n3Min));
+ok = false;
+
+tFast = round(safe_struct_field(plan, 'tFastNs', NaN));
+tMid = round(safe_struct_field(plan, 'tMidNs', NaN));
+tEnd = round(safe_struct_field(plan, 'tEndNs', NaN));
+if ~(isfinite(tFast) && tFast > from1 && isfinite(tMid) && isfinite(tEnd) && tEnd > 0)
+    return;
+end
+
+to1 = align_stop_to_integer_points(from1, tFast, n1);
+tMid = max(tMid, to1 + n2);
+to2 = align_exclusive_stop_to_integer_points(to1, tMid, n2);
+from2 = first_point_after_inclusive_edge(to1, to2, n2);
+n3Estimate = ceil((1 - to2 / tEnd) * 11);
+if ~isfinite(n3Estimate)
+    n3Estimate = n3;
+end
+n3 = max(max(1, n3Estimate), n3);
+tEnd = max(tEnd, to2 + n3);
+to3 = align_exclusive_stop_to_integer_points(to2, tEnd, n3);
+from3 = first_point_after_inclusive_edge(to2, to3, n3);
+
+pts1 = linspace(from1, to1, n1);
+pts2 = linspace(from2, to2, n2);
+pts3 = linspace(from3, to3, n3);
+customPts = unique(enforce_integer_time_points([pts1 pts2 pts3]), 'stable');
+expectedN = n1 + n2 + n3;
+ok = numel(customPts) == expectedN && all(isfinite(customPts)) && all(abs(customPts - round(customPts)) < 1e-9);
+end
+
+function stopOut = align_exclusive_stop_to_integer_points(leftEdge, stopIn, nPts)
+leftEdge = round(leftEdge);
+if nPts < 1
+    stopOut = leftEdge;
+    return;
+end
+span = max(round(stopIn) - leftEdge, nPts);
+step = max(1, ceil(span / nPts));
+stopOut = leftEdge + step * nPts;
+end
+
+function firstPt = first_point_after_inclusive_edge(leftEdge, rightEdge, nPts)
+if nPts < 1
+    firstPt = round(rightEdge);
+    return;
+end
+step = (round(rightEdge) - round(leftEdge)) / nPts;
+firstPt = round(leftEdge) + step;
+end
+
+function seq = apply_late_time_points_to_sequence(seq, range, roughInfo, ctx)
+if ~isstruct(ctx) || ~isfield(ctx, 'addLateTimePoints') || ~logical(ctx.addLateTimePoints)
+    return;
+end
+if isfield(seq, 'SmartCustomSweepParam') && ~isempty(seq.SmartCustomSweepParam)
+    return;
+end
+seqName = normalize_to_char(safe_struct_field(seq, 'name', ''));
+if ~startsWith(seqName, 'T1_')
+    return;
+end
+if nargin < 3 || ~isstruct(roughInfo) || ~isfield(roughInfo, 't1RoughMs') || ~isfinite(roughInfo.t1RoughMs)
+    return;
+end
+
+t1Ns = double(roughInfo.t1RoughMs) * 1e6;
+if ~(isfinite(t1Ns) && t1Ns > 0)
+    return;
+end
+
+startNs = 0;
+if nargin >= 2 && numel(range) >= 1 && isfinite(range(1))
+    startNs = double(range(1));
+end
+extraRaw = startNs + [4 5 6] .* t1Ns;
+extra = enforce_integer_time_points(extraRaw);
+extra = extra(isfinite(extra) & extra >= 0);
+if numel(extra) ~= 3
+    return;
+end
+
+base = sequence_sweep_points(seq);
+custom = unique(enforce_integer_time_points([base(:).' extra(:).']), 'stable');
+
+seq.bSweep3 = 1;
+seq.bSweep3log = 0;
+seq.FROM3 = num2str(extra(1), '%.12g');
+seq.TO3 = num2str(extra(end), '%.12g');
+seq.SweepNPoints3 = '3';
+seq.SmartCustomSweepParam = custom;
+append_run_decision_event('add_late_time_points', sprintf('%s late time points added at %.12g, %.12g, %.12g ns', ...
+    seqName, extra(1), extra(2), extra(3)));
+end
+
+function pts = enforce_integer_time_points(pts)
+pts = double(pts);
+valid = isfinite(pts);
+pts(valid) = round(pts(valid));
+end
+
+function pts = sequence_sweep_points(seq)
+if isfield(seq, 'SmartCustomSweepParam') && ~isempty(seq.SmartCustomSweepParam)
+    pts = double(seq.SmartCustomSweepParam(:).');
+    pts = unique(pts, 'stable');
+    return;
+end
+
+from1 = str2double(normalize_to_char(safe_struct_field(seq, 'FROM1', '0')));
+to1 = str2double(normalize_to_char(safe_struct_field(seq, 'TO1', '0')));
+n1 = max(1, round(str2double(normalize_to_char(safe_struct_field(seq, 'SweepNPoints', '1')))));
+if isfinite(from1) && isfinite(to1)
+    pts = linspace(from1, to1, n1);
+else
+    pts = [];
+end
+
+if isfield(seq, 'bSweep2') && logical(normalize_to_numeric(seq.bSweep2, 0))
+    from2 = str2double(normalize_to_char(safe_struct_field(seq, 'FROM2', '')));
+    to2 = str2double(normalize_to_char(safe_struct_field(seq, 'TO2', '')));
+    n2 = max(1, round(str2double(normalize_to_char(safe_struct_field(seq, 'SweepNPoints2', '1')))));
+    if isfinite(from2) && isfinite(to2)
+        pts = [pts linspace(from2, to2, n2)]; %#ok<AGROW>
+    end
+end
+
+if isfield(seq, 'bSweep3') && logical(normalize_to_numeric(seq.bSweep3, 0))
+    from3 = str2double(normalize_to_char(safe_struct_field(seq, 'FROM3', '')));
+    to3 = str2double(normalize_to_char(safe_struct_field(seq, 'TO3', '')));
+    n3 = max(1, round(str2double(normalize_to_char(safe_struct_field(seq, 'SweepNPoints3', '1')))));
+    if isfinite(from3) && isfinite(to3)
+        pts = [pts linspace(from3, to3, n3)]; %#ok<AGROW>
+    end
+end
+pts = unique(pts, 'stable');
 end
 
 function seqName = resolve_family_sequence_name(ctx, family, transition)
@@ -3434,25 +4108,59 @@ if ~isempty(cmdText)
 end
 end
 
+function policy = read_final_t1_autostop_policy(cfg, hAuto)
+policy = struct( ...
+    'autoStopByRelErr', false, ...
+    'relErrThreshold', 0.05, ...
+    'minAverageForAutoStop', 3);
+
+if isfield(cfg, 'smart') && isfield(cfg.smart, 'finalT1') && isstruct(cfg.smart.finalT1)
+    src = cfg.smart.finalT1;
+    if isfield(src, 'autoStopByRelErr')
+        policy.autoStopByRelErr = logical(src.autoStopByRelErr);
+    end
+    if isfield(src, 'relErrThreshold') && isfinite(src.relErrThreshold)
+        policy.relErrThreshold = src.relErrThreshold;
+    end
+    if isfield(src, 'minAverageForAutoStop') && isfinite(src.minAverageForAutoStop)
+        policy.minAverageForAutoStop = max(1, round(src.minAverageForAutoStop));
+    end
+end
+
+if isfield(cfg, 'smart') && isfield(cfg.smart, 'ui') && ...
+        isfield(cfg.smart.ui, 'tags') && isfield(cfg.smart.ui.tags, 'finalT1') && ...
+        isstruct(cfg.smart.ui.tags.finalT1)
+    tags = cfg.smart.ui.tags.finalT1;
+    if isfield(tags, 'enable')
+        policy.autoStopByRelErr = logical(read_ui_numeric(hAuto, tags.enable, policy.autoStopByRelErr));
+    end
+    if isfield(tags, 'relErr')
+        policy.relErrThreshold = read_ui_numeric(hAuto, tags.relErr, policy.relErrThreshold);
+    end
+    if isfield(tags, 'minAverage')
+        policy.minAverageForAutoStop = read_ui_numeric(hAuto, tags.minAverage, policy.minAverageForAutoStop);
+    end
+end
+
+if ~isfinite(policy.relErrThreshold) || policy.relErrThreshold <= 0
+    policy.relErrThreshold = 0.05;
+end
+if ~isfinite(policy.minAverageForAutoStop) || policy.minAverageForAutoStop < 1
+    policy.minAverageForAutoStop = 3;
+end
+policy.minAverageForAutoStop = max(1, round(policy.minAverageForAutoStop));
+end
+
 function stoppedByAutoGui = run_one_sequence_core(seq, hMain, hAuto, hObject, eventdata, cfg, suffix, isRough)
 global gSaveDataAve gmSEQ
 
 isTrueT1 = isfield(seq, 'name') && ...
-    (strcmp(seq.name, 'T1_S00_S01_S10') || strcmp(seq.name, 'T1_S11_S1m1'));
-autoStopEnabled = false;
-autoStopThr = 0.05;
-autoStopMinAvg = 3;
-if isfield(cfg, 'smart') && isfield(cfg.smart, 'finalT1')
-    if isfield(cfg.smart.finalT1, 'autoStopByRelErr')
-        autoStopEnabled = logical(cfg.smart.finalT1.autoStopByRelErr);
-    end
-    if isfield(cfg.smart.finalT1, 'relErrThreshold') && isfinite(cfg.smart.finalT1.relErrThreshold)
-        autoStopThr = cfg.smart.finalT1.relErrThreshold;
-    end
-    if isfield(cfg.smart.finalT1, 'minAverageForAutoStop') && isfinite(cfg.smart.finalT1.minAverageForAutoStop)
-        autoStopMinAvg = max(1, round(cfg.smart.finalT1.minAverageForAutoStop));
-    end
-end
+    (strcmp(seq.name, 'T1_S00_S01_S10') || strcmp(seq.name, 'T1_S11_S1m1') || ...
+    strcmp(seq.name, 'T1_Sij_all'));
+finalT1Stop = read_final_t1_autostop_policy(cfg, hAuto);
+autoStopEnabled = finalT1Stop.autoStopByRelErr;
+autoStopThr = finalT1Stop.relErrThreshold;
+autoStopMinAvg = finalT1Stop.minAverageForAutoStop;
 gmSEQ.AutoStopT1ByRelErr = autoStopEnabled && isTrueT1 && ~isRough;
 gmSEQ.AutoStopT1RelErrThreshold = autoStopThr;
 gmSEQ.AutoStopT1MinAverage = autoStopMinAvg;
@@ -3939,6 +4647,39 @@ txt = sprintf('%s %s final range [%.6g, %.6g] ns%s', ...
     finalRange(1), finalRange(min(numel(finalRange), 2)), tail);
 end
 
+function txt = summarize_sij_all_range_decision(targetId, finalRange, roughInfo)
+sqMs = NaN;
+dqMs = NaN;
+chosen = '';
+if isstruct(roughInfo)
+    if isfield(roughInfo, 'sq') && isstruct(roughInfo.sq)
+        sqMs = safe_struct_field(roughInfo.sq, 't1RoughMs', NaN);
+    end
+    if isfield(roughInfo, 'dq') && isstruct(roughInfo.dq)
+        dqMs = safe_struct_field(roughInfo.dq, 't1RoughMs', NaN);
+    end
+    chosen = normalize_to_char(safe_struct_field(roughInfo, 'chosen', ''));
+end
+txt = sprintf('T1 Sij-all %s final range [%.6g, %.6g] ns, SQrough=%.6g ms, DQrough=%.6g ms, chosen=%s', ...
+    normalize_to_char(targetId), finalRange(1), finalRange(min(numel(finalRange), 2)), sqMs, dqMs, chosen);
+end
+
+function txt = summarize_sij_all_rough_tail(roughInfo)
+sqMs = NaN;
+dqMs = NaN;
+chosen = '';
+if isstruct(roughInfo)
+    if isfield(roughInfo, 'sq') && isstruct(roughInfo.sq)
+        sqMs = safe_struct_field(roughInfo.sq, 't1RoughMs', NaN);
+    end
+    if isfield(roughInfo, 'dq') && isstruct(roughInfo.dq)
+        dqMs = safe_struct_field(roughInfo.dq, 't1RoughMs', NaN);
+    end
+    chosen = normalize_to_char(safe_struct_field(roughInfo, 'chosen', ''));
+end
+txt = sprintf('roughSQ=%.3fms roughDQ=%.3fms chosen=%s', sqMs, dqMs, chosen);
+end
+
 function ctx = read_spot_report_context()
 ctx = struct();
 try
@@ -4147,10 +4888,19 @@ end
 
 function apply_sequence_to_main_gui(seq, handlesMain)
 global gmSEQ
+if isstruct(gmSEQ) && isfield(gmSEQ, 'SmartCustomSweepParam')
+    gmSEQ = rmfield(gmSEQ, 'SmartCustomSweepParam');
+end
+clear_unspecified_optional_sweep_rows(seq, handlesMain);
 fields = fieldnames(seq);
 for i = 1:numel(fields)
     fieldName = fields{i};
     value = seq.(fieldName);
+
+    if strcmp(fieldName, 'SmartCustomSweepParam')
+        gmSEQ.SmartCustomSweepParam = value;
+        continue;
+    end
 
     if strcmp(fieldName, 'name')
         handlesMain.sequence.Value = 1;
@@ -4166,6 +4916,17 @@ for i = 1:numel(fields)
     end
 
     set_control_value(handlesMain.(fieldName), value);
+end
+end
+
+function clear_unspecified_optional_sweep_rows(seq, handlesMain)
+optionalSweepControls = {'bSweep2', 'bSweep3'};
+for iCtrl = 1:numel(optionalSweepControls)
+    ctrlName = optionalSweepControls{iCtrl};
+    if isfield(seq, ctrlName) || ~isfield(handlesMain, ctrlName)
+        continue;
+    end
+    set_control_value(handlesMain.(ctrlName), 0);
 end
 end
 
@@ -4827,6 +5588,33 @@ entry.group = groupName;
 entry.family = normalize_to_char(family);
 entry.sequence = seqName;
 entry.spin = spinLabel;
+entry.saveString = extract_save_string_stem(gSaveDataAve);
+gmSEQ.AnalysisSaveString = entry.saveString;
+
+if ~isfield(gmSEQ, 'AnalysisEntries') || ~isstruct(gmSEQ.AnalysisEntries)
+    gmSEQ.AnalysisEntries = entry;
+else
+    gmSEQ.AnalysisEntries(end+1) = entry; %#ok<AGROW>
+end
+end
+
+function append_analysis_entry_for_sij_all(target)
+global gmSEQ gSaveDataAve
+if ~isstruct(target)
+    return;
+end
+nArg = extract_ave_number_from_run_file(gSaveDataAve);
+if ~isfinite(nArg)
+    return;
+end
+
+entry = struct();
+entry.date = current_date_string();
+entry.nArg = nArg;
+entry.group = map_group_to_analysis_token(safe_struct_field(target, 'group', ''));
+entry.family = 't1';
+entry.sequence = 'T1_Sij_all';
+entry.spin = 'all';
 entry.saveString = extract_save_string_stem(gSaveDataAve);
 gmSEQ.AnalysisSaveString = entry.saveString;
 

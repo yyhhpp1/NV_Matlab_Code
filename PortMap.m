@@ -17,6 +17,8 @@ switch what
         path = '169.254.215.80';
     case 'SG2 ip'
         path = '192.168.0.170';
+    case 'SG3 ip'
+        path = '192.168.0.210';
     case 'SG com'
         path='com7';
     case 'SG com 2'

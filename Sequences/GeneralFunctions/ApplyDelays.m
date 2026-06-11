@@ -27,8 +27,8 @@ MW2_Delay = 26;
 for i=1:numel(gmSEQ.CHN)
     if gmSEQ.CHN(i).PBN==PBDictionary('GreenAOM')
         gmSEQ.CHN(i).Delays=ones(1,2)*green_aom_delay;
-    elseif gmSEQ.CHN(i).PBN==PBDictionary('OrangeAOM')
-        gmSEQ.CHN(i).Delays=ones(1,2)*orange_aom_delay;
+%     elseif gmSEQ.CHN(i).PBN==PBDictionary('OrangeAOM')
+%         gmSEQ.CHN(i).Delays=ones(1,2)*orange_aom_delay;
     elseif gmSEQ.CHN(i).PBN==PBDictionary('RedAOM')
         gmSEQ.CHN(i).Delays=ones(1,2)*red_aom_delay;
     elseif gmSEQ.CHN(i).PBN==PBDictionary('ctr0')

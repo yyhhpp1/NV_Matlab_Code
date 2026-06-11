@@ -22,7 +22,8 @@ ctx = apply_zero_field_single_target_policy(ctx, cfg);
 if stop_requested(handlesAuto)
     return;
 end
-cfg.runtime.runSaveFolder = create_run_save_folder(cfg.paths.saveFolder, ctx.estimatedB_G);
+tSetK = read_current_t_setpoint_from_v3_context();
+cfg.runtime.runSaveFolder = create_run_save_folder(cfg.paths.saveFolder, ctx.estimatedB_G, tSetK);
 cleanupSave = onCleanup(@() save_end_of_run_snapshots(handlesMain, handlesAuto, cfg)); %#ok<NASGU>
 
 if isempty(ctx.targets)
@@ -786,8 +787,17 @@ seq.name = 'ODMR';
 seq.FROM1 = num2str(window.fromGHz, '%.6f');
 seq.TO1 = num2str(window.toGHz, '%.6f');
 seq.SweepNPoints = num2str(nPts);
-odmrPow = choose_odmr_power_for_window(window, ctx, cfg);
+intendedPow = choose_odmr_power_for_window(window, ctx, cfg);
+odmrPowerOffsetDb = get_cfg_numeric_with_default(cfg.smart.odmr, 'powerOffsetFromIntendedDb', -10);
+odmrPow = intendedPow + odmrPowerOffsetDb;
+if ~isfinite(odmrPow)
+    odmrPow = intendedPow;
+end
 seq.fixPow = num2str(odmrPow);
+fixedPiNs = get_cfg_numeric_with_default(cfg.smart.odmr, 'fixedPiNs', 200);
+if isfinite(fixedPiNs) && fixedPiNs > 0
+    seq.pi = num2str(round(fixedPiNs), '%.0f');
+end
 seq.Repeat = num2str(max(1, round(ctx.precal.odmr.repeat)));
 seq.Average = num2str(max(1, round(ctx.precal.odmr.average)));
 seq.useSG2 = 0;
@@ -1336,21 +1346,98 @@ else
     targetPiNs = ctx.precal.calipi.targetPiNs;
 end
 
-powerDbm = pick_power_from_pical_quadratic(pathName, label, freqGHz, basePow, targetPiNs, ctx, hMain, hAuto, hObject, eventdata, cfg);
-if ~isfinite(powerDbm)
-    safeMax = get_numeric_field_with_default(ctx.precal.calipi, 'maxSafePowerDbm', inf);
-    powerDbm = apply_p1_calibration_power_boost(basePow, label, cfg);
-    powerDbm = enforce_power_safety_cap(powerDbm, safeMax, 'PiCal fallback base power');
+safeMax = get_numeric_field_with_default(ctx.precal.calipi, 'maxSafePowerDbm', inf);
+safeMin = get_numeric_field_with_default(ctx.precal.calipi, 'minSafePowerDbm', -40);
+piMismatchNsThreshold = max(0, get_numeric_field_with_default(ctx.precal.calipi, 'piMismatchNsThreshold', 25));
+clipRescanMaxIter = max(0, round(get_numeric_field_with_default(ctx.precal.calipi, 'clipRescanMaxIter', 2)));
+clipRescanShiftDb = max(0.5, get_numeric_field_with_default(ctx.precal.calipi, 'clipRescanShiftDb', 4));
+
+calipiCfgLocal = ctx.precal.calipi;
+attemptMax = 1 + clipRescanMaxIter;
+for iAttempt = 1:attemptMax
+    ctxAttempt = ctx;
+    ctxAttempt.precal.calipi = calipiCfgLocal;
+
+    powerDbm = pick_power_from_pical_quadratic(pathName, label, freqGHz, basePow, targetPiNs, ...
+        ctxAttempt, hMain, hAuto, hObject, eventdata, cfg);
+    if ~isfinite(powerDbm)
+        powerDbm = apply_p1_calibration_power_boost(basePow, label, cfg);
+        powerDbm = enforce_power_safety_cap(powerDbm, safeMax, 'PiCal fallback base power');
+    end
+
+    % Step 2: run standard Rabi at the fitted power to get final pi time.
+    [piNs, rabiFreqMHz] = run_rabi_at_fixed_power(pathName, label, freqGHz, powerDbm, ...
+        ctxAttempt, hMain, hAuto, hObject, eventdata, cfg);
+    if ~isfinite(piNs)
+        warning('SmartT1:PiCalRabiFitFailed', ...
+            'Rabi fit after PiCal failed for %s/%s at %.6f GHz (P=%.2f dBm).', ...
+            pathName, label, freqGHz, powerDbm);
+        return;
+    end
+
+    if ~(isfinite(targetPiNs) && targetPiNs > 0 && isfinite(piMismatchNsThreshold) && piMismatchNsThreshold > 0)
+        break;
+    end
+
+    piErrNs = piNs - targetPiNs;
+    piErrAbsNs = abs(piErrNs);
+    isAtMaxClip = isfinite(safeMax) && (powerDbm >= (safeMax - 1e-6));
+    scanMinDbm = get_numeric_field_with_default(calipiCfgLocal, 'powerStartDbm', NaN);
+    isAtScanMin = isfinite(scanMinDbm) && isfinite(powerDbm) && (powerDbm <= (scanMinDbm + 1e-6));
+    isAtMinClip = (isfinite(safeMin) && (powerDbm <= (safeMin + 1e-6))) || isAtScanMin;
+
+    if isAtMaxClip && (piErrNs > piMismatchNsThreshold)
+        disp(sprintf('[SmartT1] PiCal mismatch accepted for %s/%s: pi=%.2f ns > target=%.2f ns at max clip %.2f dBm (hard cutoff).', ...
+            pathName, label, piNs, targetPiNs, safeMax));
+        break;
+    end
+
+    needClipRescanMax = isAtMaxClip && (piErrNs < -piMismatchNsThreshold);
+    needFastNonMinRescan = (~isAtMinClip) && (piErrNs < -piMismatchNsThreshold);
+    if ~(needClipRescanMax || needFastNonMinRescan)
+        if piErrAbsNs > piMismatchNsThreshold
+            warning('SmartT1:PiCalPiMismatch', ...
+                'PiCal+Rabi mismatch for %s/%s at %.6f GHz: target=%.2f ns, measured=%.2f ns (|err|=%.2f ns, P=%.2f dBm).', ...
+                pathName, label, freqGHz, targetPiNs, piNs, piErrAbsNs, powerDbm);
+        end
+        break;
+    end
+
+    % Fast-pi (at max clip, or not at minimum) => PiCal sweep likely too high in power.
+    if iAttempt >= attemptMax
+        warning('SmartT1:PiCalClipRescanExhausted', ...
+            ['PiCal fast-pi rescan exhausted for %s/%s at %.6f GHz. ', ...
+            'target=%.2f ns, measured=%.2f ns, P=%.2f dBm (scanMin=%.2f dBm, safeMin=%.2f dBm, safeMax=%.2f dBm).'], ...
+            pathName, label, freqGHz, targetPiNs, piNs, powerDbm, scanMinDbm, safeMin, safeMax);
+        break;
+    end
+
+    [newStart, newStop, updated] = shift_calipi_power_window_down( ...
+        calipiCfgLocal, targetPiNs, piNs, safeMin, safeMax, clipRescanShiftDb);
+    if ~updated
+        warning('SmartT1:PiCalClipRescanNotUpdated', ...
+            ['PiCal fast-pi policy could not update sweep range for %s/%s at %.6f GHz. ', ...
+            'target=%.2f ns, measured=%.2f ns, current range [%.2f, %.2f] dBm.'], ...
+            pathName, label, freqGHz, targetPiNs, piNs, ...
+            get_numeric_field_with_default(calipiCfgLocal, 'powerStartDbm', NaN), ...
+            get_numeric_field_with_default(calipiCfgLocal, 'powerStopDbm', NaN));
+        break;
+    end
+
+    oldStart = get_numeric_field_with_default(calipiCfgLocal, 'powerStartDbm', NaN);
+    oldStop = get_numeric_field_with_default(calipiCfgLocal, 'powerStopDbm', NaN);
+    calipiCfgLocal.powerStartDbm = newStart;
+    calipiCfgLocal.powerStopDbm = newStop;
+    if needClipRescanMax
+        clipReason = 'max-clip';
+    else
+        clipReason = 'fast-not-min';
+    end
+    disp(sprintf(['[SmartT1] PiCal fast-pi (%s) for %s/%s: target=%.2f ns, measured=%.2f ns, ', ...
+        'rescan range [%.2f, %.2f] -> [%.2f, %.2f] dBm (attempt %d/%d).'], ...
+        clipReason, pathName, label, targetPiNs, piNs, oldStart, oldStop, newStart, newStop, iAttempt + 1, attemptMax));
 end
 
-% Step 2: run standard Rabi at the fitted power to get final pi time.
-[piNs, rabiFreqMHz] = run_rabi_at_fixed_power(pathName, label, freqGHz, powerDbm, ctx, hMain, hAuto, hObject, eventdata, cfg);
-if ~isfinite(piNs)
-    warning('SmartT1:PiCalRabiFitFailed', ...
-        'Rabi fit after PiCal failed for %s/%s at %.6f GHz (P=%.2f dBm).', ...
-        pathName, label, freqGHz, powerDbm);
-    return;
-end
 save_calipi_memory_entry(pathName, freqGHz, powerDbm, piNs, ctx, cfg);
 if isfinite(targetPiNs)
     disp(sprintf('[SmartT1] PiCal+Rabi result for %s/%s: targetPi=%.2f ns, pi=%.2f ns at P=%.2f dBm', ...
@@ -1358,6 +1445,69 @@ if isfinite(targetPiNs)
 else
     disp(sprintf('[SmartT1] PiCal+Rabi result for %s/%s: pi=%.2f ns at P=%.2f dBm', ...
         pathName, label, piNs, powerDbm));
+end
+
+function [newStart, newStop, updated] = shift_calipi_power_window_down(calipiCfg, targetPiNs, piNs, safeMin, safeMax, baseShiftDb)
+newStart = get_numeric_field_with_default(calipiCfg, 'powerStartDbm', NaN);
+newStop = get_numeric_field_with_default(calipiCfg, 'powerStopDbm', NaN);
+updated = false;
+if ~(isfinite(newStart) && isfinite(newStop))
+    return;
+end
+if newStop < newStart
+    t = newStart;
+    newStart = newStop;
+    newStop = t;
+end
+
+span = newStop - newStart;
+if ~isfinite(span) || span <= 0
+    span = max(2, abs(baseShiftDb));
+end
+
+shiftFromPi = baseShiftDb;
+if isfinite(targetPiNs) && targetPiNs > 0 && isfinite(piNs) && piNs > 0
+    shiftFromPi = max(baseShiftDb, 20 * log10(targetPiNs / piNs));
+end
+shiftDown = max(0.5, shiftFromPi);
+
+startCand = newStart - shiftDown;
+stopCand = newStop - shiftDown;
+
+% Keep a non-zero gap below max cap when possible so next fitted power
+% is not immediately re-clipped.
+if isfinite(safeMax)
+    upperLimit = safeMax - 0.1;
+    if ~isfinite(upperLimit)
+        upperLimit = safeMax;
+    end
+    if stopCand > upperLimit
+        delta = stopCand - upperLimit;
+        startCand = startCand - delta;
+        stopCand = stopCand - delta;
+    end
+end
+
+startCand = enforce_power_floor_cap(startCand, safeMin, 'PiCal clip-rescan sweep start');
+stopCand = enforce_power_floor_cap(stopCand, safeMin, 'PiCal clip-rescan sweep stop');
+if isfinite(safeMax)
+    startCand = min(startCand, safeMax);
+    stopCand = min(stopCand, safeMax);
+end
+
+if stopCand <= startCand + 1e-6
+    stopCand = startCand + max(0.5, 0.25 * span);
+    if isfinite(safeMax)
+        stopCand = min(stopCand, safeMax);
+    end
+end
+if stopCand <= startCand + 1e-6
+    return;
+end
+
+updated = (abs(startCand - newStart) > 1e-6) || (abs(stopCand - newStop) > 1e-6);
+newStart = startCand;
+newStop = stopCand;
 end
 end
 
@@ -2677,14 +2827,16 @@ if isRough
     fileNamePrefix = 'Rough_T1_';
 end
 
+savedImagePath = '';
 if ~isempty(gSaveDataAve) && isstruct(gSaveDataAve) && isfield(gSaveDataAve, 'file')
     if stoppedByAutoGui
         statusSuffix = ['. Sequence stopped by Auto GUI' suffix];
     else
         statusSuffix = ['. Current sequence is finished.' suffix];
     end
-    save_main_figure(hMain, hAuto, gSaveDataAve.file, cfg, statusSuffix, fileNamePrefix);
+    savedImagePath = save_main_figure(hMain, hAuto, gSaveDataAve.file, cfg, statusSuffix, fileNamePrefix);
 end
+log_notion_sequence_event(seq, suffix, savedImagePath, stoppedByAutoGui);
 
 if stoppedByAutoGui
     return;
@@ -2803,7 +2955,8 @@ if isprop(h, 'Value')
 end
 end
 
-function save_main_figure(handlesMain, handlesAuto, runFileName, cfg, statusSuffix, fileNamePrefix)
+function imagePath = save_main_figure(handlesMain, handlesAuto, runFileName, cfg, statusSuffix, fileNamePrefix)
+imagePath = '';
 saveFolder = cfg.paths.saveFolder;
 if isfield(cfg, 'runtime') && isstruct(cfg.runtime) && ...
         isfield(cfg.runtime, 'runSaveFolder') && ~isempty(cfg.runtime.runSaveFolder)
@@ -2834,10 +2987,182 @@ imagePath = fullfile(saveFolder, imageName);
 mainFig = resolve_figure_handle(handlesMain, {'figure1', 'output'});
 if isempty(mainFig) || ~isgraphics(mainFig, 'figure')
     warning('SmartT1:SaveMainFigureHandleMissing', 'Cannot resolve main GUI figure handle for saving.');
+    imagePath = '';
     return;
 end
 drawnow;
 imwrite(getframe(mainFig).cdata, imagePath);
+end
+
+function log_notion_sequence_event(seq, suffix, imagePath, stoppedByAutoGui)
+global gSaveDataAve gmSEQ
+
+ctx = [];
+try
+    if isappdata(0, 'V3_1_NOTION_UPLOAD_CONTEXT')
+        ctx = getappdata(0, 'V3_1_NOTION_UPLOAD_CONTEXT');
+    end
+catch
+    ctx = [];
+end
+if ~isstruct(ctx) || ~isfield(ctx, 'enabled') || ~logical(ctx.enabled)
+    return;
+end
+
+spoolPath = strtrim(char(string(safe_struct_field(ctx, 'spoolPath', ''))));
+if isempty(spoolPath)
+    return;
+end
+queueLogPath = strtrim(char(string(safe_struct_field(ctx, 'queueLogPath', ''))));
+
+seqName = '';
+if isstruct(seq) && isfield(seq, 'name')
+    seqName = normalize_to_char(seq.name);
+end
+if isempty(seqName) && isstruct(gmSEQ) && isfield(gmSEQ, 'name')
+    seqName = normalize_to_char(gmSEQ.name);
+end
+
+saveString = '';
+if isstruct(gSaveDataAve) && isfield(gSaveDataAve, 'file')
+    saveString = extract_save_string_stem(gSaveDataAve);
+elseif isstruct(gmSEQ) && isfield(gmSEQ, 'AnalysisSaveString')
+    saveString = normalize_to_char(gmSEQ.AnalysisSaveString);
+end
+
+fit = struct();
+fit.esrFreqAllMHz = [];
+fit.rabiPiNs = NaN;
+fit.rabiFreqMHz = NaN;
+fit.t1Ms = NaN;
+fit.t1RelErr = NaN;
+fit.t1Model = '';
+if isstruct(gmSEQ)
+    if isfield(gmSEQ, 'ESRFitFreqAllMHz')
+        fit.esrFreqAllMHz = safe_numeric_row(gmSEQ.ESRFitFreqAllMHz);
+    end
+    if isfield(gmSEQ, 'RabiFitPi')
+        fit.rabiPiNs = normalize_to_numeric(gmSEQ.RabiFitPi, NaN);
+    end
+    if isfield(gmSEQ, 'RabiFitFreqMHz')
+        fit.rabiFreqMHz = normalize_to_numeric(gmSEQ.RabiFitFreqMHz, NaN);
+    end
+    if isfield(gmSEQ, 'T1FitT1')
+        fit.t1Ms = normalize_to_numeric(gmSEQ.T1FitT1, NaN);
+    end
+    if isfield(gmSEQ, 'T1FitRelErr')
+        fit.t1RelErr = normalize_to_numeric(gmSEQ.T1FitRelErr, NaN);
+    end
+    if isfield(gmSEQ, 'T1FitModelUsed')
+        fit.t1Model = normalize_to_char(gmSEQ.T1FitModelUsed);
+    end
+end
+
+payload = struct();
+payload.sequence_name = seqName;
+payload.status = ternary_text(stoppedByAutoGui, 'stopped', 'finished');
+payload.suffix = normalize_to_char(suffix);
+payload.save_string = saveString;
+payload.figure_path = normalize_to_char(imagePath);
+payload.tb_step_index = normalize_to_numeric(safe_struct_field(ctx, 'tbStepIndex', NaN), NaN);
+payload.b_item_index = normalize_to_numeric(safe_struct_field(ctx, 'bItemIndex', NaN), NaN);
+payload.target_B_kG = normalize_to_numeric(safe_struct_field(ctx, 'targetBkG', NaN), NaN);
+payload.B_set_G = normalize_to_numeric(safe_struct_field(ctx, 'bEstimateG', NaN), NaN);
+payload.B_meas_G = normalize_to_numeric(safe_struct_field(gmSEQ, 'AnalysisMeasuredB', NaN), NaN);
+payload.T_K = normalize_to_numeric(safe_struct_field(ctx, 'tSetK', NaN), NaN);
+payload.run_root = normalize_to_char(safe_struct_field(ctx, 'runRoot', ''));
+payload.fit = fit;
+
+ev = struct();
+ev.op = 'sequence_finished';
+ev.parentPageKey = normalize_to_char(safe_struct_field(ctx, 'parentPageKey', ''));
+ev.timestamp = datestr(now, 'yyyy-mm-dd HH:MM:SS.FFF');
+ev.payload = payload;
+
+[okSpool, msgSpool] = append_jsonl_event(spoolPath, ev);
+if okSpool
+    append_notion_queue_log_row(queueLogPath, 'queued', 'sequence_finished', seqName, saveString, payload.figure_path, 'queued by MATLAB');
+else
+    append_notion_queue_log_row(queueLogPath, 'error', 'sequence_finished', seqName, saveString, payload.figure_path, msgSpool);
+end
+end
+
+function [ok, msg] = append_jsonl_event(spoolPath, ev)
+ok = false;
+msg = '';
+[folderPath, ~, ~] = fileparts(spoolPath);
+if ~isempty(folderPath) && exist(folderPath, 'dir') ~= 7
+    [mkOk, mkMsg, mkId] = mkdir(folderPath);
+    if ~mkOk
+        msg = sprintf('Cannot create spool folder "%s": %s (%s)', folderPath, mkMsg, mkId);
+        return;
+    end
+end
+[fid, fopenMsg] = fopen(spoolPath, 'a');
+if fid < 0
+    msg = sprintf('Cannot open spool "%s": %s', spoolPath, fopenMsg);
+    return;
+end
+cleanupObj = onCleanup(@() fclose(fid)); %#ok<NASGU>
+fprintf(fid, '%s\n', jsonencode(ev));
+ok = true;
+end
+
+function append_notion_queue_log_row(queueLogPath, status, op, seqName, saveString, figurePath, msg)
+if isempty(queueLogPath)
+    return;
+end
+[folderPath, ~, ~] = fileparts(queueLogPath);
+if ~isempty(folderPath) && exist(folderPath, 'dir') ~= 7
+    mkdir(folderPath);
+end
+needHeader = exist(queueLogPath, 'file') ~= 2;
+[fid, fopenMsg] = fopen(queueLogPath, 'a');
+if fid < 0
+    warning('SmartT1:NotionQueueLogOpenFailed', 'Cannot open queue log "%s": %s', queueLogPath, fopenMsg);
+    return;
+end
+cleanupObj = onCleanup(@() fclose(fid)); %#ok<NASGU>
+if needHeader
+    fprintf(fid, 'timestamp,status,op,sequence_name,save_string,figure_path,message\n');
+end
+line = strjoin({ ...
+    csv_quote(datestr(now, 'yyyy-mm-dd HH:MM:SS.FFF')), ...
+    csv_quote(normalize_to_char(status)), ...
+    csv_quote(normalize_to_char(op)), ...
+    csv_quote(normalize_to_char(seqName)), ...
+    csv_quote(normalize_to_char(saveString)), ...
+    csv_quote(normalize_to_char(figurePath)), ...
+    csv_quote(normalize_to_char(msg))}, ',');
+fprintf(fid, '%s\n', line);
+end
+
+function out = csv_quote(token)
+raw = normalize_to_char(token);
+raw = strrep(raw, '"', '""');
+out = ['"' raw '"'];
+end
+
+function out = safe_numeric_row(v)
+if isempty(v)
+    out = [];
+    return;
+end
+try
+    vv = double(v(:)).';
+    vv = vv(isfinite(vv));
+    out = vv;
+catch
+    out = [];
+end
+end
+
+function out = ternary_text(cond, a, b)
+if logical(cond)
+    out = a;
+else
+    out = b;
+end
 end
 
 function save_end_of_run_snapshots(handlesMain, handlesAuto, cfg)
@@ -2925,12 +3250,38 @@ val = strrep(val, '.', 'p');
 tag = [val 'G'];
 end
 
-function runFolder = create_run_save_folder(baseFolder, estimatedB_G)
+function tag = format_t_set_tag(T_K)
+if ~isfinite(T_K)
+    tag = 'NAK';
+    return;
+end
+val = num2str(T_K, '%.2f');
+val = strrep(val, '-', 'm');
+val = strrep(val, '.', 'p');
+tag = [val 'K'];
+end
+
+function T_K = read_current_t_setpoint_from_v3_context()
+T_K = NaN;
+try
+    if isappdata(0, 'V3_1_NOTION_UPLOAD_CONTEXT')
+        ctxV3 = getappdata(0, 'V3_1_NOTION_UPLOAD_CONTEXT');
+        T_K = normalize_to_numeric(safe_struct_field(ctxV3, 'tSetK', NaN), NaN);
+    end
+catch
+    T_K = NaN;
+end
+end
+
+function runFolder = create_run_save_folder(baseFolder, estimatedB_G, tSetK)
 if nargin < 1 || isempty(baseFolder)
     baseFolder = pwd;
 end
 if nargin < 2
     estimatedB_G = NaN;
+end
+if nargin < 3
+    tSetK = NaN;
 end
 if ~exist(baseFolder, 'dir')
     mkdir(baseFolder);
@@ -2938,7 +3289,12 @@ end
 
 stamp = datestr(now, 'yyyymmdd_HHMMSS');
 bTag = format_b_est_tag(estimatedB_G);
-runFolder = fullfile(baseFolder, ['Run_' bTag '_' stamp]);
+if isfinite(tSetK)
+    tTag = format_t_set_tag(tSetK);
+    runFolder = fullfile(baseFolder, ['Run_' bTag '_' tTag '_' stamp]);
+else
+    runFolder = fullfile(baseFolder, ['Run_' bTag '_' stamp]);
+end
 if exist(runFolder, 'dir')
     k = 1;
     while exist([runFolder '_' num2str(k)], 'dir')
@@ -3137,6 +3493,7 @@ if ~isfield(gmSEQ, 'AnalysisEntries') || ~isstruct(gmSEQ.AnalysisEntries)
 else
     gmSEQ.AnalysisEntries(end+1) = entry; %#ok<AGROW>
 end
+end
 
 function out = extract_save_string_stem(gSaveDataAve)
 out = '';
@@ -3175,7 +3532,6 @@ try
     end
 catch
     nArg = NaN;
-end
 end
 end
 

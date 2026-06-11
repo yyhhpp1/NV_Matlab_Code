@@ -1,9 +1,7 @@
-logFile = 'closedloop_scan_log_20260102_131110.csv';
+logFile = 'closedloop_scan_log_20260409_164328.csv';
 
-map_x = [-80, -20];
-map_y = [-20, 80];
-map_x = map_x * 3/2;
-map_y = map_y * 3/2;
+map_x = [-100, -10];
+map_y = [-10, 100];
 
 stitch_multiscan(logFile, map_x, map_y)
 

@@ -59,6 +59,10 @@ if ~valid
     return;
 end
 
+[connEffInit, respEffInit] = effective_comm_timeouts(cfg);
+vlog(cfg, 'Start: target=%.6g K, maxWait=%.6g s, poll=%.6g s, hold=%.6g s, stopGranularity=%.6g s, commTimeout(connect=%.6g s,response=%.6g s)', ...
+    TtargetK, cfg.maxWaitSec, cfg.pollSec, cfg.holdSec, cfg.stopWaitGranularitySec, connEffInit, respEffInit);
+
 [stopNow, stopWhy] = is_stop_requested_local(cfg);
 if stopNow
     message = sprintf('Stop requested before temperature change: %s', stopWhy);
@@ -67,9 +71,14 @@ if stopNow
     return;
 end
 
+[connEff, respEff] = effective_comm_timeouts(cfg);
+vlog(cfg, 'Magnet gate precheck...');
 [gateOk, gateInfo, gateMsg] = mag_z_gate_precheck(cfg.magIp, struct( ...
     'port', cfg.magPort, ...
-    'timeoutSec', cfg.magTimeoutSec));
+    'timeoutSec', cfg.magTimeoutSec, ...
+    'requirePsZero', cfg.magGateRequirePsZero, ...
+    'allowPausedStateWithPsOff', cfg.magGateAllowPausedStateWithPsOff, ...
+    'pausedCurrentAbsTol', cfg.magGatePausedCurrentAbsTol));
 info.magGateStart = gateInfo;
 if ~gateOk
     message = sprintf('Magnet pre-check gate failed: %s', gateMsg);
@@ -77,7 +86,10 @@ if ~gateOk
     info.endedAt = now_stamp();
     return; % keep heater unchanged by policy
 end
+vlog(cfg, 'Magnet gate OK: %s', gateMsg);
 
+[connEff, respEff] = effective_comm_timeouts(cfg);
+vlog(cfg, 'Pre-check CH:3 read (effective timeouts connect=%.6g s, response=%.6g s)...', connEff, respEff);
 [okT3pre, T3pre, t3pre, msgT3pre] = read_channel_with_retry(cfg.tcIp, 3, cfg, 'readCh3Failures');
 if ~okT3pre
     message = sprintf('Pre-check CH:3 read failed: %s', msgT3pre);
@@ -90,6 +102,7 @@ info.precheck.T3_time = t3pre;
 info.precheck.tempGateOk = (T3pre <= cfg.T_safe_max);
 
 if T3pre > cfg.T_safe_max
+    vlog(cfg, 'Pre-check CH:3=%.6g K exceeds T_safe_max=%.6g K, turning heater OFF.', T3pre, cfg.T_safe_max);
     [~, offMsg] = heater_off_with_retry(cfg.tcIp, cfg);
     info.heaterOffIssued = true;
     message = sprintf('Pre-check CH:3 above T_safe_max (%.6g K > %.6g K). Heater OFF. %s', ...
@@ -99,8 +112,16 @@ if T3pre > cfg.T_safe_max
     return;
 end
 
+[connEff, respEff] = effective_comm_timeouts(cfg);
+vlog(cfg, 'Heater ON command (effective timeouts connect=%.6g s, response=%.6g s)...', connEff, respEff);
 [okOn, onMsg] = heater_on_with_retry(cfg.tcIp, TtargetK, cfg);
 if ~okOn
+    if is_stop_message(onMsg)
+        message = sprintf('Stop requested before heater-ON was confirmed. Heater state preserved. (%s)', onMsg);
+        info.abortReason = message;
+        info.endedAt = now_stamp();
+        return;
+    end
     [~, offMsg] = heater_off_with_retry(cfg.tcIp, cfg);
     info.heaterOffIssued = true;
     message = sprintf('Failed to enable heater control: %s. %s', onMsg, offMsg);
@@ -109,15 +130,14 @@ if ~okOn
     return;
 end
 info.heaterOnIssued = true;
+vlog(cfg, 'Heater ON acknowledged. Enter stabilization loop.');
 
 tStart = tic;
 tInTol = NaN;
 while toc(tStart) <= cfg.maxWaitSec
     [stopNow, stopWhy] = is_stop_requested_local(cfg);
     if stopNow
-        [~, offMsg] = heater_off_with_retry(cfg.tcIp, cfg);
-        info.heaterOffIssued = true;
-        message = sprintf('Stop requested during temperature stabilization. Heater OFF. %s (%s)', offMsg, stopWhy);
+        message = sprintf('Stop requested during temperature stabilization. Heater state preserved. (%s)', stopWhy);
         info.abortReason = message;
         info.endedAt = now_stamp();
         return;
@@ -125,6 +145,12 @@ while toc(tStart) <= cfg.maxWaitSec
 
     [okT8, T8, t8, msgT8] = read_channel_with_retry(cfg.tcIp, 8, cfg, 'readCh8Failures');
     if ~okT8
+        if is_stop_message(msgT8)
+            message = sprintf('Stop requested during CH:8 read. Heater state preserved. (%s)', msgT8);
+            info.abortReason = message;
+            info.endedAt = now_stamp();
+            return;
+        end
         [~, offMsg] = heater_off_with_retry(cfg.tcIp, cfg);
         info.heaterOffIssued = true;
         message = sprintf('Runtime CH:8 read failed after retries: %s. %s', msgT8, offMsg);
@@ -135,6 +161,12 @@ while toc(tStart) <= cfg.maxWaitSec
 
     [okT3, T3, t3, msgT3] = read_channel_with_retry(cfg.tcIp, 3, cfg, 'readCh3Failures');
     if ~okT3
+        if is_stop_message(msgT3)
+            message = sprintf('Stop requested during CH:3 read. Heater state preserved. (%s)', msgT3);
+            info.abortReason = message;
+            info.endedAt = now_stamp();
+            return;
+        end
         [~, offMsg] = heater_off_with_retry(cfg.tcIp, cfg);
         info.heaterOffIssued = true;
         message = sprintf('Runtime CH:3 read failed after retries: %s. %s', msgT3, offMsg);
@@ -149,6 +181,15 @@ while toc(tStart) <= cfg.maxWaitSec
     info.final.T8_time = t8;
     info.final.T3_K = T3;
     info.final.T3_time = t3;
+    elapsed = toc(tStart);
+    dT = abs(T8 - TtargetK);
+    if isnan(tInTol)
+        holdNow = 0;
+    else
+        holdNow = toc(tInTol);
+    end
+    vlog(cfg, 'Loop: t=%.3f/%.3f s, T8=%.6g K (|dT|=%.6g, tol=%.6g), T3=%.6g K, inTolHold=%.3f/%.3f s', ...
+        elapsed, cfg.maxWaitSec, T8, dT, cfg.T_tol, T3, holdNow, cfg.holdSec);
 
     if T3 > cfg.T_safe_max
         [~, offMsg] = heater_off_with_retry(cfg.tcIp, cfg);
@@ -177,9 +218,7 @@ while toc(tStart) <= cfg.maxWaitSec
 
     [stopDuringSleep, stopWhySleep] = sleep_with_stop_check(max(0.01, cfg.pollSec), cfg);
     if stopDuringSleep
-        [~, offMsg] = heater_off_with_retry(cfg.tcIp, cfg);
-        info.heaterOffIssued = true;
-        message = sprintf('Stop requested during temperature wait. Heater OFF. %s (%s)', offMsg, stopWhySleep);
+        message = sprintf('Stop requested during temperature wait. Heater state preserved. (%s)', stopWhySleep);
         info.abortReason = message;
         info.endedAt = now_stamp();
         return;
@@ -203,9 +242,12 @@ info.endedAt = now_stamp();
                 errRead = sprintf('Stop requested: %s', stopWhyLocal);
                 return;
             end
+            [connEffLocal, respEffLocal] = effective_comm_timeouts(cfgLocal);
             readCfg = struct( ...
-                'connectTimeoutSec', cfgLocal.tcConnectTimeoutSec, ...
-                'responseTimeoutSec', cfgLocal.tcResponseTimeoutSec);
+                'connectTimeoutSec', connEffLocal, ...
+                'responseTimeoutSec', respEffLocal);
+            vlog(cfgLocal, 'Read CH:%d attempt %d/%d (timeouts connect=%.6g s, response=%.6g s)', ...
+                ch, k, cfgLocal.commRetryCount, connEffLocal, respEffLocal);
             [ok1, t1, tdt, msg1] = bf_tc_read_latest_channel(tcIp, ch, cfgLocal.lookbackMin, readCfg);
             if ok1
                 okRead = true;
@@ -233,13 +275,22 @@ info.endedAt = now_stamp();
     function [okOnLocal, msgOn] = heater_on_with_retry(tcIp, targetK, cfgLocal)
         okOnLocal = false;
         msgOn = 'unknown';
-        hcfg = struct('setpointK', targetK, 'pidP', cfgLocal.pidP, 'pidI', cfgLocal.pidI, 'pidD', cfgLocal.pidD);
+        [connEffLocal, respEffLocal] = effective_comm_timeouts(cfgLocal);
+        hcfg = struct( ...
+            'setpointK', targetK, ...
+            'pidP', cfgLocal.pidP, ...
+            'pidI', cfgLocal.pidI, ...
+            'pidD', cfgLocal.pidD, ...
+            'connectTimeoutSec', connEffLocal, ...
+            'responseTimeoutSec', respEffLocal);
         for k = 1:cfgLocal.commRetryCount
             [stopNowLocal, stopWhyLocal] = is_stop_requested_local(cfgLocal);
             if stopNowLocal
                 msgOn = sprintf('Stop requested: %s', stopWhyLocal);
                 return;
             end
+            vlog(cfgLocal, 'Heater ON attempt %d/%d (timeouts connect=%.6g s, response=%.6g s)', ...
+                k, cfgLocal.commRetryCount, connEffLocal, respEffLocal);
             [okH, msgH] = bf_tc_set_heater4(tcIp, true, hcfg);
             if okH
                 okOnLocal = true;
@@ -261,8 +312,12 @@ info.endedAt = now_stamp();
     function [okOffLocal, msgOff] = heater_off_with_retry(tcIp, cfgLocal)
         okOffLocal = false;
         msgOff = 'Heater OFF command failed.';
+        [connEffLocal, respEffLocal] = effective_comm_timeouts(cfgLocal);
+        hcfgOff = struct('connectTimeoutSec', connEffLocal, 'responseTimeoutSec', respEffLocal);
         for k = 1:cfgLocal.commRetryCount
-            [okH, msgH] = bf_tc_set_heater4(tcIp, false, struct());
+            vlog(cfgLocal, 'Heater OFF attempt %d/%d (timeouts connect=%.6g s, response=%.6g s)', ...
+                k, cfgLocal.commRetryCount, connEffLocal, respEffLocal);
+            [okH, msgH] = bf_tc_set_heater4(tcIp, false, hcfgOff);
             if okH
                 okOffLocal = true;
                 msgOff = 'Heater OFF command accepted.';
@@ -271,7 +326,11 @@ info.endedAt = now_stamp();
             info.retryStats.heaterOffFailures = info.retryStats.heaterOffFailures + 1;
             msgOff = msgH;
             if k < cfgLocal.commRetryCount
-                pause(max(0, cfgLocal.commRetryBackoffSec));
+                [stopBackoff, stopWhyBackoff] = sleep_with_stop_check(max(0, cfgLocal.commRetryBackoffSec), cfgLocal);
+                if stopBackoff
+                    msgOff = sprintf('Stop requested: %s', stopWhyBackoff);
+                    return;
+                end
             end
         end
     end
@@ -316,33 +375,73 @@ info.endedAt = now_stamp();
         end
         t0 = tic;
         while toc(t0) < sec
+            try
+                drawnow;
+            catch
+            end
             [stopNowLocal, stopWhyLocal] = is_stop_requested_local(cfgLocal);
             if stopNowLocal
                 return;
             end
             remSec = sec - toc(t0);
-            pause(min(0.1, max(0.01, remSec)));
+            pause(min(max(0.005, cfgLocal.stopWaitGranularitySec), max(0.005, remSec)));
+        end
+    end
+
+    function [connectSec, responseSec] = effective_comm_timeouts(cfgLocal)
+        connectSec = cfgLocal.tcConnectTimeoutSec;
+        responseSec = cfgLocal.tcResponseTimeoutSec;
+        if isfield(cfgLocal, 'stopCheckEnabled') && logical(cfgLocal.stopCheckEnabled)
+            cap = cfgLocal.commMaxBlockSecWhenStop;
+            if isfinite(cap) && cap > 0
+                connectSec = min(connectSec, cap);
+                responseSec = min(responseSec, cap);
+            end
+        end
+    end
+
+    function tf = is_stop_message(msgIn)
+        tf = contains(lower(char(string(msgIn))), 'stop requested');
+    end
+
+    function vlog(cfgLocal, fmt, varargin)
+        if isfield(cfgLocal, 'verbose') && logical(cfgLocal.verbose)
+            fprintf('[set_temperature_safe] %s\n', sprintf(fmt, varargin{:}));
         end
     end
 end
 
 function cfg = apply_defaults(cfg)
-cfg = set_default(cfg, 'lookbackMin', 5);
-cfg = set_default(cfg, 'commRetryCount', 3);
-cfg = set_default(cfg, 'commRetryBackoffSec', 0.5);
-cfg = set_default(cfg, 'magPort', 7185);
-cfg = set_default(cfg, 'magTimeoutSec', 3);
-cfg = set_default(cfg, 'tcConnectTimeoutSec', 20);
-cfg = set_default(cfg, 'tcResponseTimeoutSec', 30);
-cfg = set_default(cfg, 'stopCheckEnabled', false);
-cfg = set_default(cfg, 'stopAppDataKey', 'BT_CONTROL_STOP_B_QUEUE');
-cfg = set_default(cfg, 'hFigAuto', []);
-cfg = set_default(cfg, 'verbose', false);
+fileCfg = bt_control_cfg_load('set_temperature_safe');
+cfg = set_default(cfg, 'lookbackMin', cfg_file_value(fileCfg, 'lookbackMin', 5));
+cfg = set_default(cfg, 'commRetryCount', cfg_file_value(fileCfg, 'commRetryCount', 3));
+cfg = set_default(cfg, 'commRetryBackoffSec', cfg_file_value(fileCfg, 'commRetryBackoffSec', 0.5));
+cfg = set_default(cfg, 'magPort', cfg_file_value(fileCfg, 'magPort', 7185));
+cfg = set_default(cfg, 'magTimeoutSec', cfg_file_value(fileCfg, 'magTimeoutSec', 3));
+cfg = set_default(cfg, 'magGateRequirePsZero', cfg_file_value(fileCfg, 'magGateRequirePsZero', false));
+cfg = set_default(cfg, 'magGateAllowPausedStateWithPsOff', cfg_file_value(fileCfg, 'magGateAllowPausedStateWithPsOff', false));
+cfg = set_default(cfg, 'magGatePausedCurrentAbsTol', cfg_file_value(fileCfg, 'magGatePausedCurrentAbsTol', 1e-3));
+cfg = set_default(cfg, 'tcConnectTimeoutSec', cfg_file_value(fileCfg, 'tcConnectTimeoutSec', 20));
+cfg = set_default(cfg, 'tcResponseTimeoutSec', cfg_file_value(fileCfg, 'tcResponseTimeoutSec', 30));
+cfg = set_default(cfg, 'commMaxBlockSecWhenStop', cfg_file_value(fileCfg, 'commMaxBlockSecWhenStop', 2));
+cfg = set_default(cfg, 'stopWaitGranularitySec', cfg_file_value(fileCfg, 'stopWaitGranularitySec', 2));
+cfg = set_default(cfg, 'stopCheckEnabled', cfg_file_value(fileCfg, 'stopCheckEnabled', false));
+cfg = set_default(cfg, 'stopAppDataKey', cfg_file_value(fileCfg, 'stopAppDataKey', 'BT_CONTROL_STOP_B_QUEUE'));
+cfg = set_default(cfg, 'hFigAuto', cfg_file_value(fileCfg, 'hFigAuto', []));
+cfg = set_default(cfg, 'verbose', cfg_file_value(fileCfg, 'verbose', false));
 end
 
 function cfg = set_default(cfg, key, value)
 if ~isfield(cfg, key) || isempty(cfg.(key))
     cfg.(key) = value;
+end
+end
+
+function v = cfg_file_value(s, key, fallback)
+if isstruct(s) && isfield(s, key) && ~isempty(s.(key))
+    v = s.(key);
+else
+    v = fallback;
 end
 end
 
@@ -360,7 +459,7 @@ if ~(isnumeric(TtargetK) && isscalar(TtargetK) && isfinite(TtargetK))
     errMsg = 'TtargetK must be a finite numeric scalar.';
     return;
 end
-numFields = {'T_safe_max','T_tol','holdSec','maxWaitSec','pollSec','pidP','pidI','pidD','lookbackMin','commRetryCount','commRetryBackoffSec','magPort','magTimeoutSec','tcConnectTimeoutSec','tcResponseTimeoutSec'};
+numFields = {'T_safe_max','T_tol','holdSec','maxWaitSec','pollSec','pidP','pidI','pidD','lookbackMin','commRetryCount','commRetryBackoffSec','magPort','magTimeoutSec','magGatePausedCurrentAbsTol','tcConnectTimeoutSec','tcResponseTimeoutSec','commMaxBlockSecWhenStop','stopWaitGranularitySec'};
 for i = 1:numel(numFields)
     v = cfg.(numFields{i});
     if ~(isnumeric(v) && isscalar(v) && isfinite(v))
@@ -370,6 +469,14 @@ for i = 1:numel(numFields)
 end
 if cfg.T_tol <= 0 || cfg.holdSec <= 0 || cfg.maxWaitSec <= 0 || cfg.pollSec <= 0
     errMsg = 'cfg.T_tol, cfg.holdSec, cfg.maxWaitSec, and cfg.pollSec must be > 0.';
+    return;
+end
+if cfg.stopWaitGranularitySec <= 0
+    errMsg = 'cfg.stopWaitGranularitySec must be > 0.';
+    return;
+end
+if cfg.commMaxBlockSecWhenStop <= 0
+    errMsg = 'cfg.commMaxBlockSecWhenStop must be > 0.';
     return;
 end
 if cfg.commRetryCount < 1 || mod(cfg.commRetryCount, 1) ~= 0
@@ -382,6 +489,14 @@ if cfg.tcConnectTimeoutSec <= 0 || cfg.tcResponseTimeoutSec <= 0
 end
 if ~(isscalar(cfg.stopCheckEnabled) && (islogical(cfg.stopCheckEnabled) || isnumeric(cfg.stopCheckEnabled)))
     errMsg = 'cfg.stopCheckEnabled must be a logical/numeric scalar.';
+    return;
+end
+if ~(isscalar(cfg.magGateRequirePsZero) && (islogical(cfg.magGateRequirePsZero) || isnumeric(cfg.magGateRequirePsZero)))
+    errMsg = 'cfg.magGateRequirePsZero must be a logical/numeric scalar.';
+    return;
+end
+if ~(isscalar(cfg.magGateAllowPausedStateWithPsOff) && (islogical(cfg.magGateAllowPausedStateWithPsOff) || isnumeric(cfg.magGateAllowPausedStateWithPsOff)))
+    errMsg = 'cfg.magGateAllowPausedStateWithPsOff must be a logical/numeric scalar.';
     return;
 end
 ok = true;

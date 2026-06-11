@@ -16,6 +16,15 @@ function out = run_b_field_queue_v2_1(targetBkGList, cfg)
 %       .startLogPath      CSV path (default: b_field_queue_start_log_*.csv in pwd)
 %       .writeAnalysisSnippet write analysis snippet TXT (default true)
 %       .analysisSnippetPath TXT path (default: b_field_queue_analysis_snippet_*.txt in pwd)
+%       .writeNotionSequenceLog write per-sequence notion events via v2.1 (default false)
+%       .notionSpoolPath   JSONL spool path for external notion uploader
+%       .notionQueueLogPath CSV queue log path for debug
+%       .notionPageKey     optional notion page id/key written into each event
+%       .runRoot           optional TB run root path for event context
+%       .tbStepIndex       optional TB step index for event context
+%       .tSetK             optional temperature setpoint for event context
+%       .testModeNoBT      skip magnet hardware control (default false)
+%       .skipFirstMagControl skip first magnet control in this queue run (default false)
 %       .verbose           print queue logs (default true)
 %
 % Output
@@ -91,6 +100,7 @@ out.mode = cfg.mode;
 out.rows = rows;
 out.startLogPath = '';
 out.analysisSnippetPath = '';
+cleanupNotionCtx = onCleanup(@() clear_notion_upload_context()); %#ok<NASGU>
 
 if cfg.writeStartLog
     [okLog, startLogPath, logErr] = prepare_start_log(cfg);
@@ -144,17 +154,57 @@ for i = 1:numel(targetBkGList)
         break;
     end
 
-    log_msg(cfg, sprintf('Queue item %d/%d: set magnet to %.6g kG (%s).', ...
-        i, numel(targetBkGList), BkG, cfg.mode));
-    [okMag, msgMag, infoMag] = set_z_magnet_mode(BkG, cfg.mode, cfg.magnetCfg);
-    row.magnetInfo = infoMag;
-    if ~okMag
-        row.status = 'failed';
-        row.message = sprintf('Magnet set failed: %s', msgMag);
-        out.rows(end + 1, 1) = row; %#ok<AGROW>
-        out.status = 'failed';
-        out.stopReason = row.message;
-        break;
+    skipFirstMagThisItem = logical(cfg.skipFirstMagControl) && (i == 1);
+    if cfg.testModeNoBT
+        log_msg(cfg, sprintf('Queue item %d/%d: test mode ON, skip set magnet to %.6g kG.', ...
+            i, numel(targetBkGList), BkG));
+        row.magnetInfo = struct('ok', true, 'skipped', true, 'message', 'Skipped magnet control in testModeNoBT.');
+    elseif skipFirstMagThisItem
+        log_msg(cfg, sprintf('Queue item %d/%d: skip first magnet check/control at %.6g kG (user requested).', ...
+            i, numel(targetBkGList), BkG));
+        row.magnetInfo = struct( ...
+            'ok', true, ...
+            'skipped', true, ...
+            'message', 'Skipped first magnet control by cfg.skipFirstMagControl.', ...
+            'skipReason', 'skipFirstMagControl');
+    else
+        log_msg(cfg, sprintf('Queue item %d/%d: set magnet to %.6g kG (%s).', ...
+            i, numel(targetBkGList), BkG, cfg.mode));
+        magCfg = cfg.magnetCfg;
+        % Queue-level stop policy is always enforced during magnet control.
+        magCfg.stopCheckEnabled = true;
+        magCfg.stopAppDataKey = cfg.stopAppDataKey;
+        magCfg.hFigAuto = cfg.hFigAuto;
+        magCfg.verbose = cfg.verbose;
+        if ~isfield(magCfg, 'stopWaitGranularitySec') || isempty(magCfg.stopWaitGranularitySec)
+            magCfg.stopWaitGranularitySec = 2;
+        end
+        if ~isfield(magCfg, 'pollSec') || isempty(magCfg.pollSec)
+            magCfg.pollSec = 1;
+        end
+        [okMag, msgMag, infoMag] = set_z_magnet_mode(BkG, cfg.mode, magCfg);
+        row.magnetInfo = infoMag;
+        if ~okMag
+            [stopNowAfterMag, stopWhyAfterMag] = is_stop_requested(cfg, cfg.hFigAuto);
+            if stopNowAfterMag || contains(lower(char(string(msgMag))), 'stop requested')
+                row.status = 'stopped';
+                row.message = sprintf('Magnet transition stopped: %s', msgMag);
+                out.rows(end + 1, 1) = row; %#ok<AGROW>
+                out.status = 'stopped';
+                if isempty(strtrim(stopWhyAfterMag))
+                    out.stopReason = row.message;
+                else
+                    out.stopReason = stopWhyAfterMag;
+                end
+                break;
+            end
+            row.status = 'failed';
+            row.message = sprintf('Magnet set failed: %s', msgMag);
+            out.rows(end + 1, 1) = row; %#ok<AGROW>
+            out.status = 'failed';
+            out.stopReason = row.message;
+            break;
+        end
     end
 
     hAuto = guidata(cfg.hFigAuto);
@@ -197,6 +247,7 @@ for i = 1:numel(targetBkGList)
     end
     log_msg(cfg, sprintf('Queue item %d/%d: run v2.1 automation (B_estimate=%.6g G).', ...
         i, numel(targetBkGList), row.bEstimateG));
+    configure_notion_upload_context(cfg, row, i);
     try
         t1_semi_auto_program([], [], hMain, hAuto);
     catch ME
@@ -244,23 +295,41 @@ out.finishedAt = datestr(now, 'yyyy-mm-dd HH:MM:SS.FFF');
 end
 
 function cfg = apply_defaults(cfg)
-cfg = set_default(cfg, 'mode', 'driven');
-cfg = set_default(cfg, 'magnetCfg', struct());
-cfg = set_default(cfg, 'hFigAuto', []);
-cfg = set_default(cfg, 'hFigMain', []);
-cfg = set_default(cfg, 'bEstimateScale', 1000);
-cfg = set_default(cfg, 'resetStopLatch', true);
-cfg = set_default(cfg, 'stopAppDataKey', 'BT_CONTROL_STOP_B_QUEUE');
-cfg = set_default(cfg, 'writeStartLog', true);
-cfg = set_default(cfg, 'startLogPath', '');
-cfg = set_default(cfg, 'writeAnalysisSnippet', true);
-cfg = set_default(cfg, 'analysisSnippetPath', '');
-cfg = set_default(cfg, 'verbose', true);
+fileCfg = bt_control_cfg_load('run_b_field_queue_v2_1');
+cfg = set_default(cfg, 'mode', cfg_file_value(fileCfg, 'mode', 'driven'));
+cfg = set_default(cfg, 'magnetCfg', cfg_file_value(fileCfg, 'magnetCfg', struct()));
+cfg = set_default(cfg, 'hFigAuto', cfg_file_value(fileCfg, 'hFigAuto', []));
+cfg = set_default(cfg, 'hFigMain', cfg_file_value(fileCfg, 'hFigMain', []));
+cfg = set_default(cfg, 'bEstimateScale', cfg_file_value(fileCfg, 'bEstimateScale', 1000));
+cfg = set_default(cfg, 'resetStopLatch', cfg_file_value(fileCfg, 'resetStopLatch', true));
+cfg = set_default(cfg, 'stopAppDataKey', cfg_file_value(fileCfg, 'stopAppDataKey', 'BT_CONTROL_STOP_B_QUEUE'));
+cfg = set_default(cfg, 'writeStartLog', cfg_file_value(fileCfg, 'writeStartLog', true));
+cfg = set_default(cfg, 'startLogPath', cfg_file_value(fileCfg, 'startLogPath', ''));
+cfg = set_default(cfg, 'writeAnalysisSnippet', cfg_file_value(fileCfg, 'writeAnalysisSnippet', true));
+cfg = set_default(cfg, 'analysisSnippetPath', cfg_file_value(fileCfg, 'analysisSnippetPath', ''));
+cfg = set_default(cfg, 'writeNotionSequenceLog', cfg_file_value(fileCfg, 'writeNotionSequenceLog', false));
+cfg = set_default(cfg, 'notionSpoolPath', cfg_file_value(fileCfg, 'notionSpoolPath', ''));
+cfg = set_default(cfg, 'notionQueueLogPath', cfg_file_value(fileCfg, 'notionQueueLogPath', ''));
+cfg = set_default(cfg, 'notionPageKey', cfg_file_value(fileCfg, 'notionPageKey', ''));
+cfg = set_default(cfg, 'runRoot', cfg_file_value(fileCfg, 'runRoot', ''));
+cfg = set_default(cfg, 'tbStepIndex', cfg_file_value(fileCfg, 'tbStepIndex', NaN));
+cfg = set_default(cfg, 'tSetK', cfg_file_value(fileCfg, 'tSetK', NaN));
+cfg = set_default(cfg, 'testModeNoBT', cfg_file_value(fileCfg, 'testModeNoBT', false));
+cfg = set_default(cfg, 'skipFirstMagControl', cfg_file_value(fileCfg, 'skipFirstMagControl', false));
+cfg = set_default(cfg, 'verbose', cfg_file_value(fileCfg, 'verbose', true));
 end
 
 function cfg = set_default(cfg, key, val)
 if ~isfield(cfg, key) || isempty(cfg.(key))
     cfg.(key) = val;
+end
+end
+
+function v = cfg_file_value(s, key, fallback)
+if isstruct(s) && isfield(s, key) && ~isempty(s.(key))
+    v = s.(key);
+else
+    v = fallback;
 end
 end
 
@@ -528,4 +597,36 @@ end
 function out = escape_single_quotes(in)
 out = char(string(in));
 out = strrep(out, '''', '''''');
+end
+
+function configure_notion_upload_context(cfg, row, bIndex)
+clear_notion_upload_context();
+if ~isfield(cfg, 'writeNotionSequenceLog') || ~logical(cfg.writeNotionSequenceLog)
+    return;
+end
+spoolPath = strtrim(char(string(safe_struct_field(cfg, 'notionSpoolPath', ''))));
+if isempty(spoolPath)
+    return;
+end
+
+ctx = struct();
+ctx.enabled = true;
+ctx.spoolPath = spoolPath;
+ctx.queueLogPath = strtrim(char(string(safe_struct_field(cfg, 'notionQueueLogPath', ''))));
+ctx.parentPageKey = strtrim(char(string(safe_struct_field(cfg, 'notionPageKey', ''))));
+ctx.runRoot = strtrim(char(string(safe_struct_field(cfg, 'runRoot', ''))));
+ctx.tbStepIndex = safe_struct_field(cfg, 'tbStepIndex', NaN);
+ctx.tSetK = safe_struct_field(cfg, 'tSetK', NaN);
+ctx.bItemIndex = bIndex;
+ctx.targetBkG = safe_struct_field(row, 'targetBkG', NaN);
+ctx.bEstimateG = safe_struct_field(row, 'bEstimateG', NaN);
+ctx.setAt = datestr(now, 'yyyy-mm-dd HH:MM:SS.FFF');
+
+setappdata(0, 'V3_1_NOTION_UPLOAD_CONTEXT', ctx);
+end
+
+function clear_notion_upload_context()
+if isappdata(0, 'V3_1_NOTION_UPLOAD_CONTEXT')
+    rmappdata(0, 'V3_1_NOTION_UPLOAD_CONTEXT');
+end
 end

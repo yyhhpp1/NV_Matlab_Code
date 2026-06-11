@@ -156,6 +156,11 @@ gSG2.bMod='none';
 gSG2.bModSrc='External';
 SignalGeneratorFunctionPool2('SetMod');
 
+SignalGeneratorFunctionPool3('Init',PortMap('SG3 ip'));
+gSG3.bMod='none';
+gSG3.bModSrc='External';
+SignalGeneratorFunctionPool3('SetMod');
+
 % Load python env only once 
 pythonPath = 'C:\Users\dilution_fridge_2\miniconda3\envs\slackbot_haopu\python.exe';
 
@@ -286,6 +291,9 @@ gSG.Pow = str2double(get(handles.fixPow, 'String'));
 gSG.Freq = str2double(get(handles.fixFreq, 'String'))*1e9;
 gSG2.Pow = str2double(get(handles.fixPow2, 'String'));
 gSG2.Freq = str2double(get(handles.fixFreq2, 'String'))*1e9;
+gSG3.Pow = str2double(get(handles.FPGAGain7, 'String'));
+gSG3.Freq = str2double(get(handles.FPGAFreq7, 'String'))*1e6;
+
 gSG.ACmodAWG = get(handles.ACmodAWG,'Value'); % AC modulation of two SG is controlled by a single button
 gSG2.ACmodAWG = get(handles.ACmodAWG,'Value');
 gSG3.ACmodAWG = get(handles.ACmodAWG,'Value');

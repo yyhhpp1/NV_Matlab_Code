@@ -1,1 +1,0 @@
-timestamp,index,targetK,stage,status,message,idDeltaK,pReq,iReq,dReq,pRead1,iRead1,dRead1,pRetryReq,iRetryReq,dRetryReq,pRead2,iRead2,dRead2,verifyPassed,usedClampRetry,overshootK,settleTimeSec,maxAbsErrorK

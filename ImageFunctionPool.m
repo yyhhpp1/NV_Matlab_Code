@@ -84,6 +84,8 @@ switch what
         UpdateVoltage1(hObject, eventdata, handles);
     case 'multiScan'
         multi_scan_closedloop(hObject, eventdata, handles);
+    case 'multiScanXYCL_ZOL'
+        multi_scan_xy_closedloop_z_openloop(hObject, eventdata, handles);
     case 'SquareScan'
         SquareScan(hObject, eventdata, handles)
     otherwise
@@ -200,7 +202,7 @@ function multi_scan_closedloop(hObject, eventdata, handles)
 % User specifies (x_start,x_stop,Nx) and (y_start,y_stop,Ny).
 % Log stores absolute physical motor coordinates (in microns).
 
-global gPiezo gSaveImg
+global gPiezo gSaveImg gScan gMultiScanGui
 amc = gPiezo.amc;  X = 0;  Y = 1; Z = 2;
 
 % ==============================================================
@@ -216,23 +218,32 @@ amc = gPiezo.amc;  X = 0;  Y = 1; Z = 2;
 
 
 % 1/4-size image scan range (same number of tiles)
-x_start = 4505.6;
-x_stop  = 3015.2;
+x_start = 5000;
+x_stop  = 3000;
 
-y_start = 3406.6;
-y_stop  = 4825.8;
+y_start = 5300;
+y_stop  = 3300;
 
-Nx = 15;
-Ny = 15;
+Nx = 20;
+Ny = 20;
 
+snake_axis = 'Y'; % 'Y' = serpentine within Y at each X column, 'X' = serpentine within X at each Y row
+trackz_min_pl = 0.005; % skip TrackZ/rescan if first-scan max PL is below this
 
-z_idle = 3900; % safe position for z so it doesn't bump into diamond
+closedloop_tol_um = 0.2; % require measured closed-loop position to be within this error band
+closedloop_require_inrange = false; % false = accept measured position only, true = also require controller inTargetRange
+closedloop_inpos_hold_s = 0.5; % require closed-loop target-range to remain true for this long
+closedloop_poll_s = 0.1;
+closedloop_status_report_s = 2.0;
+
+z_idle = 4000; % safe position for z so it doesn't bump into diamond
 
 logDir = 'MultiImageScanLog\';
 
 % Build grid
 x_list = linspace(x_start, x_stop, Nx);
 y_list = linspace(y_start, y_stop, Ny);
+snake_axis = NormalizeMultiScanAxis(snake_axis);
 
 % ==============================================================    
 % ------ Prepare closed-loop mode (user-specific commands) -----
@@ -260,74 +271,172 @@ logFile = fullfile(logDir, sprintf('closedloop_scan_log_%s.csv', ts));
 if fid == -1, error('Could not open log file: %s', msg); end
 cleanupObj = onCleanup(@() fclose(fid));
 
-fprintf(fid,'timestamp,ix, iy, x_um,y_um,file\n');
+originalAutoSave = get(handles.bSaveImg, 'Value');
+set(handles.bSaveImg, 'Value', 0);
+autoSaveCleanup = onCleanup(@() set(handles.bSaveImg, 'Value', originalAutoSave)); %#ok<NASGU>
+
+originalFastScan = get(handles.bFastScan, 'Value');
+originalMarker = get(handles.cbMarker, 'Value');
+set(handles.bFastScan, 'Value', 1);
+set(handles.cbMarker, 'Value', 0);
+gMultiScanGui = struct( ...
+    'enabled', true, ...
+    'verbose', true, ...
+    'updateEveryChunks', 4, ...
+    'livePlotEnabled', false, ...
+    'skipReplot', true, ...
+    'closedLoopTolUm', closedloop_tol_um, ...
+    'closedLoopRequireInRange', closedloop_require_inrange, ...
+    'closedLoopInPosHoldS', closedloop_inpos_hold_s, ...
+    'closedLoopPollS', closedloop_poll_s, ...
+    'closedLoopStatusReportS', closedloop_status_report_s, ...
+    'prepositionPause', 0.1, ...
+    'loopPause', 0.05);
+guiLiteCleanup = onCleanup(@() RestoreMultiScanGuiLite(handles, originalFastScan, originalMarker)); %#ok<NASGU>
+
+fprintf(fid,'timestamp,ix,iy,x_target_um,y_target_um,x_read_um,y_read_um,file\n');
 
 % ==============================================================
 % --------------------- RASTER SCAN ----------------------------
 % ==============================================================
-y_dir_plus = true;         % serpentine flag
+if strcmp(snake_axis, 'Y')
+    outer_axis = X;
+    inner_axis = Y;
+    outer_list = x_list;
+    inner_base_list = y_list;
+else
+    outer_axis = Y;
+    inner_axis = X;
+    outer_list = y_list;
+    inner_base_list = x_list;
+end
+
+inner_dir_plus = true;         % serpentine flag on the fast axis
 scan_count = 1;
 total_scans = Nx * Ny;
 
 fprintf("\n===== CLOSED LOOP MULTI-SCAN START =====\n");
 
+SetMultiScanVerboseContext(0, total_scans, -1, -1, x_start, y_start, 'initial move to scan origin');
+MultiScanVerbose('Starting closed-loop multiscan with snake axis %s.', snake_axis);
 atto_Move(amc,X,x_start)
 atto_Move(amc,Y,y_start)
 
-first_time_flag = true;
-for ix = 1:Nx
-    % Choose y order depending on serpentine direction
-    if y_dir_plus
-        y_scan_list = y_list;
+z_restore_um = GetAttoPositionUm(amc, Z);
+
+first_outer_flag = true;
+for outer_idx = 1:numel(outer_list)
+    if inner_dir_plus
+        inner_scan_list = inner_base_list;
     else
-        y_scan_list = fliplr(y_list);
+        inner_scan_list = fliplr(inner_base_list);
     end
     
-    if ~first_time_flag
-        x_target = x_list(ix);
+    if ~first_outer_flag
+        outer_target = outer_list(outer_idx);
+        z_restore_um = GetAttoPositionUm(amc, Z);
+        SetMultiScanVerboseContext(scan_count, total_scans, -1, -1, NaN, NaN, ...
+            sprintf('capture Z before %s move', AttoAxisName(outer_axis)));
+        MultiScanVerbose('Captured current Z restore position before %s move: %.3f um.', ...
+            AttoAxisName(outer_axis), z_restore_um);
+        SetMultiScanVerboseContext(scan_count, total_scans, -1, -1, NaN, NaN, ...
+            sprintf('move Z to idle before %s move', AttoAxisName(outer_axis)));
         atto_Move(amc,Z,z_idle);
-        atto_Move(amc,X,x_target);
-        
+        SetMultiScanVerboseContext(scan_count, total_scans, -1, -1, NaN, NaN, ...
+            sprintf('move %s to next index', AttoAxisName(outer_axis)));
+        atto_Move(amc,outer_axis,outer_target);
     else
-        x_target = x_start;
-        first_time_flag = false;
-
+        first_outer_flag = false;
     end
 
-    for iy_local = 1:Ny
-        y_target = y_scan_list(iy_local);
+    for inner_local = 1:numel(inner_base_list)
+        inner_target = inner_scan_list(inner_local);
+        if strcmp(snake_axis, 'Y')
+            x_target = outer_list(outer_idx);
+            y_target = inner_target;
+            ix0 = outer_idx - 1;
+            if inner_dir_plus
+                iy = inner_local - 1;
+            else
+                iy = Ny - inner_local;
+            end
+        else
+            y_target = outer_list(outer_idx);
+            x_target = inner_target;
+            iy = outer_idx - 1;
+            if inner_dir_plus
+                ix0 = inner_local - 1;
+            else
+                ix0 = Nx - inner_local;
+            end
+        end
 
         fprintf('\n----- Starting scan %d / %d at (%.1f, %.1f um) -----\n',...
                 scan_count, total_scans, x_target, y_target);
+        SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'tile start');
+        MultiScanVerbose('Entering tile.');
 
-        % ======================================================
-        % Move using closed-loop absolute positioning
-        % ======================================================
-        atto_Move(amc,Z,z_idle);    % keep safe distance
+        if ~(outer_idx > 1 && inner_local == 1)
+            z_restore_um = GetAttoPositionUm(amc, Z);
+            MultiScanVerbose('Captured current Z restore position: %.3f um.', z_restore_um);
+        end
 
-        atto_Move(amc,Y,y_target);
+        SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'move Z to idle');
+        atto_Move(amc,Z,z_idle);
+ 
+        SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, ...
+            sprintf('move %s to target', AttoAxisName(inner_axis)));
+        atto_Move(amc,inner_axis,inner_target);
+        SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'restore Z after XY move');
+        atto_Move(amc,Z,z_restore_um);
 
-        % ======================================================
-        % Scan sequence
-        % ======================================================
-        TrackZ(hObject, eventdata, handles);
+        SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'prescan');
+        MultiScanVerbose('Starting first scan.');
         ImageScan('Scan', hObject, eventdata, handles);
-        ImageSaveImage('Save', hObject, eventdata, handles);
+        MultiScanVerbose('First scan finished.');
+
+        origFixVx = gScan.FixVx;
+        origFixVy = gScan.FixVy;
+        [brightVx, brightVy, maxPL, hasBrightSpot] = FindBrightestSpotFromLastScan();
+        MultiScanVerbose('Brightest-spot analysis finished. maxPL=%.6g, found=%d.', maxPL, hasBrightSpot);
+
+        if maxPL < trackz_min_pl
+            fprintf('Prescan max PL %.6g below threshold %.6g. Saving first scan only.\n', ...
+                maxPL, trackz_min_pl);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'save first scan');
+            ImageSaveImage('Save', hObject, eventdata, handles);
+        elseif hasBrightSpot
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'move galvo to brightest spot');
+            SetFixedXYTarget(brightVx, brightVy, hObject, eventdata, handles);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'TrackZ at brightest spot');
+            TrackZ(hObject, eventdata, handles);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'restore galvo fixed point');
+            SetFixedXYTarget(origFixVx, origFixVy, hObject, eventdata, handles);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'second scan');
+            ImageScan('Scan', hObject, eventdata, handles);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'save second scan');
+            ImageSaveImage('Save', hObject, eventdata, handles);
+        else
+            fprintf('Prescan brightest spot not found. Using current fixed XY for TrackZ.\n');
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'TrackZ at current fixed point');
+            TrackZ(hObject, eventdata, handles);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'second scan');
+            ImageScan('Scan', hObject, eventdata, handles);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'save second scan');
+            ImageSaveImage('Save', hObject, eventdata, handles);
+        end
 
         savedPath = gSaveImg.CurrentFullPath;
+        MultiScanVerbose('Tile image saved to %s', savedPath);
+        x_read_um = GetAttoPositionUm(amc, X);
+        y_read_um = GetAttoPositionUm(amc, Y);
+        MultiScanVerbose('Closed-loop XY readback after save: X=%.3f um, Y=%.3f um.', ...
+            x_read_um, y_read_um);
         
-        % Compute the true iy index
-        if y_dir_plus
-            iy = iy_local - 1;
-        else
-            iy = (Ny - iy_local);
-        end
-        ix0 = ix - 1;
-        
-        % Log
-        fprintf(fid, '%s,%d,%d,%.3f,%.3f,%s\n', ...
+        fprintf(fid, '%s,%d,%d,%.3f,%.3f,%.3f,%.3f,%s\n', ...
             datestr(now,'yyyy-mm-ddTHH:MM:SS.FFF'), ...
-            ix0, iy, x_target, y_target, savedPath);
+            ix0, iy, x_target, y_target, x_read_um, y_read_um, savedPath);
+        MultiScanVerbose('Tile logged to CSV.');
 
         if handles.multiScanStop.UserData == 1
             fprintf("User stopped scanning.\n");
@@ -336,8 +445,7 @@ for ix = 1:Nx
 
         scan_count = scan_count + 1;
     end
-    % Flip serpentine direction for next x column
-    y_dir_plus = ~y_dir_plus;
+    inner_dir_plus = ~inner_dir_plus;
 end
 
 fprintf("\n===== CLOSED LOOP MULTI-SCAN COMPLETE =====\n");
@@ -352,6 +460,291 @@ if strcmp(choice,'Yes')
     fprintf("Returning to origin...\n");
     atto_Move(amc,X,x_start)
     atto_Move(amc,Y,y_start)
+    msgbox('Returned to starting motor position.');
+else
+    msgbox('Motor position not reset.');
+end
+
+function multi_scan_xy_closedloop_z_openloop(hObject, eventdata, handles)
+% Closed-loop XY serpentine raster with open-loop Z retract/restore for safe travel.
+% Because Z is open loop, "safe" is defined relatively: retract Z by a fixed
+% number of steps in the known-away-from-sample direction before XY travel,
+% then restore by the same number of steps before imaging. TrackZ then refines
+% the local Z position at the new tile.
+
+global gPiezo gSaveImg gScan gMultiScanGui
+amc = gPiezo.amc;  X = 0;  Y = 1; Z = 2;
+
+% ==============================================================
+% ---------------------- USER SETTINGS -------------------------
+% ==============================================================
+y_start = 5100;
+y_stop  = 3300;
+
+x_start = 3900;
+x_stop  = 4600;
+
+Ny = 30;
+Nx = 11;
+
+snake_axis = 'Y'; % 'Y' = serpentine within Y at each X column, 'X' = serpentine within X at each Y row
+trackz_min_pl = 0.001; % skip TrackZ/rescan if first-scan max PL is below this
+logDir = 'MultiImageScanLog\';
+
+% Open-loop Z parking settings.
+% IMPORTANT:
+% z_retract_direction must be the direction that moves the tip/sample gap
+% larger. z_retract_steps must be chosen conservatively so every XY move is
+% safe. Since Z is open loop, this is only a relative retract, not an
+% absolute move to a known safe height.
+z_retract_direction = true;
+z_retract_steps = 1;
+z_retract_amplitude = 60000;
+z_retract_timeout_s = 10;
+z_retract_poll_s = 0.05;
+closedloop_tol_um = 2; % require measured closed-loop position to be within this error band
+closedloop_require_inrange = false; % false = accept measured position only, true = also require controller inTargetRange
+closedloop_inpos_hold_s = 0.5; % require closed-loop target-range to remain true for this long
+closedloop_poll_s = 0.1;
+closedloop_status_report_s = 2.0;
+
+% Build grid
+x_list = linspace(x_start, x_stop, Nx);
+y_list = linspace(y_start, y_stop, Ny);
+snake_axis = NormalizeMultiScanAxis(snake_axis);
+
+% ==============================================================
+% ------ Prepare closed-loop XY / open-loop Z mode -------------
+% ==============================================================
+control_setControlAmplitude(amc, X, 60000);
+control_setControlAmplitude(amc, Y, 60000);
+control_setControlOutput(amc, X, true);
+control_setControlOutput(amc, Y, true);
+control_setControlOutput(amc, Z, true);
+control_setControlAmplitude(amc, Z, z_retract_amplitude);
+
+% ==============================================================
+% ------------------ Prepare log file --------------------------
+% ==============================================================
+if isempty(logDir) || ~isfolder(logDir)
+    p = uigetdir(pwd, 'Choose folder to save multi_scan log');
+    if isequal(p,0), p = pwd; end
+    logDir = p;
+end
+if ~isfolder(logDir), mkdir(logDir); end
+
+ts = datestr(now,'yyyymmdd_HHMMSS');
+logFile = fullfile(logDir, sprintf('xycl_zol_scan_log_%s.csv', ts));
+
+[fid,msg] = fopen(logFile,'a');
+if fid == -1, error('Could not open log file: %s', msg); end
+cleanupObj = onCleanup(@() fclose(fid)); %#ok<NASGU>
+
+originalAutoSave = get(handles.bSaveImg, 'Value');
+set(handles.bSaveImg, 'Value', 0);
+autoSaveCleanup = onCleanup(@() set(handles.bSaveImg, 'Value', originalAutoSave)); %#ok<NASGU>
+
+originalFastScan = get(handles.bFastScan, 'Value');
+originalMarker = get(handles.cbMarker, 'Value');
+set(handles.bFastScan, 'Value', 1);
+set(handles.cbMarker, 'Value', 0);
+gMultiScanGui = struct( ...
+    'enabled', true, ...
+    'verbose', true, ...
+    'updateEveryChunks', 4, ...
+    'startGuardPx', 0, ...
+    'livePlotEnabled', false, ...
+    'skipReplot', true, ...
+    'closedLoopTolUm', closedloop_tol_um, ...
+    'closedLoopRequireInRange', closedloop_require_inrange, ...
+    'closedLoopInPosHoldS', closedloop_inpos_hold_s, ...
+    'closedLoopPollS', closedloop_poll_s, ...
+    'closedLoopStatusReportS', closedloop_status_report_s, ...
+    'prepositionPause', 0.1, ...
+    'loopPause', 0.05);
+guiLiteCleanup = onCleanup(@() RestoreMultiScanGuiLite(handles, originalFastScan, originalMarker)); %#ok<NASGU>
+
+fprintf(fid,'timestamp,ix,iy,x_target_um,y_target_um,x_read_um,y_read_um,file\n');
+
+% ==============================================================
+% --------------------- RASTER SCAN ----------------------------
+% ==============================================================
+if strcmp(snake_axis, 'Y')
+    outer_axis = X;
+    inner_axis = Y;
+    outer_list = x_list;
+    inner_base_list = y_list;
+else
+    outer_axis = Y;
+    inner_axis = X;
+    outer_list = y_list;
+    inner_base_list = x_list;
+end
+
+inner_dir_plus = true;
+scan_count = 1;
+total_scans = Nx * Ny;
+z_is_retracted = false;
+
+fprintf("\n===== XY CLOSED-LOOP / Z OPEN-LOOP MULTI-SCAN START =====\n");
+
+SetMultiScanVerboseContext(0, total_scans, -1, -1, x_start, y_start, 'initial retract before going to scan origin');
+MultiScanVerbose('Starting XY closed-loop / Z open-loop multiscan with snake axis %s.', snake_axis);
+MultiScanZStepAndWait(amc, Z, z_retract_direction, z_retract_steps, ...
+    z_retract_amplitude, z_retract_timeout_s, z_retract_poll_s);
+z_is_retracted = true;
+
+SetMultiScanVerboseContext(0, total_scans, -1, -1, x_start, y_start, 'initial move to scan origin');
+atto_Move(amc,X,x_start)
+atto_Move(amc,Y,y_start)
+
+SetMultiScanVerboseContext(0, total_scans, -1, -1, x_start, y_start, 'initial Z restore after origin move');
+MultiScanZStepAndWait(amc, Z, ~z_retract_direction, z_retract_steps, ...
+    z_retract_amplitude, z_retract_timeout_s, z_retract_poll_s);
+z_is_retracted = false;
+
+first_outer_flag = true;
+for outer_idx = 1:numel(outer_list)
+    if inner_dir_plus
+        inner_scan_list = inner_base_list;
+    else
+        inner_scan_list = fliplr(inner_base_list);
+    end
+
+    if ~first_outer_flag
+        outer_target = outer_list(outer_idx);
+        if ~z_is_retracted
+            SetMultiScanVerboseContext(scan_count, total_scans, -1, -1, NaN, NaN, ...
+                sprintf('retract Z before %s move', AttoAxisName(outer_axis)));
+            MultiScanZStepAndWait(amc, Z, z_retract_direction, z_retract_steps, ...
+                z_retract_amplitude, z_retract_timeout_s, z_retract_poll_s);
+            z_is_retracted = true;
+        end
+        SetMultiScanVerboseContext(scan_count, total_scans, -1, -1, NaN, NaN, ...
+            sprintf('move %s to next index', AttoAxisName(outer_axis)));
+        atto_Move(amc,outer_axis,outer_target);
+    else
+        first_outer_flag = false;
+    end
+
+    for inner_local = 1:numel(inner_base_list)
+        inner_target = inner_scan_list(inner_local);
+        if strcmp(snake_axis, 'Y')
+            x_target = outer_list(outer_idx);
+            y_target = inner_target;
+            ix0 = outer_idx - 1;
+            if inner_dir_plus
+                iy = inner_local - 1;
+            else
+                iy = Ny - inner_local;
+            end
+        else
+            y_target = outer_list(outer_idx);
+            x_target = inner_target;
+            iy = outer_idx - 1;
+            if inner_dir_plus
+                ix0 = inner_local - 1;
+            else
+                ix0 = Nx - inner_local;
+            end
+        end
+
+        fprintf('\n----- Starting scan %d / %d at (%.1f, %.1f um) -----\n',...
+                scan_count, total_scans, x_target, y_target);
+        SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'tile start');
+        MultiScanVerbose('Entering tile.');
+
+        if ~z_is_retracted
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'retract Z before XY travel');
+            MultiScanZStepAndWait(amc, Z, z_retract_direction, z_retract_steps, ...
+                z_retract_amplitude, z_retract_timeout_s, z_retract_poll_s);
+            z_is_retracted = true;
+        end
+
+        SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, ...
+            sprintf('move %s to target', AttoAxisName(inner_axis)));
+        atto_Move(amc,inner_axis,inner_target);
+
+        SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'restore Z after XY move');
+        MultiScanZStepAndWait(amc, Z, ~z_retract_direction, z_retract_steps, ...
+            z_retract_amplitude, z_retract_timeout_s, z_retract_poll_s);
+        z_is_retracted = false;
+
+        SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'prescan');
+        MultiScanVerbose('Starting first scan.');
+        ImageScan('Scan', hObject, eventdata, handles);
+        MultiScanVerbose('First scan finished.');
+
+        origFixVx = gScan.FixVx;
+        origFixVy = gScan.FixVy;
+        [brightVx, brightVy, maxPL, hasBrightSpot] = FindBrightestSpotFromLastScan();
+        MultiScanVerbose('Brightest-spot analysis finished. maxPL=%.6g, found=%d.', maxPL, hasBrightSpot);
+
+        if maxPL < trackz_min_pl
+            fprintf('Prescan max PL %.6g below threshold %.6g. Saving first scan only.\n', ...
+                maxPL, trackz_min_pl);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'save first scan');
+            ImageSaveImage('Save', hObject, eventdata, handles);
+        elseif hasBrightSpot
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'move galvo to brightest spot');
+            SetFixedXYTarget(brightVx, brightVy, hObject, eventdata, handles);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'TrackZ at brightest spot');
+            TrackZ(hObject, eventdata, handles);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'restore galvo fixed point');
+            SetFixedXYTarget(origFixVx, origFixVy, hObject, eventdata, handles);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'second scan');
+            ImageScan('Scan', hObject, eventdata, handles);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'save second scan');
+            ImageSaveImage('Save', hObject, eventdata, handles);
+        else
+            fprintf('Prescan brightest spot not found. Using current fixed XY for TrackZ.\n');
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'TrackZ at current fixed point');
+            TrackZ(hObject, eventdata, handles);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'second scan');
+            ImageScan('Scan', hObject, eventdata, handles);
+            SetMultiScanVerboseContext(scan_count, total_scans, ix0, iy, x_target, y_target, 'save second scan');
+            ImageSaveImage('Save', hObject, eventdata, handles);
+        end
+
+        savedPath = gSaveImg.CurrentFullPath;
+        MultiScanVerbose('Tile image saved to %s', savedPath);
+        x_read_um = GetAttoPositionUm(amc, X);
+        y_read_um = GetAttoPositionUm(amc, Y);
+        MultiScanVerbose('Closed-loop XY readback after save: X=%.3f um, Y=%.3f um.', ...
+            x_read_um, y_read_um);
+
+        fprintf(fid, '%s,%d,%d,%.3f,%.3f,%.3f,%.3f,%s\n', ...
+            datestr(now,'yyyy-mm-ddTHH:MM:SS.FFF'), ...
+            ix0, iy, x_target, y_target, x_read_um, y_read_um, savedPath);
+        MultiScanVerbose('Tile logged to CSV.');
+
+        if handles.multiScanStop.UserData == 1
+            fprintf("User stopped scanning.\n");
+            return;
+        end
+
+        scan_count = scan_count + 1;
+    end
+
+    inner_dir_plus = ~inner_dir_plus;
+end
+
+fprintf("\n===== XY CLOSED-LOOP / Z OPEN-LOOP MULTI-SCAN COMPLETE =====\n");
+
+choice = questdlg('Return to (x_start, y_start)?', ...
+                  'Return to Origin', 'Yes','No','Yes');
+
+if strcmp(choice,'Yes')
+    fprintf("Returning to origin...\n");
+    if ~z_is_retracted
+        MultiScanZStepAndWait(amc, Z, z_retract_direction, z_retract_steps, ...
+            z_retract_amplitude, z_retract_timeout_s, z_retract_poll_s);
+        z_is_retracted = true;
+    end
+    atto_Move(amc,X,x_start)
+    atto_Move(amc,Y,y_start)
+    MultiScanZStepAndWait(amc, Z, ~z_retract_direction, z_retract_steps, ...
+        z_retract_amplitude, z_retract_timeout_s, z_retract_poll_s);
     msgbox('Returned to starting motor position.');
 else
     msgbox('Motor position not reset.');
@@ -1167,32 +1560,63 @@ ImageFillUpForm('UpdateScan', hObject, eventdata, handles);
 function helper_scan_attocube(hObject, eventdata, handles, amc, axis, Nstep, thresh)
     global gScan 
     %%%%% determine uphill or downhill   
-    
+
+    step_timeout_s = 3;
+    step_poll_s = 0.05;
+    max_iter = 40;
+
+    MultiScanVerbose('TrackZ helper start on axis %s with Nstep=%d, thresh=%.4g.', ...
+        AttoAxisName(axis), Nstep, thresh);
     ref_count = RunCPSOnce(gScan,hObject, eventdata, handles);
-    move_setNSteps(amc, axis, true, Nstep);    % move 1 step backward  
-%     pause(1)
+    if abs(ref_count) < eps
+        warning('helper_scan_attocube:LowSignal', ...
+            'Initial count too small for stable Z hill-climb. Skipping this TrackZ pass.');
+        MultiScanVerbose('TrackZ helper skipped because initial count was too small.');
+        return;
+    end
+
+    AttoNStepsAndWait(amc, axis, true, Nstep, step_timeout_s, step_poll_s);
     bkw_count = RunCPSOnce(gScan,hObject, eventdata, handles);
     percent_change = (bkw_count - ref_count) / ref_count;
     go_bkw = percent_change > 0;    % if bkw_count is brighter, bkw is uphill.
+    MultiScanVerbose('TrackZ helper probe finished. ref=%.6g, probe=%.6g, d=%.4g, go_bkw=%d.', ...
+        ref_count, bkw_count, percent_change, go_bkw);
     
     ref_count = bkw_count;
     % coarse scan for hill climbing
-    while abs(percent_change) > thresh
-        move_setNSteps(amc, axis, go_bkw, Nstep);
-%         pause(1)
+    iter = 0;
+    while abs(percent_change) > thresh && iter < max_iter
+        iter = iter + 1;
+        MultiScanVerbose('TrackZ helper iteration %d: taking %d step(s), direction backward=%d.', ...
+            iter, Nstep, go_bkw);
+        AttoNStepsAndWait(amc, axis, go_bkw, Nstep, step_timeout_s, step_poll_s);
         curr_count = RunCPSOnce(gScan,hObject, eventdata, handles);
+        if abs(ref_count) < eps
+            warning('helper_scan_attocube:LowSignal', ...
+                'Reference count collapsed during Z hill-climb. Stopping this TrackZ pass.');
+            MultiScanVerbose('TrackZ helper stopped because reference count collapsed.');
+            break;
+        end
         percent_change = (curr_count - ref_count) / ref_count;
+        MultiScanVerbose('TrackZ helper iteration %d result: curr=%.6g, prev=%.6g, d=%.4g.', ...
+            iter, curr_count, ref_count, percent_change);
         
         if percent_change < 0
            go_bkw = ~go_bkw;
-           move_setNSteps(amc, axis, go_bkw, Nstep);
-%            pause(1)
-           %disp("change_dir");
-           break
+           MultiScanVerbose('TrackZ helper reversing direction and taking one settling step.');
+           AttoNStepsAndWait(amc, axis, go_bkw, Nstep, step_timeout_s, step_poll_s);
+            %disp("change_dir");
+            break
         end
         
         ref_count = curr_count; 
     end
+
+    if iter >= max_iter
+        warning('helper_scan_attocube:MaxIterations', ...
+            'TrackZ hit its step limit and was stopped to avoid a stall.');
+    end
+    MultiScanVerbose('TrackZ helper finished after %d iteration(s).', iter);
 
 
 
@@ -1230,6 +1654,7 @@ if using_attocube
         Nstep_fine = 1;
         
         disp("start z scan");
+        MultiScanVerbose('TrackZ start with Attocube Z.');
 
         % set to coarse mode
         control_setControlAmplitude(amc, axis, coarse_amp); 
@@ -1246,6 +1671,7 @@ if using_attocube
         fine_thresh = 0.001; % fine scan thresh
         helper_scan_attocube(hObject, eventdata, handles, amc, axis, Nstep_fine, fine_thresh);
         %disp("done fine z scan");
+        MultiScanVerbose('TrackZ finished with Attocube Z.');
         
     catch ME
         KillAllTasks;
@@ -1311,9 +1737,33 @@ else    % else we are using the RT set up, use the following piezo
 end
 
 function atto_Move(amc,axis,target)
+global gMultiScanGui
 target = target*1e3;%in um
+MultiScanVerbose('Closed-loop move start: axis=%s target=%.3f um.', AttoAxisName(axis), target/1000);
+tolUm = inf;
+requireInRange = true;
+holdInTargetS = 0;
+pollS = 0.1;
+reportS = 2.0;
+if ~isempty(gMultiScanGui) && isstruct(gMultiScanGui)
+    if isfield(gMultiScanGui, 'closedLoopTolUm')
+        tolUm = max(0, gMultiScanGui.closedLoopTolUm);
+    end
+    if isfield(gMultiScanGui, 'closedLoopRequireInRange')
+        requireInRange = logical(gMultiScanGui.closedLoopRequireInRange);
+    end
+    if isfield(gMultiScanGui, 'closedLoopInPosHoldS')
+        holdInTargetS = max(0, gMultiScanGui.closedLoopInPosHoldS);
+    end
+    if isfield(gMultiScanGui, 'closedLoopPollS')
+        pollS = max(0.01, gMultiScanGui.closedLoopPollS);
+    end
+    if isfield(gMultiScanGui, 'closedLoopStatusReportS')
+        reportS = max(0.1, gMultiScanGui.closedLoopStatusReportS);
+    end
+end
 [errNo, sensor_status] = status_getOlStatus(amc, axis);
-if sensor_status == 1
+if GetAttoValue(sensor_status) == 1
     control_setControlOutput(amc, axis, false); %Deactivate axis
     clear amc
     error('attocube sensor status wrong')
@@ -1324,21 +1774,236 @@ else
     control_setControlMove(amc, axis, true);
 
     [errNo, inTargetRange] = status_getStatusTargetRange(amc, axis);
-    while ~inTargetRange{1}
+    tStart = tic;
+    lastReport = -inf;
+    stableSince = NaN;
+    while true
         % Read out position in nm
         [errNo, position] = move_getPosition(amc, axis);
+        elapsed = toc(tStart);
+        posErrUm = abs(position - target) / 1000;
+        inRange = logical(GetAttoValue(inTargetRange));
+        if requireInRange
+            moveAccepted = inRange && posErrUm <= tolUm;
+        else
+            moveAccepted = posErrUm <= tolUm;
+        end
+        if moveAccepted
+            if isnan(stableSince)
+                stableSince = elapsed;
+                MultiScanVerbose('Closed-loop %s move entered acceptance window at %.3f um (err=%.3f um, tol=%.3f um, requireInRange=%d, inRange=%d).', ...
+                    AttoAxisName(axis), position/1000, posErrUm, tolUm, requireInRange, inRange);
+            end
+            if elapsed - stableSince >= holdInTargetS
+                break;
+            end
+        else
+            if ~isnan(stableSince)
+                MultiScanVerbose('Closed-loop %s move left acceptance window before settle hold completed (err=%.3f um, tol=%.3f um, inRange=%d).', ...
+                    AttoAxisName(axis), posErrUm, tolUm, inRange);
+                stableSince = NaN;
+            end
+        end
+        if elapsed - lastReport >= reportS
+            MultiScanVerbose('Still waiting on closed-loop %s move: current=%.3f um target=%.3f um err=%.3f um tol=%.3f um inRange=%d requireInRange=%d elapsed=%.1f s.', ...
+                AttoAxisName(axis), position/1000, target/1000, posErrUm, tolUm, inRange, requireInRange, elapsed);
+            lastReport = elapsed;
+        end
         %fprintf('Z Position: %.2f µm', position/1000);
-        pause(0.1);
+        pause(pollS);
         [errNo, inTargetRange] = status_getStatusTargetRange(amc, axis);
     end
      
     % Stop approach
     control_setControlMove(amc, axis, false);
-    if errNo{1}
+    [errNo, position] = move_getPosition(amc, axis);
+    posErrUm = abs(position - target) / 1000;
+    MultiScanVerbose('Closed-loop move finished: axis=%s final=%.3f um target=%.3f um err=%.3f um tol=%.3f um requireInRange=%d settle=%.2f s.', ...
+        AttoAxisName(axis), position/1000, target/1000, posErrUm, tolUm, requireInRange, holdInTargetS);
+    if GetAttoValue(errNo)
         control_setControlOutput(amc, axis, false); %Deactivate axis
         clear amc
         error('attocube sensor status wrong')
     end
+end
+
+function pos_um = GetAttoPositionUm(amc, axis)
+[errNo, position] = move_getPosition(amc, axis);
+if GetAttoValue(errNo)
+    error('Failed to read attocube position.');
+end
+pos_um = position/1000;
+
+function value = GetAttoValue(rawValue)
+if iscell(rawValue)
+    value = rawValue{1};
+else
+    value = rawValue;
+end
+
+function AttoNStepsAndWait(amc, axis, backward, nSteps, timeout_s, poll_s)
+MultiScanVerbose('Open-loop step start: axis=%s backward=%d nSteps=%d.', ...
+    AttoAxisName(axis), backward, nSteps);
+errNo = move_setNSteps(amc, axis, backward, nSteps);
+if GetAttoValue(errNo)
+    error('Open-loop Z step command failed.');
+end
+
+tStart = tic;
+lastReport = -inf;
+while toc(tStart) < timeout_s
+    [errNo, isMoving] = status_getStatusMoving(amc, axis);
+    errVal = GetAttoValue(errNo);
+    moveVal = GetAttoValue(isMoving);
+    if isnumeric(errVal) && any(isnan(errVal))
+        MultiScanVerbose('Open-loop step status query returned no error code.');
+        error('Open-loop Z motion status query returned no error code.');
+    end
+    if isnumeric(moveVal) && any(isnan(moveVal))
+        MultiScanVerbose('Open-loop step status query returned no motion-state value.');
+        error('Open-loop Z motion status query returned no motion-state value.');
+    end
+    if errVal
+        error('Failed to query open-loop Z motion status.');
+    end
+    if moveVal == 0
+        MultiScanVerbose('Open-loop step finished: axis=%s backward=%d nSteps=%d elapsed=%.2f s.', ...
+            AttoAxisName(axis), backward, nSteps, toc(tStart));
+        return;
+    end
+    elapsed = toc(tStart);
+    if elapsed - lastReport >= 2
+        MultiScanVerbose('Still waiting on open-loop %s step: backward=%d nSteps=%d elapsed=%.1f s.', ...
+            AttoAxisName(axis), backward, nSteps, elapsed);
+        lastReport = elapsed;
+    end
+    pause(poll_s);
+end
+
+error('Open-loop Z step did not settle within %.2f s.', timeout_s);
+
+function MultiScanZStepAndWait(amc, axis, backward, nSteps, amplitude, timeout_s, poll_s)
+control_setControlOutput(amc, axis, true);
+control_setControlAmplitude(amc, axis, amplitude);
+MultiScanVerbose('Configured open-loop step: axis=%s amplitude=%d mV.', AttoAxisName(axis), amplitude);
+AttoNStepsAndWait(amc, axis, backward, nSteps, timeout_s, poll_s);
+
+function RestoreMultiScanGuiLite(handles, originalFastScan, originalMarker)
+global gMultiScanGui
+
+set(handles.bFastScan, 'Value', originalFastScan);
+set(handles.cbMarker, 'Value', originalMarker);
+gMultiScanGui = struct();
+
+function SetMultiScanVerboseContext(scanIndex, totalScans, ix, iy, xTarget, yTarget, stepName)
+global gMultiScanGui
+
+if isempty(gMultiScanGui) || ~isstruct(gMultiScanGui)
+    return;
+end
+
+gMultiScanGui.currentScanIndex = scanIndex;
+gMultiScanGui.totalScans = totalScans;
+gMultiScanGui.currentIx = ix;
+gMultiScanGui.currentIy = iy;
+gMultiScanGui.currentXTarget = xTarget;
+gMultiScanGui.currentYTarget = yTarget;
+gMultiScanGui.currentStep = stepName;
+
+function MultiScanVerbose(fmt, varargin)
+global gMultiScanGui
+
+if isempty(gMultiScanGui) || ~isstruct(gMultiScanGui)
+    return;
+end
+
+if ~isfield(gMultiScanGui, 'enabled') || ~logical(gMultiScanGui.enabled)
+    return;
+end
+
+if isfield(gMultiScanGui, 'verbose') && ~logical(gMultiScanGui.verbose)
+    return;
+end
+
+prefix = '[MultiScan]';
+if isfield(gMultiScanGui, 'currentScanIndex') && isfield(gMultiScanGui, 'totalScans') && ...
+        ~isempty(gMultiScanGui.currentScanIndex) && gMultiScanGui.currentScanIndex > 0
+    prefix = sprintf('%s [scan %d/%d', prefix, gMultiScanGui.currentScanIndex, gMultiScanGui.totalScans);
+    if isfield(gMultiScanGui, 'currentIx') && isfield(gMultiScanGui, 'currentIy') && ...
+            ~isempty(gMultiScanGui.currentIx) && ~isempty(gMultiScanGui.currentIy) && ...
+            gMultiScanGui.currentIx >= 0 && gMultiScanGui.currentIy >= 0
+        prefix = sprintf('%s ix=%d iy=%d', prefix, gMultiScanGui.currentIx, gMultiScanGui.currentIy);
+    end
+    prefix = sprintf('%s]', prefix);
+end
+
+if isfield(gMultiScanGui, 'currentStep') && ~isempty(gMultiScanGui.currentStep)
+    prefix = sprintf('%s [%s]', prefix, gMultiScanGui.currentStep);
+end
+
+timestamp = datestr(now, 'HH:MM:SS.FFF');
+fprintf('[%s] %s %s\n', timestamp, prefix, sprintf(fmt, varargin{:}));
+
+function name = AttoAxisName(axis)
+switch axis
+    case 0
+        name = 'X';
+    case 1
+        name = 'Y';
+    case 2
+        name = 'Z';
+    otherwise
+        name = sprintf('axis%d', axis);
+end
+
+function axisName = NormalizeMultiScanAxis(axisName)
+axisName = upper(strtrim(axisName));
+if ~ismember(axisName, {'X', 'Y'})
+    error('snake_axis must be ''X'' or ''Y''.');
+end
+
+function II = BuildFastScanImage(cumCounts, planScan, fixDT, measType, apdBidiShiftPx)
+if isfield(planScan, 'startGuardPx')
+    startGuardPx = max(0, round(planScan.startGuardPx));
+else
+    startGuardPx = 0;
+end
+
+if strcmp(measType, 'SPCM')
+    % Counter samples are cumulative; convert them to CPS.
+    rawLineData = diff(cumCounts);
+    rawLineData = rawLineData(startGuardPx+1:startGuardPx+planScan.Ntot);
+    II = reshape(rawLineData, planScan.NRead, length(planScan.FL)).' / fixDT;
+elseif strcmp(measType, 'APD')
+    % APD samples are direct voltage values; drop the duplicate end sample.
+    rawLineData = cumCounts(startGuardPx+1:startGuardPx+planScan.Ntot);
+    II = reshape(rawLineData, planScan.NRead, length(planScan.FL)).';
+else
+    error('Unsupported detector type: %s', measType);
+end
+
+II(2:2:end, :) = fliplr(II(2:2:end,:));
+if strcmp(measType, 'APD') && apdBidiShiftPx ~= 0
+    II(2:2:end, :) = ShiftRowsWithEdgeFill(II(2:2:end, :), apdBidiShiftPx);
+end
+
+function rowsOut = ShiftRowsWithEdgeFill(rowsIn, shiftPx)
+rowsOut = rowsIn;
+
+if isempty(rowsIn) || shiftPx == 0
+    return;
+end
+
+nCols = size(rowsIn, 2);
+shiftPx = max(min(round(shiftPx), nCols-1), -(nCols-1));
+
+if shiftPx > 0
+    rowsOut(:, shiftPx+1:end) = rowsIn(:, 1:end-shiftPx);
+    rowsOut(:, 1:shiftPx) = repmat(rowsIn(:, 1), 1, shiftPx);
+else
+    s = -shiftPx;
+    rowsOut(:, 1:end-s) = rowsIn(:, s+1:end);
+    rowsOut(:, end-s+1:end) = repmat(rowsIn(:, end), 1, s);
 end
 
 
@@ -1568,8 +2233,37 @@ function MakeScan_Haopu(planScan, himg, hObject,eventdata,handles)
 %   - Diff on cumulative counts -> per-pixel counts; divide by DT -> CPS.
 
 % ---------- Globals & early setup ----------
-global bGo gScan gConfocal hTasks
+global bGo gScan gConfocal hTasks gmSEQ gMultiScanGui
 bGo = true;
+
+apd_bidi_shift_px = 2; % APD reverse-line correction after snake unflip
+start_guard_px = 2;    % number of extra first-pixel samples before image acquisition
+guiUpdateEveryChunks = 1;
+livePlotEnabled = true;
+skipLiveReplot = false;
+prepositionPause = 1;
+loopPause = 0.3;
+
+if isstruct(gMultiScanGui) && isfield(gMultiScanGui, 'enabled') && gMultiScanGui.enabled
+    if isfield(gMultiScanGui, 'updateEveryChunks')
+        guiUpdateEveryChunks = max(1, round(gMultiScanGui.updateEveryChunks));
+    end
+    if isfield(gMultiScanGui, 'startGuardPx')
+        start_guard_px = max(0, round(gMultiScanGui.startGuardPx));
+    end
+    if isfield(gMultiScanGui, 'livePlotEnabled')
+        livePlotEnabled = logical(gMultiScanGui.livePlotEnabled);
+    end
+    if isfield(gMultiScanGui, 'skipReplot')
+        skipLiveReplot = logical(gMultiScanGui.skipReplot);
+    end
+    if isfield(gMultiScanGui, 'prepositionPause')
+        prepositionPause = gMultiScanGui.prepositionPause;
+    end
+    if isfield(gMultiScanGui, 'loopPause')
+        loopPause = gMultiScanGui.loopPause;
+    end
+end
 
 % Plan scan (ranges, counts, image size, etc.)
 % moved to CallMakeScan
@@ -1577,12 +2271,14 @@ bGo = true;
 % Galvo pre-position to starting pixel (upper-left)
 WriteVoltage(PortMap('Galvo x'), gScan.minVx + gConfocal.XOffSet);
 WriteVoltage(PortMap('Galvo y'), gScan.minVy + gConfocal.XOffSet);
-pause(1);  % Increase if the first pixel looks off
+pause(prepositionPause);  % Increase if the first pixel looks off
 
 % Timing
 cvalue = gScan.FixDT;          % seconds per pixel (dwell time)
 planScan.DT = cvalue;
 planScan.TimeOut = cvalue * planScan.NRead * 4;  % conservative CI timeout fallback
+planScan.startGuardPx = start_guard_px;
+planScan.totalSamples = planScan.Ntot + planScan.startGuardPx + 1;
 
 % ---------- Device reset (optional) ----------
 % If you see device-in-use errors, keep this enabled:
@@ -1590,13 +2286,13 @@ planScan.TimeOut = cvalue * planScan.NRead * 4;  % conservative CI timeout fallb
 
 % ---------- Configure tasks ----------
 % 1) CI (counter) — cumulative photon counts (Ntot+1 samples)
-planScan.hCounter = SetCounter(planScan.Ntot+1, 1/cvalue);
+planScan.hCounter = SetCounter(planScan.totalSamples, 1/cvalue);
 % Enable "read all available samples" (non-blocking usage relies on this)
 status = calllib('mynidaqmx','DAQmxSetReadReadAllAvailSamp',planScan.hCounter,uint32(1));
 DAQmxErr(status);
 
 % 2) CO (pulse train) — shared sample clock at 1/DT, 50% duty, Ntot+1 ticks
-[status, planScan.hPulse] = DigPulseTrainCont(1/cvalue, 0.5, planScan.Ntot+1);
+[status, planScan.hPulse] = DigPulseTrainCont(1/cvalue, 0.5, planScan.totalSamples);
 DAQmxErr(status);
 
 % 3) AO (galvo voltages) — precomputed raster pattern (Ntot+1 samples/channel)
@@ -1608,8 +2304,9 @@ hTasks.hCounter = planScan.hCounter;
 hTasks.hPulse   = planScan.hPulse;
 
 %%---------- Start run ----------
-cumCounts = nan(1, planScan.Ntot+1, 'double'); % cumulative U32 -> double for diff
+cumCounts = nan(1, planScan.totalSamples, 'double'); % cumulative U32/AI samples
 currentScanIdx = 1;
+guiChunkCounter = 0;
 
 % % Pre-create an image object for fast updates (streaming per-pixel)
 % moved to CallMakeScan 
@@ -1620,13 +2317,13 @@ try
     DAQmxErr( DAQmxStartTask(planScan.hScan)    );
     DAQmxErr( DAQmxStartTask(planScan.hPulse)   );
     
-    if planScan.Ntot < 50000
-        MAX_BUFFER_SIZE = planScan.Ntot + 1;
+    if planScan.totalSamples < 50000
+        MAX_BUFFER_SIZE = planScan.totalSamples;
     else
         MAX_BUFFER_SIZE = 50000;
     end
 
-    while currentScanIdx < planScan.Ntot+2 && bGo          
+    while currentScanIdx < planScan.totalSamples + 1 && bGo          
         
         if ~bGo; break; end
         
@@ -1640,28 +2337,31 @@ try
             
             if ~isempty(valid)
                 nvalid = numel(valid);
-                lastIdx = min(currentScanIdx + nvalid - 1, planScan.Ntot+1);
+                lastIdx = min(currentScanIdx + nvalid - 1, planScan.totalSamples);
                 writeCount = lastIdx - currentScanIdx + 1;
                 
                 cumCounts(currentScanIdx:lastIdx) = double(valid(1:writeCount)); % fill read data
                 currentScanIdx = lastIdx + 1;
+                guiChunkCounter = guiChunkCounter + 1;
             end
         end
         
         % Update the live image once we have at least a couple of samples
-        if currentScanIdx > 3
-            % cumCounts -> counts -> CPS -> un-snake
-            I = reshape(diff(cumCounts), planScan.SizeImg);
-            II = I.'/gScan.FixDT;
-            II(2:2:end, :) = fliplr(II(2:2:end,:));
-            
-            % Push to image and throttle UI
-            set(himg, 'CData', II);
-            RePlot(hObject, eventdata, handles);
+        if currentScanIdx > 3 && ...
+                (mod(guiChunkCounter, guiUpdateEveryChunks) == 0 || currentScanIdx >= planScan.totalSamples)
+            if livePlotEnabled
+                II = BuildFastScanImage(cumCounts, planScan, gScan.FixDT, gmSEQ.meas, apd_bidi_shift_px);
+
+                % Push to image and throttle UI
+                set(himg, 'CData', II);
+                if ~skipLiveReplot
+                    RePlot(hObject, eventdata, handles);
+                end
+            end
             drawnow limitrate;
         end
         
-        pause(0.3); % adjust for CPU usage vs. latency
+        pause(loopPause); % adjust for CPU usage vs. latency
         
     end
     
@@ -1678,8 +2378,17 @@ DAQmxClearTask(planScan.hPulse);
 DAQmxClearTask(planScan.hScan);
 DAQmxClearTask(planScan.hCounter);
 
+if currentScanIdx > 3
+    II = BuildFastScanImage(cumCounts, planScan, gScan.FixDT, gmSEQ.meas, apd_bidi_shift_px);
+    set(himg, 'CData', II);
+    if ~skipLiveReplot
+        RePlot(hObject, eventdata, handles);
+    end
+end
+
 % Don't do the following if continous scanning for speed
 if ~get(handles.bScanCont,'Value')
+    CacheLastScanResult(get(himg, 'CData'), planScan);
     % ---------- Set clickcable ----------
     set(himg, 'ButtonDownFcn',{@CallImageSetXYVoltage,hObject,handles});
     
@@ -1787,23 +2496,35 @@ planScan.hPulse = [];
 planScan.hScan = [];
 
 function [status, readArray, sampsPerChanRead] = ReadDataFromDAQ(taskHandle, MAX_BUFFER_SIZE)
-%READDATAFROMDAQ  Non-blocking read of U32 counter samples (all available).
+%READDATAFROMDAQ  Non-blocking read of all available samples.
 %
 % Returns
-%   readArray         : buffer read in U32 array 
-%   sampsPerChanRead  : # of samples actually read 
+%   readArray         : counter samples for SPCM, analog voltage samples for APD
+%   sampsPerChanRead  : # of samples actually read
 
-readArray    = zeros(1, MAX_BUFFER_SIZE, 'uint32');
-readArrayPtr = libpointer('uint32Ptr', readArray);
+global gmSEQ
+
+numSampsPerChan = int32(-1); % -1 => read all available
+timeout = 0;                 % 0 => non-blocking
+arraySizeInSamps = uint32(MAX_BUFFER_SIZE);
 sampsReadPtr = libpointer('int32Ptr', 0);
 
-numSampsPerChan   = int32(-1);        % -1 => read all available
-timeout           = 0;                % 0 => non-blocking
-arraySizeInSamps  = uint32(MAX_BUFFER_SIZE);
+if strcmp(gmSEQ.meas, 'SPCM')
+    readArray = zeros(1, MAX_BUFFER_SIZE, 'uint32');
+    readArrayPtr = libpointer('uint32Ptr', readArray);
 
-[status, readArray, sampsPerChanRead] = calllib('mynidaqmx','DAQmxReadCounterU32', ...
-    taskHandle, numSampsPerChan, timeout, ...
-    readArrayPtr, arraySizeInSamps, sampsReadPtr, []);
+    [status, readArray, sampsPerChanRead] = calllib('mynidaqmx', 'DAQmxReadCounterU32', ...
+        taskHandle, numSampsPerChan, timeout, ...
+        readArrayPtr, arraySizeInSamps, sampsReadPtr, []);
+elseif strcmp(gmSEQ.meas, 'APD')
+    DAQmx_Val_GroupByChannel = 0; % Group by channel
+    readArray = zeros(1, MAX_BUFFER_SIZE);
+    [status, readArray] = DAQmxReadAnalogF64(taskHandle, numSampsPerChan, timeout, ...
+        DAQmx_Val_GroupByChannel, readArray, arraySizeInSamps, sampsReadPtr, []);
+    sampsPerChanRead = get(sampsReadPtr, 'Value');
+else
+    error('Unsupported detector type: %s', gmSEQ.meas);
+end
 
 function task = SetXYOutPut_Haopu(planScan, rate, ~, ~, ~)
 %SETXYOUTPUT_HAOPU  Precompute serpentine raster and configure AO task.
@@ -1820,6 +2541,11 @@ DAQmx_Val_GroupByChannel = 0; % Group by channel
 % Build snake X/Y voltage pulse train
 xVals = planScan.VV{1}; numX = numel(xVals);
 yVals = planScan.VV{2}; numY = numel(yVals);
+if isfield(planScan, 'startGuardPx')
+    startGuardPx = max(0, round(planScan.startGuardPx));
+else
+    startGuardPx = 0;
+end
 
 xPattern = zeros(1, numX * numY);
 yPattern = zeros(1, numX * numY);
@@ -1837,10 +2563,15 @@ for i = 1:numY
     idx = idx + n;
 end
 
+if startGuardPx > 0
+    xPattern = [repmat(xPattern(1), 1, startGuardPx), xPattern];
+    yPattern = [repmat(yPattern(1), 1, startGuardPx), yPattern];
+end
+
 % Match CI/CO sample count: append one duplicate sample for counts differential
 xPattern = [xPattern, xPattern(end)];
 yPattern = [yPattern, yPattern(end)];
-N = planScan.Ntot + 1;    % samples per channel
+N = numel(xPattern);    % samples per channel
 
 V = [xPattern yPattern];  % size: [1, 2N] layout: [AO0(1..N), AO1(1..N)]
 
@@ -2090,6 +2821,9 @@ end
 function PlotScan(I,planScan,hObject, eventdata, handles, mode)
 global gRawImg gConfocal;
 
+gRawImg = I;
+CacheLastScanResult(I, planScan);
+
 if nargin == 5
     mode = 'Quick';
 end
@@ -2309,6 +3043,80 @@ planScan.hScan = [];
 
 function CallImageSetXYVoltage(scr,eventdata,arg1,arg2)
 ImageSetXYVoltage('Cursor',arg1,eventdata,arg2);
+
+function CacheLastScanResult(I, planScan)
+global gLastScanResult
+
+gLastScanResult = struct('Data', I, 'Plan', planScan);
+
+function [brightVx, brightVy, maxPL, ok] = FindBrightestSpotFromLastScan
+global gLastScanResult gScan
+
+brightVx = gScan.FixVx;
+brightVy = gScan.FixVy;
+maxPL = -Inf;
+ok = false;
+
+if isempty(gLastScanResult) || ~isfield(gLastScanResult, 'Data') || ~isfield(gLastScanResult, 'Plan')
+    return;
+end
+
+I = gLastScanResult.Data;
+planScan = gLastScanResult.Plan;
+
+if isempty(I) || ~ismatrix(I)
+    return;
+end
+
+I(~isfinite(I)) = -Inf;
+if all(I(:) == -Inf)
+    return;
+end
+
+[maxPL, idx] = max(I(:));
+[rowIdx, colIdx] = ind2sub(size(I), idx);
+
+contAxis = linspace(planScan.ContRange(1), planScan.ContRange(2), size(I, 2));
+flAxis = linspace(planScan.FLRange(1), planScan.FLRange(2), size(I, 1));
+
+contValue = contAxis(colIdx);
+flValue = flAxis(rowIdx);
+
+switch planScan.WhatCont
+    case 1
+        brightVx = contValue;
+    case 2
+        brightVy = contValue;
+    otherwise
+        return;
+end
+
+switch planScan.WhatFL
+    case 1
+        brightVx = flValue;
+    case 2
+        brightVy = flValue;
+    otherwise
+        return;
+end
+
+ok = true;
+
+function SetFixedXYTarget(fixVx, fixVy, hObject, eventdata, handles)
+global gScan gConfocal
+
+gScan.FixVx = fixVx;
+gScan.FixVy = fixVy;
+
+set(handles.FixVx, 'String', num2str(gScan.FixVx));
+set(handles.FixVy, 'String', num2str(gScan.FixVy));
+
+WriteVoltage(PortMap('Galvo x'), gScan.FixVx + gConfocal.XOffSet);
+WriteVoltage(PortMap('Galvo y'), gScan.FixVy + gConfocal.YOffSet);
+
+if get(handles.cbMarker, 'Value')
+    DrawCrossHairs(hObject, eventdata, handles);
+end
 
 %WriteVoltage(PortMap('Galvo x'),Scan.FixVx);
 %WriteVoltage(PortMap('Galvo y'),Scan.FixVy);

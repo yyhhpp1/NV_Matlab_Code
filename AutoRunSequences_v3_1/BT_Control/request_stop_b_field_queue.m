@@ -39,13 +39,22 @@ end
 end
 
 function cfg = apply_defaults(cfg)
-cfg = set_default(cfg, 'stopAppDataKey', 'BT_CONTROL_STOP_B_QUEUE');
-cfg = set_default(cfg, 'hFigAuto', []);
-cfg = set_default(cfg, 'verbose', true);
+fileCfg = bt_control_cfg_load('request_stop_b_field_queue');
+cfg = set_default(cfg, 'stopAppDataKey', cfg_file_value(fileCfg, 'stopAppDataKey', 'BT_CONTROL_STOP_B_QUEUE'));
+cfg = set_default(cfg, 'hFigAuto', cfg_file_value(fileCfg, 'hFigAuto', []));
+cfg = set_default(cfg, 'verbose', cfg_file_value(fileCfg, 'verbose', true));
 end
 
 function cfg = set_default(cfg, key, val)
 if ~isfield(cfg, key) || isempty(cfg.(key))
     cfg.(key) = val;
+end
+end
+
+function v = cfg_file_value(s, key, fallback)
+if isstruct(s) && isfield(s, key) && ~isempty(s.(key))
+    v = s.(key);
+else
+    v = fallback;
 end
 end

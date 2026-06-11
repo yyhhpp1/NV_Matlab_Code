@@ -18,6 +18,25 @@ Standalone high-level Z-magnet control (not integrated with v3.1 queue runner).
 - `mag_z_gate_precheck.m`
 - `temperature_communication.md` (temperature comm details: read/set T, PID, heater)
 
+## Default Config File
+
+- File: `AutoRunSequences_v3_1/BT_Control/bt_control_defaults.cfg`
+- Loader: `bt_control_cfg_load.m`
+- Supported sections:
+  - `[set_z_magnet_mode]`
+  - `[set_temperature_safe]`
+  - `[mag_z_gate_precheck]`
+  - `[run_b_field_queue_v2_1]`
+  - `[run_tb_queue_minimal]`
+  - `[request_stop_b_field_queue]`
+  - `[clear_stop_b_field_queue]`
+  - `[global]`
+
+Behavior:
+- Function argument structs still work and have priority.
+- Missing/empty fields are filled from `bt_control_defaults.cfg`.
+- If the cfg file is missing, built-in defaults are used.
+
 ## Usage
 
 ```matlab

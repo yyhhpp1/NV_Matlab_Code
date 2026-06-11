@@ -1,4 +1,0 @@
-% Minimal B queue analysis snippet
-% Generated at: 2026-02-26 18:39:06.440
-
-% No entries yet.

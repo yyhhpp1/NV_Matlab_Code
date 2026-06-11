@@ -27,8 +27,10 @@ switch type
         pbn=14;
     case 'MWSwitch2' %changed from OrangeAOM on 6/19/2025 Haopu
         pbn=3;
-    case 'OrangeAOM' %changed from OrangeAOM on 6/19/2025 Haopu
-        pbn=10;
-    case 'TimeTaggerTrig'
-        pbn=9;
+    case 'MWSwitch3' 
+        pbn=1;
+%     case 'OrangeAOM' %changed from OrangeAOM on 6/19/2025 Haopu
+%         pbn=10;
+%     case 'TimeTaggerTrig'
+%         pbn=9;
 end

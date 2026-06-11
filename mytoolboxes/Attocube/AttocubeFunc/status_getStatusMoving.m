@@ -15,8 +15,26 @@ writeline(tcp, data_send);
 data_receive = readline(tcp);
 data = jsondecode(data_receive);
 
-errNo = data.result (1);
-status = data.result (2);
+if isfield(data, 'result')
+    result = data.result;
+else
+    errNo = NaN;
+    status = NaN;
+    return;
+end
+
+if isempty(result)
+    errNo = NaN;
+    status = NaN;
+    return;
+end
+
+errNo = result(1);
+if numel(result) >= 2
+    status = result(2);
+else
+    status = NaN;
+end
 
 
 end

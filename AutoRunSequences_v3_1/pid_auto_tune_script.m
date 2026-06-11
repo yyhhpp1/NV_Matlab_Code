@@ -49,7 +49,7 @@ cfg.interpolationMethod = 'linear';
 cfg.profileMonotonicMode = 'off';
 cfg.profileExtrapolation = 'extrap';
 
-cfg.logRoot = fullfile(thisDir, 'AutoRunSequences_v3_1_Saves');
+cfg.logRoot = 'D:\t1_auto_saves_v3_1';
 cfg.logPrefix = 'PID_AutoTune_5K_80K_CONV_Td0';
 cfg.verbose = true;
 
