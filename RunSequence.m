@@ -32,6 +32,13 @@ disp(strcat('Commencing ',{' '},string(gmSEQ.name), ' sequence...'))
 set(handles.runningText,'string','Running')
 drawnow;
 
+% HeliCam widefield lock-in detector: image-based acquisition path.
+% Diverts from the NI-DAQ counter branches below (no ctr0 / ReadCountersN).
+if strcmp(gmSEQ.meas,'HeliCam')
+    RunSequence_HeliCam(hObject, eventdata, handles);
+    return
+end
+
 gmSEQ.bRandom = 0;  % Shuffle the input, added by Weijie 04/20/2022
 
 if gSG.bfixedFreq % pulsed sequence (supports fixed-power and swept-power)
@@ -610,6 +617,239 @@ PBFunctionPool('PBON',2^SequencePool('PBDictionary','GreenAOM'));
 set(handles.runningText,'string','Stopped')
 %sound(y,Fs);
 
+function RunSequence_HeliCam(hObject, eventdata, handles)
+% Widefield lock-in acquisition with the HeliCam C4 (external DivideBy4).
+% Image-based counterpart to the NI-DAQ branches: the camera is configured once,
+% only the PulseBlaster timing changes per sweep point, and each burst yields
+% per-pixel I/Q that form a contrast image. No ctr0 / ReadCountersN here.
+global gmSEQ gSG gSG2 gCam gWide
+BackupFile = 'C:\MATLAB_Code\Data\TempDataBackup\Temp.mat';
+
+% Lazy backend init (robust to Initialize order / detector switch).
+if isempty(gCam)
+    cfg0 = WidefieldConfig();
+    if cfg0.useFakeCamera
+        gCam = FakeCamera(cfg0);
+    else
+        gCam = HeliCamInterface(cfg0.ifNo, cfg0.devNo);
+    end
+end
+
+gmSEQ.bGo  = 1;
+gmSEQ.bExp = 1;
+gmSEQ.ctrN = 1;            % no NI-DAQ counter gate in widefield mode
+CreateSavePath_Ave();
+
+% --- Configure camera once: WidefieldConfig hardware/display fields, with the
+% per-run lock-in params taken from gmSEQ (populated by LoadUserInputs). ---
+ccfg = WidefieldConfig();
+ccfg.exposureSeconds      = gmSEQ.exposureSeconds;
+ccfg.nPeriods             = gmSEQ.nPeriods;
+ccfg.nFrames              = gmSEQ.nFrames;
+ccfg.sensitivity          = gmSEQ.sensitivity;
+ccfg.coupling             = gmSEQ.coupling;
+ccfg.referenceTimeShiftUs = gmSEQ.referenceTimeShiftUs;
+gCam.configLockInMode(ccfg);
+
+H = gCam.Height; W = gCam.Width; N = gmSEQ.NSweepParam;
+
+% Frequency-swept sequences (e.g. hc_ODMR) use GHz on the GUI -> Hz, as ODMR does.
+bFreqSweep = ~gSG.bfixedFreq;
+if bFreqSweep
+    gmSEQ.SweepParam = gmSEQ.SweepParam * 1e9;
+end
+
+% --- Result store (images, parallel to scalar gmSEQ.signal) ---
+gWide = struct();
+gWide.signal     = NaN(H, W, N);   % contrast = -mean(Q)./mean(I)
+gWide.reference  = NaN(H, W, N);   % mean(I)
+gWide.rawsignal  = NaN(H, W, N);   % -mean(Q)
+gWide.SweepParam = gmSEQ.SweepParam;
+gWide.name       = char(string(gmSEQ.name));
+
+% --- MW source on (off for f_ sequences, mirroring the pulsed branch) ---
+SignalGeneratorFunctionPool('SetMod');
+SignalGeneratorFunctionPool('WritePow');
+if ~bFreqSweep
+    SignalGeneratorFunctionPool('WriteFreq');
+end
+if startsWith(string(gmSEQ.name), 'f_'); gSG.bOn = 0; else; gSG.bOn = 1; end
+SignalGeneratorFunctionPool('RFOnOff');
+
+roi = ccfg.roi;   % [] -> frame-center ROI for the 1-D trace
+
+try
+    for i = 1:gmSEQ.Average
+        gmSEQ.iAverage = i;
+        handles.biAverage.String = num2str(i);
+        j = 1;
+        while j <= N
+            gmSEQ.m = gmSEQ.SweepParam(j);
+            if bFreqSweep
+                gSG.Freq = gmSEQ.SweepParam(j);
+                SignalGeneratorFunctionPool('WriteFreq');
+            end
+
+            % Program PulseBlaster for this point (emits the CamRef quarter train).
+            SequencePool(string(gmSEQ.name));
+            DrawSequence(gmSEQ, hObject, eventdata, handles.axes1);
+            for k = 1:numel(gmSEQ.CHN)
+                gmSEQ.CHN(k).T      = gmSEQ.CHN(k).T      / 1e9;
+                gmSEQ.CHN(k).DT     = gmSEQ.CHN(k).DT     / 1e9;
+                gmSEQ.CHN(k).Delays = gmSEQ.CHN(k).Delays / 1e9;
+            end
+            PBFunctionPool('PreprocessPBSequence', gmSEQ);
+
+            % Acquire one lock-in burst.
+            gCam.startAcq();
+            Run_PB_Sequence();
+            [I, Q] = gCam.readIQ(ccfg.timeoutMs);
+            gCam.stopAcq();
+
+            ref      = mean(I, 3);
+            sig      = -mean(Q, 3);
+            contrast = sig ./ (ref + eps);
+
+            if i == 1
+                gWide.signal(:,:,j)    = contrast;
+                gWide.reference(:,:,j) = ref;
+                gWide.rawsignal(:,:,j) = sig;
+            else
+                gWide.signal(:,:,j)    = (gWide.signal(:,:,j)*(i-1)    + contrast) / i;
+                gWide.reference(:,:,j) = (gWide.reference(:,:,j)*(i-1) + ref)      / i;
+                gWide.rawsignal(:,:,j) = (gWide.rawsignal(:,:,j)*(i-1) + sig)      / i;
+            end
+
+            DisplayWidefield(handles, j, roi);
+
+            TemporarySave(BackupFile);
+            drawnow;
+            if ~gmSEQ.bGo; break; end
+            j = j + 1;
+        end
+        if ~gmSEQ.bGo || ~gmSEQ.bGoAfterAvg; break; end
+    end
+catch ME
+    try; gCam.stopAcq(); catch; end
+    KillAllTasks;
+    set(handles.runningText, 'string', 'Error!')
+    gSG.bOn = 0; SignalGeneratorFunctionPool('RFOnOff');
+    PBFunctionPool('PBON', 2^SequencePool('PBDictionary','GreenAOM'));
+    rethrow(ME);
+end
+
+% --- Cleanup ---
+gSG.bOn = 0; SignalGeneratorFunctionPool('RFOnOff');
+if isfield(handles,'useSG2') && handles.useSG2.Value
+    gSG2.bOn = 0; SignalGeneratorFunctionPool2('RFOnOff');
+end
+gmSEQ.bGo  = 0;
+gmSEQ.bExp = 0;
+PBFunctionPool('PBON', 2^SequencePool('PBDictionary','GreenAOM'));
+SaveWidefield();
+set(handles.runningText, 'string', 'Stopped')
+disp('Widefield experiment completed!')
+
+function DisplayWidefield(handles, j, roi)
+% DisplayWidefield(handles, j, roi)  Live widefield display for HeliCam runs.
+%   axes2: contrast image gWide.signal(:,:,j) (contrast = rawsignal./reference)
+%   axes3: ROI-mean contrast vs sweep parameter, built up through point j
+% roi = [] -> frame-center square; else [xc yc halfwidth] in pixels.
+global gmSEQ gWide
+
+img = gWide.signal(:,:,j);
+[H, W] = size(img);
+
+% --- axes2: 2-D contrast image ---
+imagesc(handles.axes2, img);
+axis(handles.axes2, 'image');
+colorbar(handles.axes2);
+title(handles.axes2, sprintf('contrast @ %g %s', ...
+    gmSEQ.SweepParam(j)*gmSEQ.ScaleT, gmSEQ.ScaleStr));
+
+% --- ROI box ---
+if isempty(roi)
+    cx = round(W/2); cy = round(H/2); hw = round(min(H,W)/10);
+else
+    cx = roi(1); cy = roi(2); hw = roi(3);
+end
+xr = max(1,cx-hw):min(W,cx+hw);
+yr = max(1,cy-hw):min(H,cy+hw);
+hold(handles.axes2, 'on');
+rectangle(handles.axes2, 'Position', [xr(1) yr(1) numel(xr) numel(yr)], ...
+    'EdgeColor', 'r', 'LineWidth', 1);
+hold(handles.axes2, 'off');
+
+% --- axes3: ROI-mean contrast trace vs sweep ---
+trace = squeeze(mean(mean(gWide.signal(yr,xr,:), 1), 2));
+plot(handles.axes3, gmSEQ.SweepParam(1:j)*gmSEQ.ScaleT, trace(1:j), '-o');
+xlabel(handles.axes3, gmSEQ.ScaleStr);
+ylabel(handles.axes3, 'ROI contrast');
+grid(handles.axes3, 'on');
+if j > 1
+    xlim(handles.axes3, sort([gmSEQ.SweepParam(1) gmSEQ.SweepParam(end)])*gmSEQ.ScaleT);
+end
+
+function SaveWidefield()
+% SaveWidefield  Write the widefield run to a portable HDF5 (.h5) file.
+% Stores reference (mean I) and rawsignal (-mean Q) only; contrast is derived
+% on read as rawsignal ./ reference. Metadata: key scalars as root attributes
+% plus the full gmSEQ as a JSON string (params_json). Written into the dated
+% CreateSavePath_Ave folder with a collision-safe _### suffix.
+global gmSEQ gSG gWide gSaveDataAve
+
+if isempty(gWide) || ~isfield(gWide,'reference'); return; end
+
+% Reuse the dated path/stem prepared by CreateSavePath_Ave.
+date = regexprep(gSaveDataAve.file, '^_|_Ave\.txt$', '');   % '<YYYY-M-D>'
+name = regexprep(char(string(gmSEQ.name)), '\W', '');
+stem = fullfile(gSaveDataAve.path, [name '_' date '_WF']);
+
+% Collision-safe suffix.
+n = 1;
+while exist(sprintf('%s_%03d.h5', stem, n), 'file'); n = n + 1; end
+fname = sprintf('%s_%03d.h5', stem, n);
+
+ref = gWide.reference;
+raw = gWide.rawsignal;
+sz  = size(ref);
+if numel(sz) < 3; sz(3) = 1; end
+
+% Datasets (chunked + gzip; chunk a single frame for partial reads).
+chunk = [sz(1) sz(2) 1];
+h5create(fname, '/reference',   sz, 'Datatype','double', 'ChunkSize',chunk, 'Deflate',4);
+h5write (fname, '/reference',   ref);
+h5create(fname, '/rawsignal',   sz, 'Datatype','double', 'ChunkSize',chunk, 'Deflate',4);
+h5write (fname, '/rawsignal',   raw);
+h5create(fname, '/sweep_param', [1 numel(gWide.SweepParam)], 'Datatype','double');
+h5write (fname, '/sweep_param', gWide.SweepParam(:)');
+
+% Root attributes: key scalars + full params as JSON.
+h5writeatt(fname, '/', 'sequence',       char(string(gmSEQ.name)));
+h5writeatt(fname, '/', 'sweep_unit',     gmSEQ.ScaleStr);
+h5writeatt(fname, '/', 'derived',        'contrast = rawsignal ./ reference');
+attrIf(fname, 'exposure_s',     gmSEQ, 'exposureSeconds');
+attrIf(fname, 'n_periods',      gmSEQ, 'nPeriods');
+attrIf(fname, 'n_frames',       gmSEQ, 'nFrames');
+attrIf(fname, 'sensitivity',    gmSEQ, 'sensitivity');
+attrIf(fname, 'quarter_bin_ns', gmSEQ, 'quarterBinNs');
+attrIf(fname, 'average',        gmSEQ, 'Average');
+if ~isempty(gSG) && isfield(gSG,'Pow');  h5writeatt(fname,'/','mw_power_dBm', gSG.Pow);  end
+if ~isempty(gSG) && isfield(gSG,'Freq'); h5writeatt(fname,'/','mw_freq_Hz',   gSG.Freq); end
+try
+    h5writeatt(fname, '/', 'params_json', jsonencode(gmSEQ));
+catch
+    % jsonencode can choke on non-serializable fields; metadata loss is non-fatal.
+end
+
+fprintf('[Widefield] Saved %s\n', fname);
+
+function attrIf(fname, attrName, s, field)
+% Write s.(field) as a root attribute if the field exists and is non-empty.
+if isfield(s, field) && ~isempty(s.(field))
+    h5writeatt(fname, '/', attrName, s.(field));
+end
+
 function getUserInputFromGUI(handles)
 global gmSEQ
 
@@ -979,11 +1219,13 @@ function ClearCounters(task)
 DAQmxClearTask(task);
 
 function TemporarySave(BackupFile)
-global gSG gmSEQ
+global gSG gmSEQ gWide
 
 % convert relevant globals to a bigger structure
 BackupExp.gmSEQ=gmSEQ;
 BackupExp.gSG=gSG;
+% include widefield image stacks when present (HeliCam runs)
+if ~isempty(gWide); BackupExp.gWide=gWide; end
 %save the data in matlab binary format
 save(BackupFile,'BackupExp');
 

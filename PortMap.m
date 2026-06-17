@@ -27,6 +27,7 @@ switch what
         path='com10';
     case 'meas'
         %path='SPCM';
+        %path='HeliCam';   % HeliCam C4 widefield lock-in detector
         path='APD';
     case 'meas2'
         %path='PD0';

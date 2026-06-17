@@ -120,8 +120,10 @@ PBFunctionPool('PBON',OutPuts);
 %Jero 2008-07-10
 
 function PBOFF(hObject, eventdata, handles)
+global gCam
 OutPuts = 0;
 PBFunctionPool('PBON',OutPuts);
+if ~isempty(gCam); try; gCam.stopAcq(); catch; end; end
 
 function Initialize(hObject, eventdata, handles)
 global gmSEQ gSG gSG2 gSG3 fpga
@@ -184,6 +186,24 @@ end
 
 gmSEQ.meas2=PortMap('meas2');
 gmSEQ.meas3=PortMap('meas3');
+
+% HeliCam widefield detector: instantiate the camera backend when selected.
+% Backend (real vs fake) chosen in WidefieldConfig. Degrades gracefully if the
+% camera is absent; the RunSequence HeliCam branch also re-instantiates lazily.
+global gCam
+if strcmp(PortMap('meas'),'HeliCam')
+    try
+        cfg = WidefieldConfig();
+        if cfg.useFakeCamera
+            gCam = FakeCamera(cfg);
+        else
+            gCam = HeliCamInterface(cfg.ifNo, cfg.devNo);
+        end
+    catch ME
+        warning('Initialize: HeliCam backend unavailable (%s).', ME.message);
+        gCam = [];
+    end
+end
 
 function LoadSEQ(hObject, eventdata, handles,ax)
 global gmSEQ
@@ -286,6 +306,18 @@ gmSEQ.bTrack=get(handles.bTrack,'Value');
 gmSEQ.saveRaw = get(handles.saveRaw,'Value');
 gmSEQ.post_init_wait = str2double(get(handles.post_init_wait,'String'));
 gmSEQ.post_MW_wait = str2double(get(handles.post_MW_wait,'String'));
+
+% --- HeliCam widefield params: WidefieldConfig defaults, kept as overridable
+% gmSEQ fields so future GUI edit fields take precedence automatically (set the
+% gmSEQ.<field> here from a handles widget when one exists). No .fig edits. ---
+wcfg = WidefieldConfig();
+if ~isfield(gmSEQ,'exposureSeconds')      || isempty(gmSEQ.exposureSeconds);      gmSEQ.exposureSeconds      = wcfg.exposureSeconds;      end
+if ~isfield(gmSEQ,'nPeriods')             || isempty(gmSEQ.nPeriods);             gmSEQ.nPeriods             = wcfg.nPeriods;             end
+if ~isfield(gmSEQ,'nFrames')              || isempty(gmSEQ.nFrames);              gmSEQ.nFrames              = wcfg.nFrames;              end
+if ~isfield(gmSEQ,'sensitivity')          || isempty(gmSEQ.sensitivity);          gmSEQ.sensitivity          = wcfg.sensitivity;          end
+if ~isfield(gmSEQ,'coupling')             || isempty(gmSEQ.coupling);             gmSEQ.coupling             = wcfg.coupling;             end
+if ~isfield(gmSEQ,'referenceTimeShiftUs') || isempty(gmSEQ.referenceTimeShiftUs); gmSEQ.referenceTimeShiftUs = wcfg.referenceTimeShiftUs; end
+if ~isfield(gmSEQ,'quarterBinNs')         || isempty(gmSEQ.quarterBinNs);         gmSEQ.quarterBinNs         = wcfg.quarterBinNs;         end
 
 gSG.Pow = str2double(get(handles.fixPow, 'String'));
 gSG.Freq = str2double(get(handles.fixFreq, 'String'))*1e9;
