@@ -27,8 +27,10 @@ switch type
         pbn=14;
     case 'MWSwitch2' %changed from OrangeAOM on 6/19/2025 Haopu
         pbn=3;
-    case 'MWSwitch3' 
+    case 'MWSwitch3'
         pbn=1;
+    case 'CamRef'   % HeliCam FI2: quarter-period reference train (DivideBy4)
+        pbn=9;
 %     case 'OrangeAOM' %changed from OrangeAOM on 6/19/2025 Haopu
 %         pbn=10;
 %     case 'TimeTaggerTrig'

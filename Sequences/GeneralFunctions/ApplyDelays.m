@@ -35,7 +35,9 @@ for i=1:numel(gmSEQ.CHN)
         gmSEQ.CHN(i).Delays=ones(1,2)*detector_delay;
     elseif gmSEQ.CHN(i).PBN == PBDictionary('PD')
         gmSEQ.CHN(i).Delays = ones(1, 2) * photodiode_delay;
-%     elseif gmSEQ.CHN(i).PBN == PBDictionary('AWGTrig2') 
+    elseif gmSEQ.CHN(i).PBN == PBDictionary('CamRef')
+        gmSEQ.CHN(i).Delays = zeros(1, gmSEQ.CHN(i).NRise);  % FI2 train, no delay
+%     elseif gmSEQ.CHN(i).PBN == PBDictionary('AWGTrig2')
 %         gmSEQ.CHN(i).Delays = ones(1, 2) * AWG_Delay;
 %     elseif gmSEQ.CHN(i).PBN == PBDictionary('AWGTrig3') 
 %         gmSEQ.CHN(i).Delays = ones(1, 2) * (AWG_Delay+MW2_Delay);
