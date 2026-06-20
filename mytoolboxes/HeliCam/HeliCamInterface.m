@@ -182,6 +182,7 @@ classdef HeliCamInterface < handle
             obj.stopAcq();
             try; obj.c4dev.release(); catch; end
             try; obj.c4if.release();  catch; end
+            try; obj.c4sys.reset();   catch; end   % free native device handle
         end
     end
 

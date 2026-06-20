@@ -192,16 +192,24 @@ gmSEQ.meas3=PortMap('meas3');
 % camera is absent; the RunSequence HeliCam branch also re-instantiates lazily.
 global gCam
 if strcmp(PortMap('meas'),'HeliCam')
-    try
-        cfg = WidefieldConfig();
-        if cfg.useFakeCamera
-            gCam = FakeCamera(cfg);
-        else
-            gCam = HeliCamInterface(cfg.ifNo, cfg.devNo);
+    if ~isempty(gCam) && isvalid(gCam)
+        % Reuse the existing connection. Re-opening C4HdlCLR (new C4HandlerCLR +
+        % reset() / openDevice) in the same MATLAB session -- e.g. after closing
+        % and reopening the GUI -- crashes the .NET runtime (0xe0434352). Keep the
+        % camera alive for the whole session; release it with HeliCamRelease.
+        fprintf('[HeliCam] Reusing existing camera connection.\n');
+    else
+        try
+            cfg = WidefieldConfig();
+            if cfg.useFakeCamera
+                gCam = FakeCamera(cfg);
+            else
+                gCam = HeliCamInterface(cfg.ifNo, cfg.devNo);
+            end
+        catch ME
+            warning('Initialize: HeliCam backend unavailable (%s).', ME.message);
+            gCam = [];
         end
-    catch ME
-        warning('Initialize: HeliCam backend unavailable (%s).', ME.message);
-        gCam = [];
     end
 end
 
