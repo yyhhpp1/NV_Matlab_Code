@@ -752,20 +752,30 @@ disp('Widefield experiment completed!')
 
 function DisplayWidefield(handles, j, roi)
 % DisplayWidefield(handles, j, roi)  Live widefield display for HeliCam runs.
-%   axes2: contrast image gWide.signal(:,:,j) (contrast = rawsignal./reference)
-%   axes3: ROI-mean contrast vs sweep parameter, built up through point j
+%   axes2: image at sweep point j (contrast normally; raw intensity I for hc_Image)
+%   axes3: ROI-mean of that quantity vs sweep parameter, built up through point j
 % roi = [] -> frame-center square; else [xc yc halfwidth] in pixels.
 global gmSEQ gWide
 
-img = gWide.signal(:,:,j);
+% hc_Image is laser-in-Q1-only, so contrast is ~0; show the I (reference) image.
+isImageOnly = strcmp(char(string(gmSEQ.name)), 'hc_Image');
+if isImageOnly
+    stack = gWide.reference;   % I = Q1 image
+    qty   = 'intensity (I)';
+else
+    stack = gWide.signal;      % contrast = rawsignal ./ reference
+    qty   = 'contrast';
+end
+
+img = stack(:,:,j);
 [H, W] = size(img);
 
-% --- axes2: 2-D contrast image ---
+% --- axes2: 2-D image ---
 imagesc(handles.axes2, img);
 axis(handles.axes2, 'image');
 colorbar(handles.axes2);
-title(handles.axes2, sprintf('contrast @ %g %s', ...
-    gmSEQ.SweepParam(j)*gmSEQ.ScaleT, gmSEQ.ScaleStr));
+title(handles.axes2, sprintf('%s @ %g %s', ...
+    qty, gmSEQ.SweepParam(j)*gmSEQ.ScaleT, gmSEQ.ScaleStr));
 
 % --- ROI box ---
 if isempty(roi)
@@ -780,11 +790,11 @@ rectangle(handles.axes2, 'Position', [xr(1) yr(1) numel(xr) numel(yr)], ...
     'EdgeColor', 'r', 'LineWidth', 1);
 hold(handles.axes2, 'off');
 
-% --- axes3: ROI-mean contrast trace vs sweep ---
-trace = squeeze(mean(mean(gWide.signal(yr,xr,:), 1), 2));
+% --- axes3: ROI-mean trace vs sweep ---
+trace = squeeze(mean(mean(stack(yr,xr,:), 1), 2));
 plot(handles.axes3, gmSEQ.SweepParam(1:j)*gmSEQ.ScaleT, trace(1:j), '-o');
 xlabel(handles.axes3, gmSEQ.ScaleStr);
-ylabel(handles.axes3, 'ROI contrast');
+ylabel(handles.axes3, ['ROI ' qty]);
 grid(handles.axes3, 'on');
 if j > 1
     xlim(handles.axes3, sort([gmSEQ.SweepParam(1) gmSEQ.SweepParam(end)])*gmSEQ.ScaleT);

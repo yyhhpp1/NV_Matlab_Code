@@ -161,6 +161,8 @@ switch varargin{1}
         ODMR_sweep()
     case 'ODMR_1m1'
         ODMR_1m1()
+    case 'hc_Image'
+        hc_Image();
     case 'hc_Rabi'
         hc_Rabi();
     case 'hc_T1'
@@ -252,6 +254,7 @@ StrL{numel(StrL)+1}='XY8_N_wDarkRef';
 StrL{numel(StrL)+1}='XY8_N_tomo1';
 
 StrL{numel(StrL)+1}='--------------------Widefield (HeliCam)--------------------';
+StrL{numel(StrL)+1}='hc_Image';
 StrL{numel(StrL)+1}='hc_Rabi';
 StrL{numel(StrL)+1}='hc_T1';
 StrL{numel(StrL)+1}='hc_ODMR';
