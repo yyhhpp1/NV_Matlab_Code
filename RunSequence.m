@@ -3,20 +3,30 @@ function RunSequence(hObject, eventdata, handles)
 BackupFile = 'C:\MATLAB_Code\Data\TempDataBackup\Temp.mat';
 global gmSEQ gSG tmax hCPS gSG2 gSG3 fpga
 
-%%% init fpga
-%connect to fpga if not already connected
-Set_FPGA_GUI_buttons(handles, 'on')
-if isempty(fpga.client_socket)
-    fpga = FPGA_AWG_Client(handles);
-    msg = fpga.connect(PortMap('FPGA Host'),PortMap('FPGA Port'));
-    handles.fpga_ack_str.String = msg;
+% Ensure the detector is set (normally done in Initialize). RunSequence routes
+% on this, so guarantee it exists even if Initialize order/state differs.
+if ~isfield(gmSEQ,'meas') || isempty(gmSEQ.meas)
+    gmSEQ.meas = PortMap('meas');
 end
 
-fpga.delete_all_envelope_data();
-fpga.delete_all_waveform_cfg();
-fpga.delete_all_programs();
-% set trigger
-fpga.set_trigger_mode('external');
+%%% init fpga
+%connect to fpga if not already connected
+% Skip the FPGA preamble when FPGA is disabled (InstrumentEnabled) or for
+% HeliCam widefield (hc_*) runs, which never use the FPGA.
+if InstrumentEnabled('fpga') && ~strcmp(gmSEQ.meas,'HeliCam')
+    Set_FPGA_GUI_buttons(handles, 'on')
+    if isempty(fpga.client_socket)
+        fpga = FPGA_AWG_Client(handles);
+        msg = fpga.connect(PortMap('FPGA Host'),PortMap('FPGA Port'));
+        handles.fpga_ack_str.String = msg;
+    end
+
+    fpga.delete_all_envelope_data();
+    fpga.delete_all_waveform_cfg();
+    fpga.delete_all_programs();
+    % set trigger
+    fpga.set_trigger_mode('external');
+end
 
 
 % default setting
@@ -667,14 +677,21 @@ gWide.rawsignal  = NaN(H, W, N);   % -mean(Q)
 gWide.SweepParam = gmSEQ.SweepParam;
 gWide.name       = char(string(gmSEQ.name));
 
+% Instrument switches (InstrumentEnabled.m). With SRS disabled, all MW source
+% calls are skipped -- run hc_Image (needs no MW). hc_Rabi/T1/ODMR need the SRS.
+srsOn = InstrumentEnabled('srs');
+pbOn  = InstrumentEnabled('pulseblaster');
+
 % --- MW source on (off for f_ sequences, mirroring the pulsed branch) ---
-SignalGeneratorFunctionPool('SetMod');
-SignalGeneratorFunctionPool('WritePow');
-if ~bFreqSweep
-    SignalGeneratorFunctionPool('WriteFreq');
+if srsOn
+    SignalGeneratorFunctionPool('SetMod');
+    SignalGeneratorFunctionPool('WritePow');
+    if ~bFreqSweep
+        SignalGeneratorFunctionPool('WriteFreq');
+    end
+    if startsWith(string(gmSEQ.name), 'f_'); gSG.bOn = 0; else; gSG.bOn = 1; end
+    SignalGeneratorFunctionPool('RFOnOff');
 end
-if startsWith(string(gmSEQ.name), 'f_'); gSG.bOn = 0; else; gSG.bOn = 1; end
-SignalGeneratorFunctionPool('RFOnOff');
 
 roi = ccfg.roi;   % [] -> frame-center ROI for the 1-D trace
 
@@ -685,7 +702,7 @@ try
         j = 1;
         while j <= N
             gmSEQ.m = gmSEQ.SweepParam(j);
-            if bFreqSweep
+            if bFreqSweep && srsOn
                 gSG.Freq = gmSEQ.SweepParam(j);
                 SignalGeneratorFunctionPool('WriteFreq');
             end
@@ -698,11 +715,13 @@ try
                 gmSEQ.CHN(k).DT     = gmSEQ.CHN(k).DT     / 1e9;
                 gmSEQ.CHN(k).Delays = gmSEQ.CHN(k).Delays / 1e9;
             end
-            PBFunctionPool('PreprocessPBSequence', gmSEQ);
+            if pbOn
+                PBFunctionPool('PreprocessPBSequence', gmSEQ);
+            end
 
             % Acquire one lock-in burst.
             gCam.startAcq();
-            Run_PB_Sequence();
+            if pbOn; Run_PB_Sequence(); end   % PB drives the CamRef quarter train
             [I, Q] = gCam.readIQ(ccfg.timeoutMs);
             gCam.stopAcq();
 
@@ -731,21 +750,23 @@ try
     end
 catch ME
     try; gCam.stopAcq(); catch; end
-    KillAllTasks;
+    if InstrumentEnabled('nidaq'); try; KillAllTasks; catch; end; end
+    if srsOn; gSG.bOn = 0; SignalGeneratorFunctionPool('RFOnOff'); end
     set(handles.runningText, 'string', 'Error!')
-    gSG.bOn = 0; SignalGeneratorFunctionPool('RFOnOff');
-    PBFunctionPool('PBON', 2^SequencePool('PBDictionary','GreenAOM'));
+    if pbOn; PBFunctionPool('PBON', 2^SequencePool('PBDictionary','GreenAOM')); end
     rethrow(ME);
 end
 
 % --- Cleanup ---
-gSG.bOn = 0; SignalGeneratorFunctionPool('RFOnOff');
-if isfield(handles,'useSG2') && handles.useSG2.Value
-    gSG2.bOn = 0; SignalGeneratorFunctionPool2('RFOnOff');
+if srsOn
+    gSG.bOn = 0; SignalGeneratorFunctionPool('RFOnOff');
+    if InstrumentEnabled('srs2') && isfield(handles,'useSG2') && handles.useSG2.Value
+        gSG2.bOn = 0; SignalGeneratorFunctionPool2('RFOnOff');
+    end
 end
 gmSEQ.bGo  = 0;
 gmSEQ.bExp = 0;
-PBFunctionPool('PBON', 2^SequencePool('PBDictionary','GreenAOM'));
+if pbOn; PBFunctionPool('PBON', 2^SequencePool('PBDictionary','GreenAOM')); end
 SaveWidefield();
 set(handles.runningText, 'string', 'Stopped')
 disp('Widefield experiment completed!')

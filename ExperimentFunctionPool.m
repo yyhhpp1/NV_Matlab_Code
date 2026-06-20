@@ -122,7 +122,7 @@ PBFunctionPool('PBON',OutPuts);
 function PBOFF(hObject, eventdata, handles)
 global gCam
 OutPuts = 0;
-PBFunctionPool('PBON',OutPuts);
+if InstrumentEnabled('pulseblaster'); PBFunctionPool('PBON',OutPuts); end
 if ~isempty(gCam); try; gCam.stopAcq(); catch; end; end
 
 function Initialize(hObject, eventdata, handles)
@@ -140,28 +140,50 @@ gmSEQ.bGo=0;
 gmSEQ.bExp = 0;
 gmSEQ.bTomo = false;
 
-% load PulseBlaster DLL
-LoadPBESR;
+% load PulseBlaster DLL (gate via InstrumentEnabled)
+if InstrumentEnabled('pulseblaster')
+    LoadPBESR;
+else
+    warning('Initialize: PulseBlaster disabled in InstrumentEnabled.');
+end
 % load NI-DAQ MX DLL
 % LoadNIDAQmx;
 
-% load SRS SG386 DLL
-SignalGeneratorFunctionPool('Init',PortMap('SG ip'));
-gSG.bMod='IQ';
-gSG.bModSrc='External';
-SignalGeneratorFunctionPool('SetMod');
+% Instruments are individually enabled/disabled in InstrumentEnabled.m, so the
+% system still initializes when a box is absent (e.g. camera-only bench test).
+if InstrumentEnabled('srs')
+    % load SRS SG386 DLL
+    SignalGeneratorFunctionPool('Init',PortMap('SG ip'));
+    gSG.bMod='IQ';
+    gSG.bModSrc='External';
+    SignalGeneratorFunctionPool('SetMod');
+else
+    warning('Initialize: SRS (gSG) disabled in InstrumentEnabled.');
+end
 
-fpga = FPGA_AWG_Client(handles);
+if InstrumentEnabled('fpga')
+    fpga = FPGA_AWG_Client(handles);
+else
+    warning('Initialize: FPGA disabled in InstrumentEnabled.');
+end
 
-SignalGeneratorFunctionPool2('Init',PortMap('SG2 ip'));
-gSG2.bMod='none';
-gSG2.bModSrc='External';
-SignalGeneratorFunctionPool2('SetMod');
+if InstrumentEnabled('srs2')
+    SignalGeneratorFunctionPool2('Init',PortMap('SG2 ip'));
+    gSG2.bMod='none';
+    gSG2.bModSrc='External';
+    SignalGeneratorFunctionPool2('SetMod');
+else
+    warning('Initialize: SRS2 (gSG2) disabled in InstrumentEnabled.');
+end
 
-SignalGeneratorFunctionPool3('Init',PortMap('SG3 ip'));
-gSG3.bMod='none';
-gSG3.bModSrc='External';
-SignalGeneratorFunctionPool3('SetMod');
+if InstrumentEnabled('srs3')
+    SignalGeneratorFunctionPool3('Init',PortMap('SG3 ip'));
+    gSG3.bMod='none';
+    gSG3.bModSrc='External';
+    SignalGeneratorFunctionPool3('SetMod');
+else
+    warning('Initialize: SRS3 (gSG3) disabled in InstrumentEnabled.');
+end
 
 % Load python env only once 
 pythonPath = 'C:\Users\dilution_fridge_2\miniconda3\envs\slackbot_haopu\python.exe';
@@ -184,6 +206,7 @@ end
 % gSG3.bModSrc='External';
 % SignalGeneratorFunctionPool3('SetMod');
 
+gmSEQ.meas=PortMap('meas');     % ensure detector is set (RunSequence routes on this)
 gmSEQ.meas2=PortMap('meas2');
 gmSEQ.meas3=PortMap('meas3');
 

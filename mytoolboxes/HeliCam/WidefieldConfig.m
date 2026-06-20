@@ -18,6 +18,9 @@ function cfg = WidefieldConfig()
     cfg.ifNo          = 0;        % GigE interface index
     cfg.devNo         = 0;        % device index
 
+    % Note: to disable instruments (FPGA, SRS, ...) for a camera-only check, use
+    % InstrumentEnabled.m -- not a flag here.
+
     % --- Lock-in acquisition (held constant across a sweep) -------------------
     cfg.exposureSeconds       = 4e-6;   % per-quarter-bin integration time t_s
     cfg.nPeriods              = 20;     % LockInTargetTimeConstantNPeriods (1..100)
