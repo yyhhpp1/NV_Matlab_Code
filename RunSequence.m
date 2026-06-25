@@ -651,21 +651,28 @@ gmSEQ.ctrN = 1;            % no NI-DAQ counter gate in widefield mode
 CreateSavePath_Ave();
 
 % --- Lock-in trigger budget -------------------------------------------------
+% nPeriods = 1; nFrames comes from the GUI Repeat field (>= 4, HeliCam minimum).
 % One PB run of an hc_* sequence = one lock-in period (CamRef NRise=4 -> 4
-% quarter edges). The camera fills its burst from nFrames*nPeriods periods, so
-% fix nPeriods = 1 and loop the PB exactly nFrames times. Hence per camera run:
-%   CamRef edges = 4 * nPeriods * nFrames = 4 * nFrames.
-% nFrames >= 4 (HeliCam minimum). Average is the outer repeat of the whole run.
+% quarter edges), so the PB loops nFrames times and emits 4*nFrames CamRef
+% edges per camera run. Average is the outer repeat of the whole acquisition.
 gmSEQ.nPeriods = 1;
-gmSEQ.nFrames  = max(4, round(gmSEQ.nFrames));
+gmSEQ.nFrames  = max(4, round(gmSEQ.Repeat));   % GUI Repeat -> nFrames
 gmSEQ.Repeat   = gmSEQ.nFrames;   % PB executes the lock-in period nFrames times
 gmSEQ.Samples  = gmSEQ.Repeat;    % PB LOOP count (PBFunctionPool uses SEQ.Samples)
+
+% Camera exposure tracks the GUI readout (= quarter-bin spacing), kept just
+% below it by the sensor overhead so the configured reference frequency matches
+% the actual PB quarter rate (otherwise the camera won't lock and readIQ times
+% out). readout is in ns; camera exposure floor ~1.825 us.
+overheadNs = 2000;                                  % ~2 us sensor busy overhead
+expoNs = max(gmSEQ.readout - overheadNs, 1825);
+gmSEQ.exposureSeconds = expoNs * 1e-9;
 
 % --- Configure camera once: WidefieldConfig hardware/display fields, with the
 % per-run lock-in params taken from gmSEQ (populated by LoadUserInputs). ---
 ccfg = WidefieldConfig();
-ccfg.exposureSeconds      = gmSEQ.exposureSeconds;
-ccfg.nPeriods             = gmSEQ.nPeriods;   % forced to 1 above
+ccfg.exposureSeconds      = gmSEQ.exposureSeconds;   % tracks readout, set above
+ccfg.nPeriods             = gmSEQ.nPeriods;          % forced to 1 above
 ccfg.nFrames              = gmSEQ.nFrames;
 ccfg.sensitivity          = gmSEQ.sensitivity;
 ccfg.coupling             = gmSEQ.coupling;
