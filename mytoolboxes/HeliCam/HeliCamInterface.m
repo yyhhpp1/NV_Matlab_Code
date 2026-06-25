@@ -218,8 +218,12 @@ classdef HeliCamInterface < handle
 
             if nargin < 2 || isempty(sensitivity); sensitivity = 1.0; end
             tClock = 12.5e-9;                          % 80 MHz sensor clock cycle
+            fRefMin = 306;                             % camera GenICam minimum (Hz)
+            % Largest grid index whose f_ref still satisfies the 306 Hz floor
+            % (n=65536 would give ~305.18 Hz, just below the limit).
+            nMax = min(65536, floor(sensitivity / (fRefMin * 4 * tClock)));
             nGrid  = round(tExpSeconds / (sensitivity * tClock));
-            nGrid  = min(max(nGrid, 146), 65536);      % external-ref usable grid bounds
+            nGrid  = min(max(nGrid, 146), nMax);       % external-ref usable grid bounds
             fRef   = sensitivity / (nGrid * 4 * tClock);
             tExpActual = sensitivity * nGrid * tClock;
 
