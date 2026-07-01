@@ -131,6 +131,54 @@ classdef HeliCamInterface < handle
         end
 
         % ------------------------------------------------------------------ %
+        function armExternalRecording(obj, refLine, nFrames)
+        % armExternalRecording(refLine, nFrames)  Diagnostic: arm the camera to
+        % start a plain intensity burst on a single external RecordingStart edge
+        % on refLine ('FI2'/'FI3'). Returns immediately; the camera then waits
+        % for the edge. Pair with readAfterTrigger. Use to test whether a TTL on
+        % the reference line actually reaches the camera.
+
+            if nargin < 2 || isempty(refLine); refLine = 'FI2'; end
+            if nargin < 3 || isempty(nFrames); nFrames = 4;     end
+
+            obj.c4dev.writeString("DeviceOperationMode",    "LockInCam");
+            obj.c4dev.writeString("Scan3dExtractionMethod", "Intensity"); % plain image
+            obj.c4dev.writeInteger("AcquisitionBurstFrameCount", nFrames);
+
+            % RecordingStart: external edge on refLine
+            obj.c4dev.writeString("TriggerSelector", "RecordingStart");
+            obj.c4dev.writeString("TriggerMode",     "On");
+            obj.c4dev.writeString("TriggerSource",   refLine);
+            % FrameStart: software
+            obj.c4dev.writeString("TriggerSelector", "FrameStart");
+            obj.c4dev.writeString("TriggerMode",     "On");
+            obj.c4dev.writeString("TriggerSource",   "Software");
+
+            obj.c4dev.startAcquisition(4);
+            obj.c4dev.writeString("TriggerSelector", "FrameStart");
+            obj.c4dev.executeCommand("TriggerSoftware");
+            fprintf('[HeliCam] Armed: waiting for a RecordingStart edge on %s ...\n', refLine);
+        end
+
+        % ------------------------------------------------------------------ %
+        function ok = readAfterTrigger(obj, timeoutMs)
+        % ok = readAfterTrigger(timeoutMs)  Wait up to timeoutMs for the burst
+        % armed by armExternalRecording. Returns true if data arrived (edge
+        % detected), false on timeout. Stops acquisition either way.
+
+            if nargin < 2 || isempty(timeoutMs); timeoutMs = 5000; end
+            ok = false;
+            try
+                c4buf = obj.c4dev.getBuffer(timeoutMs);
+                try; c4buf.release(); catch; end
+                ok = true;
+            catch ME
+                fprintf('[HeliCam] No data: %s\n', ME.message);
+            end
+            obj.stopAcq();
+        end
+
+        % ------------------------------------------------------------------ %
         function [I, Q] = readIQ(obj, timeoutMs)
         % [I, Q] = readIQ(timeoutMs)  Return I and Q as double(Height, Width, nFrames).
         %
