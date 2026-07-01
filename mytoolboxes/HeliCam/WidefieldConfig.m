@@ -30,6 +30,10 @@ function cfg = WidefieldConfig()
     cfg.referenceTimeShiftUs  = 0.0;    % LockInReferenceTimeShift; phase-align Q1 to PB init edge
     cfg.recordingStartExternal = false; % kept false: RecordingStart unused on this setup
 
+    % HeliCam input line the CamRef (PB pin 9) train is wired to. Must match the
+    % physical cable. 'FI2' or 'FI3'. Do not use 'FI3' with recordingStartExternal.
+    cfg.refSourceSignal = 'FI2';
+
     % --- PulseBlaster quarter-period train (CamRef -> FI2) --------------------
     % Each lock-in period = 4 quarter bins; PB emits one CamRef edge per bin.
     % quarterBinNs must exceed the per-bin exposure plus ~2 us sensor overhead.

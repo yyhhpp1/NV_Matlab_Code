@@ -100,10 +100,17 @@ classdef HeliCamInterface < handle
             obj.c4dev.writeString("LockInCoupling", cfg.coupling);
             obj.c4dev.writeInteger("AcquisitionBurstFrameCount", cfg.nFrames);
 
-            % --- External reference: quarter triggers direct from PB on FI2 ---
+            % --- External reference: quarter triggers direct from PB ---
+            % Input line (FI2/FI3/...) is configurable; must match where CamRef
+            % (PB pin 9) is physically wired. Do NOT use FI3 here if
+            % recordingStartExternal is on (that also uses FI3).
+            refSig = 'FI2';
+            if isfield(cfg,'refSourceSignal') && ~isempty(cfg.refSourceSignal)
+                refSig = cfg.refSourceSignal;
+            end
             obj.c4dev.writeString("LockInReferenceSourceType",      "External");
             obj.c4dev.writeString("LockInReferenceFrequencyScaler", "DivideBy4"); % each PB edge = 1 quarter
-            obj.c4dev.writeString("LockInReferenceSourceSignal",    "FI2");
+            obj.c4dev.writeString("LockInReferenceSourceSignal",    refSig);
 
             % --- Phase alignment of the quarter grid to PB pulses ---
             obj.c4dev.writeFloat("LockInReferenceTimeShift", cfg.referenceTimeShiftUs); % us, ~5 ns resolution
