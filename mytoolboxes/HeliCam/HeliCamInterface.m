@@ -140,12 +140,35 @@ classdef HeliCamInterface < handle
         end
 
         % ------------------------------------------------------------------ %
-        function s = readLineStatus(obj, lineName)
-        % s = readLineStatus(lineName)  State of one line, selected by name.
-        % lineName: 'Line0'|'Line1'|'Line2'|'Line3'|'RTIO2'|'RTIO3'.
+        function [s, bitIdx, actualName] = readLineStatus(obj, lineName)
+        % [s, bitIdx, actualName] = readLineStatus(lineName)  State of one line,
+        % selected by name. lineName e.g. 'Line0'..'Line3', 'FI2', 'RTIO2'.
+        %
+        %   s          : 0/1 line state
+        %   bitIdx     : the LineSelector enum's integer value, which is the bit
+        %                position this line occupies in LineStatusAll (NaN if the
+        %                camera will not report the enum numerically)
+        %   actualName : LineSelector read back after the write. If this differs
+        %                from lineName the write did not take -- the name is not
+        %                supported and s belongs to some other line.
+        %
+        % Throws if the camera rejects lineName outright; callers probing for
+        % supported names should wrap this in try/catch.
 
             obj.c4dev.writeString("LineSelector", lineName);
             s = double(obj.c4dev.readInteger("LineStatus"));
+
+            bitIdx = NaN;
+            try
+                bitIdx = double(obj.c4dev.readInteger("LineSelector"));
+            catch
+            end
+
+            actualName = lineName;
+            try
+                actualName = char(string(obj.c4dev.readString("LineSelector")));
+            catch
+            end
         end
 
         % ------------------------------------------------------------------ %
