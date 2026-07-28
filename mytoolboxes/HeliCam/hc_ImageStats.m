@@ -1,9 +1,15 @@
-function s = hc_ImageStats(src, j)
-% s = hc_ImageStats(src, j)  Decide whether a widefield image is LIGHT or PATTERN.
+function s = hc_ImageStats(src, j, dark)
+% s = hc_ImageStats(src, j, dark)  Decide whether a widefield image is LIGHT or
+% PATTERN.
 %
-%   src : omitted/[] -> use global gWide (the run just finished)
-%         char/string -> path to a saved .h5 from SaveWidefield
-%   j   : sweep index to analyse (default: first slice that is not all-NaN)
+%   src  : omitted/[] -> use global gWide (the run just finished)
+%          char/string -> path to a saved .h5 from SaveWidefield
+%   j    : sweep index to analyse (default: first slice that is not all-NaN)
+%   dark : optional dark reference to subtract per pixel -- a struct from
+%          hc_DarkRef('load'), or a path to its .mat. The C4 carries a large
+%          per-pixel electronic pedestal (~517 in decoded units with the cap on),
+%          so without this the stats describe the offset and its fixed-pattern
+%          structure rather than any light.
 %
 % A HeliCam lock-in image can look perfectly plausible and contain no light at
 % all: electronic pedestal plus row-wise fixed-pattern noise produces a smooth,
@@ -36,8 +42,9 @@ function s = hc_ImageStats(src, j)
 % excitation unblocked and again blocked, and compare 'mean'. If the mean barely
 % moves, the image is not light.
 
-    if nargin < 1; src = []; end
-    if nargin < 2; j   = []; end
+    if nargin < 1; src  = []; end
+    if nargin < 2; j    = []; end
+    if nargin < 3; dark = []; end
 
     [ref, raw, label] = loadStack(src);
 
@@ -55,7 +62,31 @@ function s = hc_ImageStats(src, j)
     end
 
     fprintf('=== hc_ImageStats (%s, sweep index %d) ===\n', label, j);
-    fprintf('Image size: %d x %d\n\n', size(A,1), size(A,2));
+    fprintf('Image size: %d x %d\n', size(A,1), size(A,2));
+
+    % --- optional per-pixel dark subtraction ------------------------------- %
+    s.darkApplied = false;
+    if ~isempty(dark)
+        D = resolveDark(dark);
+        checkDarkSettings(D);
+        if ~isequal(size(D.reference), size(A))
+            error(['hc_ImageStats: dark reference is %dx%d but the image is ', ...
+                   '%dx%d.'], size(D.reference,1), size(D.reference,2), ...
+                   size(A,1), size(A,2));
+        end
+        fprintf('Dark subtraction: ON (pedestal mean %.6g removed)\n', ...
+                mean(D.reference(:), 'omitnan'));
+        A = A - D.reference;
+        if ~isempty(B) && isfield(D,'rawsignal') && isequal(size(D.rawsignal), size(B))
+            B = B - D.rawsignal;
+        end
+        s.darkApplied = true;
+    else
+        fprintf(['Dark subtraction: off. The C4 pedestal (~500 units) dominates,\n', ...
+                 '   so the numbers below describe OFFSET + PATTERN, not light.\n', ...
+                 '   Capture one with hc_DarkRef(''save'') and pass it here.\n']);
+    end
+    fprintf('\n');
 
     s.reference = describe(A, 'reference  (mean I)');
 
@@ -76,8 +107,52 @@ function s = hc_ImageStats(src, j)
         s.qOverI = rr;
     end
 
-    fprintf(['Next: rerun with the excitation BLOCKED and compare "mean".\n', ...
-             'Unchanged mean => pedestal/pattern, not light.\n']);
+    if s.darkApplied
+        fprintf(['Dark-subtracted, so "mean" is now light-induced signal only.\n', ...
+                 'A mean near zero on an UNMODULATED source is the CORRECT result:\n', ...
+                 'I = Q1-Q3 cancels DC light by design.\n']);
+    else
+        fprintf(['Next: capture a dark (block the light, run, hc_DarkRef(''save'')),\n', ...
+                 'then pass it here. Comparing blocked vs unblocked "mean" without\n', ...
+                 'it only works if the difference exceeds the pedestal drift.\n']);
+    end
+end
+
+% ---------------------------------------------------------------------------- %
+function D = resolveDark(dark)
+% Accept a struct from hc_DarkRef('load'), or a path to its .mat.
+    if isstruct(dark)
+        D = dark;
+    else
+        D = hc_DarkRef('load', dark);
+    end
+    if ~isfield(D, 'reference')
+        error('hc_ImageStats: dark reference has no ''reference'' field.');
+    end
+end
+
+% ---------------------------------------------------------------------------- %
+function checkDarkSettings(D)
+% The pedestal scales with exposure, nPeriods and nFrames, so a dark taken under
+% different settings subtracts the wrong amount. Warn rather than refuse -- the
+% user may deliberately be comparing.
+    if ~isfield(D, 'settings') || ~isstruct(D.settings); return; end
+    try
+        global gmSEQ %#ok<GVMIS>
+        f = {'exposureSeconds', 'nPeriods', 'nFrames', 'readout'};
+        for i = 1:numel(f)
+            if isfield(gmSEQ, f{i}) && isfield(D.settings, f{i})
+                a = double(gmSEQ.(f{i}));
+                b = D.settings.(f{i});
+                if isscalar(a) && ~isnan(b) && abs(a - b) > 1e-12 * max(1, abs(b))
+                    fprintf(2, ['   WARNING: dark was taken at %s = %g but the run ', ...
+                                'used %g. The pedestal scales with it, so the ', ...
+                                'subtraction is wrong.\n'], f{i}, b, a);
+                end
+            end
+        end
+    catch
+    end
 end
 
 % ---------------------------------------------------------------------------- %
