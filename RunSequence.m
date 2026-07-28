@@ -916,10 +916,20 @@ global gmSEQ gSG gWide gSaveDataAve
 
 if isempty(gWide) || ~isfield(gWide,'reference'); return; end
 
-% Reuse the dated path/stem prepared by CreateSavePath_Ave.
-date = regexprep(gSaveDataAve.file, '^_|_Ave\.txt$', '');   % '<YYYY-M-D>'
+% Reuse the dated folder prepared by CreateSavePath_Ave, and take the date from
+% the folder name rather than parsing gSaveDataAve.file. That field is built with
+% strcat on gmSEQ.name, so it inherits gmSEQ.name's type -- when the sequence name
+% is a string/cell it is a CELL, which propagated into stem and made sprintf
+% throw. It also carries the _### suffix, which the old pattern never matched.
+pth     = char(string(gSaveDataAve.path));
+base    = regexprep(pth, '[\\/]+$', '');            % drop trailing separator
+toks    = regexp(base, '[\\/]', 'split');
+dateStr = toks{end};                                % '<YYYY-M-D>'
+if isempty(dateStr)
+    dateStr = datestr(datetime('now'), 'yyyy-mm-dd');
+end
 name = regexprep(char(string(gmSEQ.name)), '\W', '');
-stem = fullfile(gSaveDataAve.path, [name '_' date '_WF']);
+stem = char(fullfile(base, [name '_' dateStr '_WF']));
 
 % Collision-safe suffix.
 n = 1;
