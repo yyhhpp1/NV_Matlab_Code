@@ -64,42 +64,17 @@ function cfg = WidefieldConfig()
     % hc_CamRefWidth. Set e.g. 100 to reproduce the old behaviour.
     cfg.camRefWidthNs  = [];
 
-    % Surplus lock-in periods PB runs beyond what the camera consumes.
+    % Sensor busy time after each integration window, subtracted from the quarter
+    % bin to get the exposure:  exposure = readout - sensorOverheadNs.
     %
-    % STATUS: not the fix for the original readIQ timeout -- that was nPeriods = 1
-    % demanding ~2.5 kHz of output frames. This margin has never been tested
-    % alone, so it is NOT known to be necessary. It is kept as insurance, not as
-    % a proven requirement.
-    %
-    % Why keep it: the camera's frame count (AcquisitionBurstFrameCount, over
-    % GenICam) and PB's period count (the LOOP instruction) are set by unrelated
-    % mechanisms and nothing enforces that they agree. With an exact fit the run
-    % succeeds only if the camera consumes exactly 4*nPeriods*nFrames edges AND
-    % starts on the very first one -- making a race between startAcq() and
-    % Run_PB_Sequence(). Losing that race produces "Timeout, no data available!"
-    % intermittently, which is expensive to diagnose. getBuffer only returns a
-    % COMPLETE burst, so there is no partial data to inspect when it happens.
-    % Cost is ~4 periods (~1.6 ms at readout = 100 us) per sweep point, and
-    % surplus edges cannot corrupt data: the camera stops at its own frame count.
-    %
-    % To retire it, set 0 and confirm over ~10 consecutive runs -- a single
-    % success does not disprove a race.
-    cfg.camRefPeriodMargin = 4;
-
-    % Exposure is derived from the quarter bin as
-    %     exposure = readout - sensorOverheadNs - exposureMarginNs
-    % sensorOverheadNs is the sensor's busy time after each integration window (a
-    % property of the camera). exposureMarginNs is deliberate slack on top of it:
-    % with margin 0 the quarter bin equals exposure + overhead exactly, so the
-    % next CamRef edge arrives the instant the sensor frees up.
-    %
-    % STATUS: exposureMarginNs was also speculative, added while chasing the
-    % timeout that turned out to be nPeriods = 1. Unlike camRefPeriodMargin it has
-    % a REAL ONGOING COST: at readout = 100 us it throws away 2 us of every 98,
-    % about 2% of signal on every measurement, which matters for NV contrast.
-    % Worth testing at 0 -- if frames still return, the signal is free.
+    % PB emits exactly the periods the camera consumes -- no surplus -- and the
+    % quarter bin equals exposure + overhead exactly, with no extra slack. Both of
+    % those were carried as configurable margins while the readIQ timeout was
+    % being chased; the cause turned out to be nPeriods = 1 demanding ~2.5 kHz of
+    % output frames, and 20 consecutive acquisitions with both margins at zero
+    % confirmed neither was doing anything. Removed rather than left as dead
+    % knobs. (Verified 2026-07-28, readout = 100 us, nPeriods = 20, nFrames = 10.)
     cfg.sensorOverheadNs = 2000;
-    cfg.exposureMarginNs = 2000;
 
     % --- Readout / display ----------------------------------------------------
     cfg.timeoutMs = 20000;        % getBuffer timeout per acquisition

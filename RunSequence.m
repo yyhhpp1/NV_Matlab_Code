@@ -652,9 +652,9 @@ CreateSavePath_Ave();
 
 % --- Lock-in trigger budget -------------------------------------------------
 % nFrames comes from the GUI Repeat field (>= 4, HeliCam minimum). One PB run of
-% an hc_* sequence = one lock-in period (CamRef NRise=4 -> 4 quarter edges). The
-% PB loop count is the number of periods the camera consumes PLUS a margin (see
-% below). Average is the outer repeat of the whole acquisition.
+% an hc_* sequence = one lock-in period (CamRef NRise=4 -> 4 quarter edges), so the
+% PB loop count is exactly the number of periods the camera consumes. Average is
+% the outer repeat of the whole acquisition.
 cfgPB = WidefieldConfig();
 
 % Demodulation periods averaged into each output frame. This was hardcoded to 1,
@@ -672,23 +672,19 @@ end
 gmSEQ.nPeriods = max(1, min(100, round(nPeriodsSel)));   % camera range 1..100
 gmSEQ.nFrames  = max(4, round(gmSEQ.Repeat));   % GUI Repeat -> nFrames
 
-% PB runs a SURPLUS of lock-in periods beyond what the camera consumes.
-% getBuffer only returns a complete burst, so if the camera needs even one edge
-% more than PB supplies the result is a bare "Timeout, no data available!" with
-% nothing to inspect. The camera stops at its own frame count, so the extra
-% periods are discarded. (gmSEQ.Repeat is re-read from the GUI by LoadUserInputs
-% on every run, so overwriting it here does not accumulate.)
-periodMargin = 4;
-if isfield(cfgPB,'camRefPeriodMargin') && ~isempty(cfgPB.camRefPeriodMargin)
-    periodMargin = cfgPB.camRefPeriodMargin;
-end
+% PB runs exactly the periods the camera consumes -- no surplus. A surplus was
+% carried for a while on the theory that a shortfall of even one edge would leave
+% getBuffer waiting forever with no partial data; 20 consecutive acquisitions with
+% zero surplus showed the camera does not need it. (gmSEQ.Repeat is re-read from
+% the GUI by LoadUserInputs on every run, so overwriting it here does not
+% accumulate.)
 nBlankCfg = 0;
 if isfield(cfgPB,'blankPeriods') && ~isempty(cfgPB.blankPeriods)
     nBlankCfg = cfgPB.blankPeriods;
 end
 % Periods the camera consumes: (nPeriods + blank) per frame, all nFrames frames.
 nPeriodsNeeded = (gmSEQ.nPeriods + nBlankCfg) * gmSEQ.nFrames;
-gmSEQ.nPBPeriods = nPeriodsNeeded + periodMargin;
+gmSEQ.nPBPeriods = nPeriodsNeeded;
 % Set both: the root PBFunctionPool loops on SEQ.Repeat, the one in
 % mytoolboxes/PulseBlaster loops on SEQ.Samples, and path order decides which
 % runs. Keeping them equal makes the loop count correct either way.
@@ -703,25 +699,26 @@ overheadNs = 2000;                                  % ~2 us sensor busy overhead
 if isfield(cfgPB,'sensorOverheadNs') && ~isempty(cfgPB.sensorOverheadNs)
     overheadNs = cfgPB.sensorOverheadNs;
 end
-marginNs = 0;                                       % deliberate lock slack
-if isfield(cfgPB,'exposureMarginNs') && ~isempty(cfgPB.exposureMarginNs)
-    marginNs = cfgPB.exposureMarginNs;
-end
-expoNs = max(gmSEQ.readout - overheadNs - marginNs, 1825);
+expoNs = max(gmSEQ.readout - overheadNs, 1825);     % camera exposure floor 1.825 us
 gmSEQ.exposureSeconds = expoNs * 1e-9;
 
 fprintf(['[Widefield] Edge budget: camera needs %d periods ', ...
          '(%d frames x (%d+%d)) = %d CamRef edges; PB will run %d periods ', ...
          '= %d edges.\n'], nPeriodsNeeded, gmSEQ.nFrames, gmSEQ.nPeriods, ...
         nBlankCfg, 4*nPeriodsNeeded, gmSEQ.nPBPeriods, 4*gmSEQ.nPBPeriods);
+% slack is 0 by construction (exposure = readout - overhead); it goes NEGATIVE
+% only when readout is too short for the camera's 1.825 us exposure floor, which
+% means the next CamRef edge lands while the sensor is still busy.
 slackNs = gmSEQ.readout - expoNs - overheadNs;
 fprintf(['[Widefield] Quarter bin = readout = %g ns; exposure = %g ns ', ...
          '(overhead %g ns, slack %g ns).\n'], ...
         gmSEQ.readout, expoNs, overheadNs, slackNs);
-if slackNs <= 0
-    fprintf(2, ['[Widefield] WARNING: no slack -- the next CamRef edge arrives ', ...
-                'as the sensor frees up (or sooner). Raise readout, or set ', ...
-                'cfg.exposureMarginNs in WidefieldConfig.\n']);
+if slackNs < 0
+    fprintf(2, ['[Widefield] WARNING: readout %g ns is too short -- the exposure ', ...
+                'floor (1825 ns) plus overhead (%g ns) exceeds the quarter bin, so ', ...
+                'the next CamRef edge arrives while the sensor is still busy. ', ...
+                'Raise readout to at least %g ns.\n'], ...
+            gmSEQ.readout, overheadNs, 1825 + overheadNs);
 end
 
 % Output frame rate the camera is being asked to sustain. One frame per
