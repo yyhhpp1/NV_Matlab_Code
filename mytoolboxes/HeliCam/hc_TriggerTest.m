@@ -3,13 +3,15 @@ function hc_TriggerTest(mode, refLine)
 % actually reaches the HeliCam.
 %
 %   mode = 'line'   (default) PURE REGISTER TEST -- no acquisition, no triggers.
-%                   Toggles PB CamRef (pin 9) and reads the camera's
-%                   LineStatusAll bitfield before/after. Whichever bit flips is
-%                   the camera line your cable is on. This is the test to run
-%                   first: it cannot time out and cannot disturb camera state.
+%                   Toggles the PB CamRef pin (whatever PBDictionary('CamRef')
+%                   resolves to -- the test PRINTS it, do not assume) and reads
+%                   the camera's LineStatusAll bitfield before/after. Whichever
+%                   bit flips is the camera line your cable is on. This is the
+%                   test to run first: it cannot time out and cannot disturb
+%                   camera state.
 %   mode = 'manual' Same read-back, but YOU toggle the line (30 s window,
 %                   sampled continuously). Use with a function generator or if
-%                   PB pin 9 is not the line you want to test.
+%                   the CamRef pin is not the line you want to test.
 %   mode = 'record' Arm a burst on one external RecordingStart edge on refLine
 %                   ('FI2'/'FI3'), pulse pin 9, see if data arrives. Heavier;
 %                   only meaningful once 'line' shows the signal arriving.
@@ -36,11 +38,15 @@ function hc_TriggerTest(mode, refLine)
         error('hc_TriggerTest: gCam is not a real HeliCamInterface (FakeCamera cannot test wiring).');
     end
 
-    camRefMask = 2^SequencePool('PBDictionary','CamRef');   % PB pin 9
+    % Resolve the CamRef pin from the dictionary -- never assume a pin number.
+    camRefPin  = SequencePool('PBDictionary','CamRef');
+    camRefMask = 2^camRefPin;
+    reportPinMap(camRefPin);
 
     switch lower(mode)
         case 'line'
-            fprintf('--- Line-status toggle test (PB CamRef = pin 9) ---\n');
+            fprintf('--- Line-status toggle test (PB CamRef = pin %d, mask 0x%X) ---\n', ...
+                    camRefPin, camRefMask);
             PBFunctionPool('PBON', 0);            pause(0.2);
             lo1 = gCam.readLineStatusAll();
             PBFunctionPool('PBON', camRefMask);   pause(0.2);
@@ -79,7 +85,7 @@ function hc_TriggerTest(mode, refLine)
             reportLines(gCam);
 
         case 'record'
-            fprintf('--- RecordingStart test on %s ---\n', refLine);
+            fprintf('--- RecordingStart test on %s (PB pin %d) ---\n', refLine, camRefPin);
             gCam.armExternalRecording(refLine, 4);
             pause(0.3);
             PBFunctionPool('PBON', camRefMask);   pause(0.05);
@@ -94,6 +100,31 @@ function hc_TriggerTest(mode, refLine)
 
         otherwise
             error('hc_TriggerTest: mode must be ''line'', ''manual'' or ''record''.');
+    end
+end
+
+% ---------------------------------------------------------------------------- %
+function reportPinMap(camRefPin)
+% State which PB pin CamRef resolves to, and warn if another logical channel in
+% PBDictionary shares it. A shared pin means an unrelated sequence channel drives
+% the camera reference line (and ApplyDelays mis-tags that channel as CamRef).
+    names = {'ctr0','dummy1','GreenAOM','RedAOM','MWSwitch','+X','-X','+Y','-Y', ...
+             'PD','MWSwitch2','MWSwitch3'};
+    clash = {};
+    for i = 1:numel(names)
+        try
+            if SequencePool('PBDictionary', names{i}) == camRefPin
+                clash{end+1} = names{i}; %#ok<AGROW>
+            end
+        catch
+        end
+    end
+    fprintf('[PBDictionary] CamRef -> PB pin %d.\n', camRefPin);
+    if ~isempty(clash)
+        fprintf(2, ['[PBDictionary] WARNING: pin %d is also mapped to: %s.\n', ...
+                    '   That channel and CamRef drive the same physical output, and\n', ...
+                    '   ApplyDelays will treat it as CamRef. Give CamRef its own pin.\n'], ...
+                camRefPin, strjoin(clash, ', '));
     end
 end
 
