@@ -1,6 +1,6 @@
-function hc_TriggerTest(mode, refLine)
-% hc_TriggerTest(mode, refLine)  Minimal check that the PB CamRef signal
-% actually reaches the HeliCam.
+function hc_TriggerTest(mode, refLine, pinOverride)
+% hc_TriggerTest(mode, refLine, pinOverride)  Minimal check that the PB CamRef
+% signal actually reaches the HeliCam.
 %
 %   mode = 'line'   (default) PURE REGISTER TEST -- no acquisition, no triggers.
 %                   Toggles the PB CamRef pin (whatever PBDictionary('CamRef')
@@ -13,15 +13,23 @@ function hc_TriggerTest(mode, refLine)
 %                   sampled continuously). Use with a function generator or if
 %                   the CamRef pin is not the line you want to test.
 %   mode = 'record' Arm a burst on one external RecordingStart edge on refLine
-%                   ('FI2'/'FI3'), pulse pin 9, see if data arrives. Heavier;
-%                   only meaningful once 'line' shows the signal arriving.
+%                   ('FI2'/'FI3'), pulse the CamRef pin, see if data arrives.
+%                   Heavier; only meaningful once 'line' shows the signal
+%                   arriving.
+%
+%   pinOverride     Optional PB pin number to toggle INSTEAD of
+%                   PBDictionary('CamRef'). Use it to test a candidate pin when
+%                   you are unsure which output the camera coax is on, without
+%                   editing the dictionary. Diagnostic only -- it does not change
+%                   what the sequences drive.
 %
 % Requires the camera already connected (global gCam) -- open Experiment_PB_DAQ
 % once so Initialize creates it. Reuses that connection (re-opening C4HdlCLR in
 % one MATLAB session crashes the .NET runtime).
 %
 % Examples:
-%   hc_TriggerTest                     % line-status toggle test
+%   hc_TriggerTest                     % line-status toggle test, dictionary pin
+%   hc_TriggerTest('line',[],9)        % same test, force PB pin 9
 %   hc_TriggerTest('manual')           % you create the edges
 %   hc_TriggerTest('record','FI3')     % RecordingStart test on FI3
 
@@ -39,9 +47,14 @@ function hc_TriggerTest(mode, refLine)
     end
 
     % Resolve the CamRef pin from the dictionary -- never assume a pin number.
-    camRefPin  = SequencePool('PBDictionary','CamRef');
-    camRefMask = 2^camRefPin;
+    camRefPin = SequencePool('PBDictionary','CamRef');
     reportPinMap(camRefPin);
+    if nargin >= 3 && ~isempty(pinOverride)
+        camRefPin = pinOverride;
+        fprintf('[override] Toggling PB pin %d instead of the dictionary CamRef pin.\n', ...
+                camRefPin);
+    end
+    camRefMask = 2^camRefPin;
 
     switch lower(mode)
         case 'line'
