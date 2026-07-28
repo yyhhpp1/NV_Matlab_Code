@@ -26,8 +26,22 @@ function s = hc_FindStride(src, j)
 %   columns left by that amount moves the seam to the edge -- which is exactly the
 %   "move the right half to the left" operation when the offset happens to be L/2.
 %
-% Reports the current stride, the best stride, and the seam column, so the fix is
-% a number rather than an impression.
+% IMPORTANT -- why a bare "which stride is smoothest" test does not work, and what
+% is done instead. Comparing vertical roughness across strides is comparing the
+% stream's autocorrelation at different lags, and the baseline correlation falls
+% off with lag on its own. At L = 32, "vertically adjacent" pixels are 32 samples
+% apart, i.e. 32 px along the SAME sensor row; at L = 512 they are one row apart.
+% When row-to-row fixed-pattern noise dominates, along-a-row neighbours are more
+% alike than down-a-row neighbours, so small strides always win on that score
+% regardless of the true geometry.
+%
+% The true row length is a PEAK in the stream autocorrelation ABOVE the local
+% baseline, with harmonics at 2L, 3L, ... So this detrends the autocorrelation
+% against a running median and looks for peaks, which is scale-free. The divisor
+% table is still printed for context, with its bias called out.
+%
+% Reports the current stride, the detected stride, and the seam column, so the fix
+% is a number rather than an impression.
 
     if nargin < 1; src = []; end
     if nargin < 2; j   = []; end
@@ -66,36 +80,63 @@ function s = hc_FindStride(src, j)
         error('hc_FindStride: %d has no divisors in the searched range.', N);
     end
 
+    % --- PRIMARY test: detrended stream autocorrelation --------------------- %
+    maxLag = min(4096, floor(N/8));
+    [lags, acRatio] = detrendedAutocorr(v, maxLag);
+    peaks = localPeaks(lags, acRatio, 1.02);      % lag, ratio; sorted by ratio
+
+    fprintf('--- Autocorrelation peaks (scale-free; the true row length is here) ---\n');
+    if isempty(peaks)
+        fprintf('   No peak stands above the baseline. Either the image has no\n');
+        fprintf('   row-to-row structure to lock onto, or it is pure noise.\n');
+        strideDetected = NaN;
+    else
+        fprintf('%-8s %s\n', 'LAG', 'PEAK / BASELINE');
+        nShow = min(8, size(peaks,1));
+        for k = 1:nShow
+            fprintf('%-8d %.4f\n', peaks(k,1), peaks(k,2));
+        end
+        % The fundamental is the smallest lag among the strong peaks whose
+        % harmonics also appear -- a shear cannot fake that structure.
+        strideDetected = pickFundamental(peaks);
+        fprintf('\n   Fundamental (row length): %d\n', strideDetected);
+    end
+    fprintf('\n');
+
+    % --- CONTEXT: divisor table, with its bias stated ---------------------- %
+    fprintf('--- Vertical roughness by exact-divisor stride (BIASED, context only) ---\n');
+    fprintf('    Small strides score well simply because their "vertical"\n');
+    fprintf('    neighbours are nearby pixels on the SAME row. Read this for a\n');
+    fprintf('    DIP against the local trend, not for the global minimum.\n');
     fprintf('%-8s %-8s %-14s %s\n', 'STRIDE', 'ROWS', 'VERT-ROUGHNESS', 'NOTE');
-    best = struct('L', NaN, 'score', Inf);
-    rows = zeros(1, numel(cands));
+    rows  = zeros(1, numel(cands));
     score = zeros(1, numel(cands));
     for k = 1:numel(cands)
-        L = cands(k);
-        rows(k)  = N / L;
-        score(k) = vertRoughness(v, L);
-        if score(k) < best.score
-            best.score = score(k);
-            best.L     = L;
-        end
+        rows(k)  = N / cands(k);
+        score(k) = vertRoughness(v, cands(k));
     end
-
-    % Print, flagging the current and the best.
     for k = 1:numel(cands)
         note = '';
-        if cands(k) == strideNow; note = [note '<- in use  ']; end
-        if cands(k) == best.L;    note = [note '<== BEST (smoothest)']; end
+        if cands(k) == strideNow;      note = [note '<- in use  ']; end
+        if cands(k) == strideDetected; note = [note '<== autocorr fundamental']; end
         fprintf('%-8d %-8d %-14.5g %s\n', cands(k), rows(k), score(k), note);
     end
     fprintf('\n');
 
-    s.strideNow  = strideNow;
-    s.strideBest = best.L;
-    s.candidates = cands;
-    s.roughness  = score;
+    if isnan(strideDetected); strideDetected = strideNow; end
+    best.L = strideDetected;
 
-    % --- seam / offset within the best stride ------------------------------- %
-    M = reshape(v, best.L, []).';           % rows x best.L
+    s.strideNow      = strideNow;
+    s.strideDetected = strideDetected;
+    s.candidates     = cands;
+    s.roughness      = score;
+    s.acLags         = lags;
+    s.acRatio        = acRatio;
+    s.acPeaks        = peaks;
+
+    % --- seam / offset within the detected stride --------------------------- %
+    ny = floor(N / best.L);
+    M  = reshape(v(1:ny*best.L), best.L, []).';   % rows x best.L
     d = mean(abs(diff(M, 1, 2)), 1);         % horizontal jump per column gap
     [~, ix] = max(d);
     seamCol = ix;                            % jump sits between ix and ix+1
@@ -121,17 +162,100 @@ function s = hc_FindStride(src, j)
     end
 
     if best.L ~= strideNow
-        fprintf(2, ['\n*** The stride in use (%d) is NOT the smoothest (%d). readIQ is\n', ...
-                    '    reshaping with the wrong row length, which shears the image by\n', ...
-                    '    %d px per row. ***\n'], strideNow, best.L, abs(strideNow - best.L));
+        fprintf(2, ['\n*** The stride in use (%d) does not match the autocorrelation\n', ...
+                    '    fundamental (%d). readIQ would be reshaping with the wrong row\n', ...
+                    '    length, shearing the image by %d px per row. ***\n'], ...
+                strideNow, best.L, abs(strideNow - best.L));
     else
-        fprintf('\nStride in use matches the smoothest candidate.\n');
+        fprintf(['\nStride in use (%d) matches the autocorrelation fundamental:\n', ...
+                 'the reshape geometry is CORRECT and needs no change.\n'], strideNow);
     end
 
     fprintf(['\nTo eyeball a candidate without changing any code:\n', ...
              '    v = reshape(double(gWide.reference(:,:,%d)).'', [], 1);\n', ...
              '    figure; imagesc(circshift(reshape(v, %d, []).'', [0 -%d])); axis image; colorbar\n'], ...
             j, best.L, s.shiftSuggested);
+
+    fprintf(['\nReminder: geometry and photometry are independent. A sheared or\n', ...
+             'offset image still has the right histogram, so this says nothing\n', ...
+             'about whether the frame contains LIGHT -- and with an unmodulated\n', ...
+             'LED, I = Q1-Q3 should be ~0 and any apparent picture is pattern\n', ...
+             'noise. Settle that with the LED on/off pair in hc_ImageStats.\n']);
+end
+
+% ---------------------------------------------------------------------------- %
+function [lags, ratio] = detrendedAutocorr(v, maxLag)
+% Autocorrelation of the pixel stream, divided by a running-median baseline.
+%
+% The raw autocorrelation decays with lag, so a global maximum is meaningless for
+% finding geometry. Dividing by the local median removes that decay and leaves
+% only genuine periodicity -- which is what a fixed row length is.
+
+    x = double(v(:));
+    x = x - mean(x);
+
+    n  = 2^nextpow2(2*numel(x));
+    F  = fft(x, n);
+    ac = real(ifft(F .* conj(F)));
+    ac = ac(1:maxLag+1);
+    if ac(1) == 0
+        lags = (1:maxLag)'; ratio = ones(maxLag,1); return
+    end
+    ac = ac / ac(1);
+
+    lags = (1:maxLag)';
+    a    = ac(2:end);                       % drop lag 0
+
+    % Baseline: running median wide enough to ignore individual peaks.
+    win  = max(21, 2*round(maxLag/64) + 1);
+    base = movmedian(a, win, 'Endpoints', 'shrink');
+
+    ratio = a ./ max(abs(base), eps);
+end
+
+% ---------------------------------------------------------------------------- %
+function pk = localPeaks(lags, ratio, thresh)
+% Strict local maxima above thresh, returned as [lag ratio] sorted by ratio.
+% Hand-rolled rather than findpeaks so no Signal Processing Toolbox is needed.
+
+    pk = zeros(0, 2);
+    for i = 2:(numel(ratio)-1)
+        if ratio(i) > thresh && ratio(i) > ratio(i-1) && ratio(i) >= ratio(i+1)
+            pk(end+1, :) = [lags(i), ratio(i)]; %#ok<AGROW>
+        end
+    end
+    if ~isempty(pk)
+        [~, ord] = sort(pk(:,2), 'descend');
+        pk = pk(ord, :);
+    end
+end
+
+% ---------------------------------------------------------------------------- %
+function L = pickFundamental(peaks)
+% The row length is the smallest strong lag whose harmonics also show up. Taking
+% the tallest peak alone can land on a harmonic (2L, 3L), which would look like a
+% plausible stride while halving the row count.
+
+    cand = peaks(:,1);
+    strong = cand(peaks(:,2) >= 0.5*max(peaks(:,2)));
+    if isempty(strong); strong = cand; end
+    strong = sort(strong);
+
+    bestL = strong(1); bestN = -1;
+    for i = 1:numel(strong)
+        L0 = strong(i);
+        if L0 < 8; continue; end
+        % Count how many of this candidate's harmonics appear among all peaks.
+        nHarm = 0;
+        for m = 2:6
+            if any(abs(cand - m*L0) <= max(1, 0.01*m*L0)); nHarm = nHarm + 1; end
+        end
+        if nHarm > bestN
+            bestN = nHarm;
+            bestL = L0;
+        end
+    end
+    L = bestL;
 end
 
 % ---------------------------------------------------------------------------- %
