@@ -653,20 +653,64 @@ CreateSavePath_Ave();
 % --- Lock-in trigger budget -------------------------------------------------
 % nPeriods = 1; nFrames comes from the GUI Repeat field (>= 4, HeliCam minimum).
 % One PB run of an hc_* sequence = one lock-in period (CamRef NRise=4 -> 4
-% quarter edges), so the PB loops nFrames times and emits 4*nFrames CamRef
-% edges per camera run. Average is the outer repeat of the whole acquisition.
+% quarter edges). The PB loop count is the number of periods the camera consumes
+% PLUS a margin (see below), not nFrames exactly. Average is the outer repeat of
+% the whole acquisition.
 gmSEQ.nPeriods = 1;
 gmSEQ.nFrames  = max(4, round(gmSEQ.Repeat));   % GUI Repeat -> nFrames
-gmSEQ.Repeat   = gmSEQ.nFrames;   % PB executes the lock-in period nFrames times
-gmSEQ.Samples  = gmSEQ.Repeat;    % PB LOOP count (PBFunctionPool uses SEQ.Samples)
+
+% PB runs a SURPLUS of lock-in periods beyond nFrames. getBuffer only returns a
+% complete burst, so if the camera needs even one edge more than PB supplies the
+% result is a bare "Timeout, no data available!" with nothing to inspect. The
+% camera stops at its own frame count, so the extra periods are discarded.
+% (gmSEQ.Repeat is re-read from the GUI by LoadUserInputs on every run, so
+% overwriting it here does not accumulate.)
+cfgPB = WidefieldConfig();
+periodMargin = 4;
+if isfield(cfgPB,'camRefPeriodMargin') && ~isempty(cfgPB.camRefPeriodMargin)
+    periodMargin = cfgPB.camRefPeriodMargin;
+end
+nBlankCfg = 0;
+if isfield(cfgPB,'blankPeriods') && ~isempty(cfgPB.blankPeriods)
+    nBlankCfg = cfgPB.blankPeriods;
+end
+% Periods the camera consumes: (nPeriods + blank) per frame, all nFrames frames.
+nPeriodsNeeded = (gmSEQ.nPeriods + nBlankCfg) * gmSEQ.nFrames;
+gmSEQ.nPBPeriods = nPeriodsNeeded + periodMargin;
+% Set both: the root PBFunctionPool loops on SEQ.Repeat, the one in
+% mytoolboxes/PulseBlaster loops on SEQ.Samples, and path order decides which
+% runs. Keeping them equal makes the loop count correct either way.
+gmSEQ.Repeat   = gmSEQ.nPBPeriods;
+gmSEQ.Samples  = gmSEQ.nPBPeriods;
 
 % Camera exposure tracks the GUI readout (= quarter-bin spacing), kept just
 % below it by the sensor overhead so the configured reference frequency matches
 % the actual PB quarter rate (otherwise the camera won't lock and readIQ times
 % out). readout is in ns; camera exposure floor ~1.825 us.
 overheadNs = 2000;                                  % ~2 us sensor busy overhead
-expoNs = max(gmSEQ.readout - overheadNs, 1825);
+if isfield(cfgPB,'sensorOverheadNs') && ~isempty(cfgPB.sensorOverheadNs)
+    overheadNs = cfgPB.sensorOverheadNs;
+end
+marginNs = 0;                                       % deliberate lock slack
+if isfield(cfgPB,'exposureMarginNs') && ~isempty(cfgPB.exposureMarginNs)
+    marginNs = cfgPB.exposureMarginNs;
+end
+expoNs = max(gmSEQ.readout - overheadNs - marginNs, 1825);
 gmSEQ.exposureSeconds = expoNs * 1e-9;
+
+fprintf(['[Widefield] Edge budget: camera needs %d periods ', ...
+         '(%d frames x (%d+%d)) = %d CamRef edges; PB will run %d periods ', ...
+         '= %d edges.\n'], nPeriodsNeeded, gmSEQ.nFrames, gmSEQ.nPeriods, ...
+        nBlankCfg, 4*nPeriodsNeeded, gmSEQ.nPBPeriods, 4*gmSEQ.nPBPeriods);
+slackNs = gmSEQ.readout - expoNs - overheadNs;
+fprintf(['[Widefield] Quarter bin = readout = %g ns; exposure = %g ns ', ...
+         '(overhead %g ns, slack %g ns).\n'], ...
+        gmSEQ.readout, expoNs, overheadNs, slackNs);
+if slackNs <= 0
+    fprintf(2, ['[Widefield] WARNING: no slack -- the next CamRef edge arrives ', ...
+                'as the sensor frees up (or sooner). Raise readout, or set ', ...
+                'cfg.exposureMarginNs in WidefieldConfig.\n']);
+end
 
 % --- Configure camera once: WidefieldConfig hardware/display fields, with the
 % per-run lock-in params taken from gmSEQ (populated by LoadUserInputs). ---
@@ -1549,7 +1593,7 @@ function CreateSavePath_Ave()
 global gSaveDataAve gmSEQ
 now = clock;
 date = [num2str(now(1)),'-',num2str(now(2)),'-',num2str(round(now(3)))];
-fullPath=fullfile('D:\Data\',date,'\');
+fullPath=fullfile('C:\Data\',date,'\');
 if ~exist(fullPath,'dir')
     mkdir(fullPath);
 end

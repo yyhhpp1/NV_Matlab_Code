@@ -91,8 +91,14 @@ classdef HeliCamInterface < handle
             obj.c4dev.writeString("Scan3dExtractionMethod", "rawIQ");
 
             % --- Exposure / integration ---
+            % d defaults to 0 (PB triggers are phase-stable) but is configurable:
+            % it is the lever to try if the camera refuses to lock.
+            dPct = 0;
+            if isfield(cfg,'expectedFreqDeviationPct') && ~isempty(cfg.expectedFreqDeviationPct)
+                dPct = cfg.expectedFreqDeviationPct;
+            end
             obj.c4dev.writeFloat("LockInSensitivity", cfg.sensitivity);          % p_s
-            obj.c4dev.writeInteger("LockInExpectedFrequencyDeviation", 0);       % d = 0: PB triggers are phase-stable
+            obj.c4dev.writeInteger("LockInExpectedFrequencyDeviation", dPct);    % d, percent
             obj.c4dev.writeFloat("LockInTargetReferenceFrequency", fRefCfg);     % sets t_s = p_s/(4*fRef)
 
             % --- Filter / averaging ---
@@ -100,10 +106,26 @@ classdef HeliCamInterface < handle
             obj.c4dev.writeString("LockInCoupling", cfg.coupling);
             obj.c4dev.writeInteger("AcquisitionBurstFrameCount", cfg.nFrames);
 
+            % Blank periods per frame. Written explicitly: left alone it keeps
+            % whatever is persisted in the camera, and any nonzero value adds 4
+            % more CamRef edges per frame than the PB budget assumes -- which
+            % starves the burst and shows up only as a readIQ timeout.
+            nBlank = 0;
+            if isfield(cfg,'blankPeriods') && ~isempty(cfg.blankPeriods)
+                nBlank = cfg.blankPeriods;
+            end
+            try
+                obj.c4dev.writeInteger("LockInTargetBlankDurationNPeriods", nBlank);
+            catch ME
+                warning('HeliCamInterface:BlankPeriods', ...
+                    'Could not write LockInTargetBlankDurationNPeriods (%s).', ME.message);
+            end
+
             % --- External reference: quarter triggers direct from PB ---
-            % Input line (FI2/FI3/...) is configurable; must match where CamRef
-            % (PB pin 9) is physically wired. Do NOT use FI3 here if
-            % recordingStartExternal is on (that also uses FI3).
+            % Input line (FI2/FI3/...) is configurable; must match where the
+            % CamRef pin is physically wired. Verified 2026-07-28 with
+            % hc_TriggerTest('identify'): CamRef arrives on FI2. Do NOT use FI3
+            % here if recordingStartExternal is on (that also uses FI3).
             refSig = 'FI2';
             if isfield(cfg,'refSourceSignal') && ~isempty(cfg.refSourceSignal)
                 refSig = cfg.refSourceSignal;
@@ -119,6 +141,15 @@ classdef HeliCamInterface < handle
             fprintf(['[HeliCam] Lock-in (DivideBy4) configured: exposure %.3g s ', ...
                      '(n=%d, f_ref %.1f Hz, actual %.1f Hz), %d periods, %d frames.\n'], ...
                     tExp, nGrid, fRefCfg, actualFreq, cfg.nPeriods, cfg.nFrames);
+
+            % Read the camera's own view back. nBlank especially: if the write
+            % above was rejected, the edge budget is wrong and the only other
+            % symptom is a bare timeout.
+            nBlankActual = obj.readBlankPeriods();
+            fprintf(['[HeliCam]   ref line %s, blank periods %s, deviation %g%%, ', ...
+                     'edges needed = 4*(%d+%s)*%d.\n'], ...
+                    refSig, num2str(nBlankActual), dPct, cfg.nPeriods, ...
+                    num2str(nBlankActual), cfg.nFrames);
         end
 
         % ------------------------------------------------------------------ %
@@ -277,6 +308,18 @@ classdef HeliCamInterface < handle
         function actualFreq = readActualRefFrequency(obj)
         % actualFreq = readActualRefFrequency()  Camera's realized reference frequency (Hz).
             actualFreq = obj.c4dev.readFloat("LockInActualReferenceFrequency");
+        end
+
+        % ------------------------------------------------------------------ %
+        function n = readBlankPeriods(obj)
+        % n = readBlankPeriods()  Blank periods per frame the camera currently
+        % holds, or NaN if the feature is unreadable. Each one costs 4 extra
+        % CamRef edges per frame.
+            n = NaN;
+            try
+                n = double(obj.c4dev.readInteger("LockInTargetBlankDurationNPeriods"));
+            catch
+            end
         end
 
         % ------------------------------------------------------------------ %
