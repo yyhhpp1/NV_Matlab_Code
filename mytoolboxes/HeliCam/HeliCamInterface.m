@@ -311,6 +311,81 @@ classdef HeliCamInterface < handle
         end
 
         % ------------------------------------------------------------------ %
+        function dumpLockInState(obj)
+        % dumpLockInState()  Read back every feature relevant to external
+        % DivideBy4 lock-in and print it.
+        %
+        % We only ever WROTE these values; nothing confirmed the camera accepted
+        % them. GenICam silently clamps out-of-range values and a rejected write
+        % can leave a feature at a value that makes a burst impossible -- which
+        % surfaces only as "Timeout, no data available!". This shows what the
+        % camera actually holds.
+        %
+        % Writes LineSelector/TriggerSelector to walk the per-selector features,
+        % so call it when NOT acquiring (those are read-only during acquisition).
+        % stopAcq() is called first for that reason.
+
+            obj.stopAcq();
+
+            fprintf('=== HeliCam lock-in state readback ===\n');
+
+            fprintf('-- Device --\n');
+            obj.showFeature('DeviceFirmwareVersion');
+            obj.showFeature('DeviceOperationMode');
+            obj.showFeature('Scan3dExtractionMethod');
+            obj.showFeature('Width');
+            obj.showFeature('Height');
+
+            fprintf('-- Lock-in core --\n');
+            obj.showFeature('LockInSensitivity');
+            obj.showFeature('LockInExpectedFrequencyDeviation');
+            obj.showFeature('LockInTargetReferenceFrequency');
+            obj.showFeature('LockInActualReferenceFrequency');
+            obj.showFeature('LockInTargetTimeConstantNPeriods');
+            obj.showFeature('LockInTargetBlankDurationNPeriods');
+            obj.showFeature('LockInCoupling');
+            obj.showFeature('AcquisitionBurstFrameCount');
+
+            fprintf('-- Reference routing --\n');
+            obj.showFeature('LockInReferenceSourceType');
+            obj.showFeature('LockInReferenceFrequencyScaler');
+            obj.showFeature('LockInReferenceSourceSignal');
+            obj.showFeature('LockInReferenceTimeShift');
+
+            % Per-selector trigger features. 'Reference' is the interesting one:
+            % if the camera exposes it and its TriggerMode is Off, the external
+            % reference train is being ignored no matter how it is wired.
+            fprintf('-- Triggers (by TriggerSelector) --\n');
+            sels = {'RecordingStart', 'FrameStart', 'Reference', 'LineStart', 'ExposureStart'};
+            for i = 1:numel(sels)
+                ok = false;
+                try
+                    obj.c4dev.writeString("TriggerSelector", sels{i});
+                    back = char(string(obj.c4dev.readString("TriggerSelector")));
+                    ok = strcmpi(strtrim(back), sels{i});
+                catch
+                end
+                if ~ok
+                    fprintf('   [%s] not supported\n', sels{i});
+                    continue
+                end
+                fprintf('   [%s]\n', sels{i});
+                obj.showFeature('TriggerMode',       '      ');
+                obj.showFeature('TriggerSource',     '      ');
+                obj.showFeature('TriggerActivation', '      ');
+                obj.showFeature('TriggerDelay',      '      ');
+            end
+
+            fprintf('-- Frame rate / throughput --\n');
+            obj.showFeature('AcquisitionFrameRate');
+            obj.showFeature('AcquisitionFrameRateMax');
+            obj.showFeature('DeviceMaxThroughput');
+            obj.showFeature('DeviceLinkThroughputLimit');
+
+            fprintf('=== end readback ===\n');
+        end
+
+        % ------------------------------------------------------------------ %
         function n = readBlankPeriods(obj)
         % n = readBlankPeriods()  Blank periods per frame the camera currently
         % holds, or NaN if the feature is unreadable. Each one costs 4 extra
@@ -332,6 +407,33 @@ classdef HeliCamInterface < handle
     end
 
     methods (Access = private)
+        function showFeature(obj, name, indent)
+        % Print one GenICam feature. The wrapper is typed, so try each reader and
+        % report whichever succeeds; a feature that reads by no method is either
+        % unsupported or not currently accessible, and both are worth seeing.
+            if nargin < 3; indent = '   '; end
+
+            try
+                v = obj.c4dev.readString(name);
+                fprintf('%s%-36s = %s\n', indent, name, char(string(v)));
+                return
+            catch
+            end
+            try
+                v = double(obj.c4dev.readInteger(name));
+                fprintf('%s%-36s = %g\n', indent, name, v);
+                return
+            catch
+            end
+            try
+                v = obj.c4dev.readFloat(name);
+                fprintf('%s%-36s = %g\n', indent, name, double(v));
+                return
+            catch
+            end
+            fprintf('%s%-36s = <unreadable / unsupported>\n', indent, name);
+        end
+
         function n = warmupDiscardCount(obj)
         % Heliotis' Python example discards 2 frames for firmware <= 1.9.2, none for newer.
             n = 0;

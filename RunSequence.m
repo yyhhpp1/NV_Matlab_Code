@@ -651,21 +651,33 @@ gmSEQ.ctrN = 1;            % no NI-DAQ counter gate in widefield mode
 CreateSavePath_Ave();
 
 % --- Lock-in trigger budget -------------------------------------------------
-% nPeriods = 1; nFrames comes from the GUI Repeat field (>= 4, HeliCam minimum).
-% One PB run of an hc_* sequence = one lock-in period (CamRef NRise=4 -> 4
-% quarter edges). The PB loop count is the number of periods the camera consumes
-% PLUS a margin (see below), not nFrames exactly. Average is the outer repeat of
-% the whole acquisition.
-gmSEQ.nPeriods = 1;
+% nFrames comes from the GUI Repeat field (>= 4, HeliCam minimum). One PB run of
+% an hc_* sequence = one lock-in period (CamRef NRise=4 -> 4 quarter edges). The
+% PB loop count is the number of periods the camera consumes PLUS a margin (see
+% below). Average is the outer repeat of the whole acquisition.
+cfgPB = WidefieldConfig();
+
+% Demodulation periods averaged into each output frame. This was hardcoded to 1,
+% which is the most demanding setting the camera can be given: one lock-in frame
+% per reference period means a frame every 4*readout, i.e. ~2.5 kHz at readout =
+% 100 us. Both vendor examples use 20-100 for good reason. Now configurable, and
+% overridable from the GUI via gmSEQ.lockInNPeriods if that field is added.
+nPeriodsSel = 1;
+if isfield(cfgPB,'nPeriods') && ~isempty(cfgPB.nPeriods)
+    nPeriodsSel = cfgPB.nPeriods;
+end
+if isfield(gmSEQ,'lockInNPeriods') && ~isempty(gmSEQ.lockInNPeriods)
+    nPeriodsSel = gmSEQ.lockInNPeriods;
+end
+gmSEQ.nPeriods = max(1, min(100, round(nPeriodsSel)));   % camera range 1..100
 gmSEQ.nFrames  = max(4, round(gmSEQ.Repeat));   % GUI Repeat -> nFrames
 
-% PB runs a SURPLUS of lock-in periods beyond nFrames. getBuffer only returns a
-% complete burst, so if the camera needs even one edge more than PB supplies the
-% result is a bare "Timeout, no data available!" with nothing to inspect. The
-% camera stops at its own frame count, so the extra periods are discarded.
-% (gmSEQ.Repeat is re-read from the GUI by LoadUserInputs on every run, so
-% overwriting it here does not accumulate.)
-cfgPB = WidefieldConfig();
+% PB runs a SURPLUS of lock-in periods beyond what the camera consumes.
+% getBuffer only returns a complete burst, so if the camera needs even one edge
+% more than PB supplies the result is a bare "Timeout, no data available!" with
+% nothing to inspect. The camera stops at its own frame count, so the extra
+% periods are discarded. (gmSEQ.Repeat is re-read from the GUI by LoadUserInputs
+% on every run, so overwriting it here does not accumulate.)
 periodMargin = 4;
 if isfield(cfgPB,'camRefPeriodMargin') && ~isempty(cfgPB.camRefPeriodMargin)
     periodMargin = cfgPB.camRefPeriodMargin;
@@ -711,6 +723,17 @@ if slackNs <= 0
                 'as the sensor frees up (or sooner). Raise readout, or set ', ...
                 'cfg.exposureMarginNs in WidefieldConfig.\n']);
 end
+
+% Output frame rate the camera is being asked to sustain. One frame per
+% nPeriods reference periods, each period = 4 quarter bins. With nPeriods = 1
+% this is 1/(4*readout) -- 2.5 kHz at readout = 100 us, which may simply exceed
+% what the sensor can emit. Raising nPeriods divides it down.
+periodSeconds = 4 * gmSEQ.readout * 1e-9;
+frameRateHz   = 1 / (gmSEQ.nPeriods * periodSeconds);
+fprintf(['[Widefield] Reference period = %.4g s; %d periods/frame ', ...
+         '-> %.4g frames/s, burst %.4g s for %d frames.\n'], ...
+        periodSeconds, gmSEQ.nPeriods, frameRateHz, ...
+        gmSEQ.nFrames * gmSEQ.nPeriods * periodSeconds, gmSEQ.nFrames);
 
 % --- Configure camera once: WidefieldConfig hardware/display fields, with the
 % per-run lock-in params taken from gmSEQ (populated by LoadUserInputs). ---
