@@ -131,6 +131,24 @@ classdef HeliCamInterface < handle
         end
 
         % ------------------------------------------------------------------ %
+        function v = readLineStatusAll(obj)
+        % v = readLineStatusAll()  Bitfield of all digital input line states.
+        % Pure register read: no acquisition, no triggers. Toggle a PB pin and
+        % watch which bit changes to prove the signal reaches the camera.
+
+            v = double(obj.c4dev.readInteger("LineStatusAll"));
+        end
+
+        % ------------------------------------------------------------------ %
+        function s = readLineStatus(obj, lineName)
+        % s = readLineStatus(lineName)  State of one line, selected by name.
+        % lineName: 'Line0'|'Line1'|'Line2'|'Line3'|'RTIO2'|'RTIO3'.
+
+            obj.c4dev.writeString("LineSelector", lineName);
+            s = double(obj.c4dev.readInteger("LineStatus"));
+        end
+
+        % ------------------------------------------------------------------ %
         function armExternalRecording(obj, refLine, nFrames)
         % armExternalRecording(refLine, nFrames)  Diagnostic: arm the camera to
         % start a plain intensity burst on a single external RecordingStart edge
@@ -140,6 +158,12 @@ classdef HeliCamInterface < handle
 
             if nargin < 2 || isempty(refLine); refLine = 'FI2'; end
             if nargin < 3 || isempty(nFrames); nFrames = 4;     end
+
+            % TriggerSource/TriggerSelector are NOT writable while acquisition is
+            % active (feature doc: "Writable in Acquisition Mode: False"); a
+            % leftover acquisition from an earlier timeout makes these writes
+            % throw a GenICam NULL-pointer exception. Always stop first.
+            obj.stopAcq();
 
             obj.c4dev.writeString("DeviceOperationMode",    "LockInCam");
             obj.c4dev.writeString("Scan3dExtractionMethod", "Intensity"); % plain image

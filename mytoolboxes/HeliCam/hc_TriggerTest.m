@@ -1,30 +1,32 @@
-function hc_TriggerTest(refLine, mode)
-% hc_TriggerTest(refLine, mode)  Minimal check that a TTL edge on the camera's
-% reference input is actually detected by the HeliCam.
+function hc_TriggerTest(mode, refLine)
+% hc_TriggerTest(mode, refLine)  Minimal check that the PB CamRef signal
+% actually reaches the HeliCam.
 %
-% It arms the camera to begin a plain intensity burst on ONE external
-% RecordingStart edge on refLine ('FI2' or 'FI3'), then looks for a rising edge
-% on the PB CamRef pin (pin 9). If the buffer returns -> the edge reached the
-% camera (wiring/line OK). If it times out -> no edge got through.
+%   mode = 'line'   (default) PURE REGISTER TEST -- no acquisition, no triggers.
+%                   Toggles PB CamRef (pin 9) and reads the camera's
+%                   LineStatusAll bitfield before/after. Whichever bit flips is
+%                   the camera line your cable is on. This is the test to run
+%                   first: it cannot time out and cannot disturb camera state.
+%   mode = 'manual' Same read-back, but YOU toggle the line (30 s window,
+%                   sampled continuously). Use with a function generator or if
+%                   PB pin 9 is not the line you want to test.
+%   mode = 'record' Arm a burst on one external RecordingStart edge on refLine
+%                   ('FI2'/'FI3'), pulse pin 9, see if data arrives. Heavier;
+%                   only meaningful once 'line' shows the signal arriving.
 %
-%   refLine : 'FI2' (default) or 'FI3' -- the camera input your CamRef cable is on
-%   mode    : 'auto'   (default) pulse PB pin 9 automatically, then read
-%             'manual' arm and wait 30 s while YOU create the edge (function
-%                      generator / physical toggle / your own PB pulse)
-%
-% Requires the camera already connected (global gCam) -- e.g. open
-% Experiment_PB_DAQ once so Initialize creates it. Reuses that connection
-% (re-opening C4HdlCLR in one MATLAB session crashes the .NET runtime).
+% Requires the camera already connected (global gCam) -- open Experiment_PB_DAQ
+% once so Initialize creates it. Reuses that connection (re-opening C4HdlCLR in
+% one MATLAB session crashes the .NET runtime).
 %
 % Examples:
-%   hc_TriggerTest('FI2')            % auto-pulse pin 9, check FI2
-%   hc_TriggerTest('FI3','auto')     % same, check FI3
-%   hc_TriggerTest('FI2','manual')   % arm, then toggle the line yourself
+%   hc_TriggerTest                     % line-status toggle test
+%   hc_TriggerTest('manual')           % you create the edges
+%   hc_TriggerTest('record','FI3')     % RecordingStart test on FI3
 
     global gCam
 
-    if nargin < 1 || isempty(refLine); refLine = 'FI2';  end
-    if nargin < 2 || isempty(mode);    mode    = 'auto'; end
+    if nargin < 1 || isempty(mode);    mode    = 'line'; end
+    if nargin < 2 || isempty(refLine); refLine = 'FI2';  end
 
     if isempty(gCam) || ~isvalid(gCam)
         error(['hc_TriggerTest: no camera connection (global gCam). Open ', ...
@@ -36,31 +38,75 @@ function hc_TriggerTest(refLine, mode)
 
     camRefMask = 2^SequencePool('PBDictionary','CamRef');   % PB pin 9
 
-    gCam.armExternalRecording(refLine, 4);
-
     switch lower(mode)
-        case 'auto'
-            pause(0.3);                       % let the arm settle
-            PBFunctionPool('PBON', camRefMask);   % CamRef high  -> rising edge
-            pause(0.05);
-            PBFunctionPool('PBON', 0);            % CamRef low
-            ok = gCam.readAfterTrigger(5000);
+        case 'line'
+            fprintf('--- Line-status toggle test (PB CamRef = pin 9) ---\n');
+            PBFunctionPool('PBON', 0);            pause(0.2);
+            lo1 = gCam.readLineStatusAll();
+            PBFunctionPool('PBON', camRefMask);   pause(0.2);
+            hi  = gCam.readLineStatusAll();
+            PBFunctionPool('PBON', 0);            pause(0.2);
+            lo2 = gCam.readLineStatusAll();
+
+            fprintf('LineStatusAll: low=0x%X  high=0x%X  low=0x%X\n', lo1, hi, lo2);
+            changed = bitxor(uint32(lo1), uint32(hi));
+            if changed ~= 0
+                bits = find(bitget(changed, 1:32)) - 1;
+                fprintf('*** SIGNAL SEEN. Bit(s) toggled: %s ***\n', mat2str(bits));
+                fprintf('    The camera line carrying that bit is where CamRef is wired.\n');
+            else
+                fprintf('*** NO CHANGE -- camera did not see PB pin 9 toggle. ***\n');
+                fprintf('    Check the cable, the connector, and scope PB pin 9 directly.\n');
+            end
+            reportLines(gCam);
+
         case 'manual'
-            fprintf(['>> Create a rising edge on %s now (function generator / ', ...
-                     'physical toggle / PB pulse). 30 s window ...\n'], refLine);
-            ok = gCam.readAfterTrigger(30000);
+            fprintf('--- Manual toggle test: sampling LineStatusAll for 30 s ---\n');
+            base = gCam.readLineStatusAll();
+            fprintf('Baseline = 0x%X. Toggle the line now ...\n', base);
+            seen = uint32(0); t0 = tic;
+            while toc(t0) < 30
+                v = gCam.readLineStatusAll();
+                seen = bitor(seen, bitxor(uint32(base), uint32(v)));
+                pause(0.05);
+            end
+            if seen ~= 0
+                bits = find(bitget(seen, 1:32)) - 1;
+                fprintf('*** SIGNAL SEEN. Bit(s) toggled: %s ***\n', mat2str(bits));
+            else
+                fprintf('*** NO CHANGE detected in 30 s. ***\n');
+            end
+            reportLines(gCam);
+
+        case 'record'
+            fprintf('--- RecordingStart test on %s ---\n', refLine);
+            gCam.armExternalRecording(refLine, 4);
+            pause(0.3);
+            PBFunctionPool('PBON', camRefMask);   pause(0.05);
+            PBFunctionPool('PBON', 0);
+            ok = gCam.readAfterTrigger(5000);
+            try; PBFunctionPool('PBON', 0); catch; end
+            if ok
+                fprintf('*** TRIGGER DETECTED on %s. ***\n', refLine);
+            else
+                fprintf('*** NO TRIGGER on %s. ***\n', refLine);
+            end
+
         otherwise
-            error('hc_TriggerTest: mode must be ''auto'' or ''manual''.');
+            error('hc_TriggerTest: mode must be ''line'', ''manual'' or ''record''.');
     end
+end
 
-    % Leave the CamRef line low.
-    try; PBFunctionPool('PBON', 0); catch; end
-
-    if ok
-        fprintf('*** TRIGGER DETECTED on %s -- reference wiring OK. ***\n', refLine);
-    else
-        fprintf(['*** NO TRIGGER on %s -- edge did not reach the camera. ', ...
-                 'Check the cable, the connector (FI2 vs FI3), and that PB pin 9 ', ...
-                 'is the CamRef output. ***\n'], refLine);
+% ---------------------------------------------------------------------------- %
+function reportLines(cam)
+% Per-line status, for reference. Unsupported names are skipped.
+    names = {'Line0','Line1','Line2','Line3','RTIO2','RTIO3'};
+    out = '';
+    for i = 1:numel(names)
+        try
+            out = [out sprintf('  %s=%d', names{i}, cam.readLineStatus(names{i}))]; %#ok<AGROW>
+        catch
+        end
     end
+    if ~isempty(out); fprintf('Per-line now:%s\n', out); end
 end
