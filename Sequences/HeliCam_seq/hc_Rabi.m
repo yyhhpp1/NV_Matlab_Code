@@ -28,7 +28,7 @@ if isfield(gmSEQ,'quarterBinNs') && ~isempty(gmSEQ.quarterBinNs)
 else
     Q = cfg.quarterBinNs;
 end
-wRef  = cfg.camRefWidthNs;       % CamRef TTL width (ns)
+wRef  = hc_CamRefWidth(cfg, Q);  % CamRef TTL width (ns); auto = Q/2
 laser = gmSEQ.readout;           % init/readout laser duration (ns)
 mwOff = gmSEQ.post_init_wait;    % delay of MW start into Q2 (ns)
 

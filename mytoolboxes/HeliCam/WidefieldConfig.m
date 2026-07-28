@@ -54,7 +54,15 @@ function cfg = WidefieldConfig()
     % Each lock-in period = 4 quarter bins; PB emits one CamRef edge per bin.
     % quarterBinNs must exceed the per-bin exposure plus ~2 us sensor overhead.
     cfg.quarterBinNs   = 25000;   % Q: spacing between CamRef edges (ns)
-    cfg.camRefWidthNs  = 100;     % CamRef TTL pulse width (ns)
+
+    % CamRef TTL pulse width (ns). [] = auto, half the quarter bin -> a ~50% duty
+    % reference square wave, which is how an external lock-in reference is
+    % normally driven. The previous fixed 100 ns is only 0.1% duty in a 100 us
+    % bin, narrow enough that the camera input may filter it out entirely -- and
+    % an ignored reference train is indistinguishable from a wiring fault: both
+    % give a readIQ timeout with no data. Any explicit value is clamped to Q/2 by
+    % hc_CamRefWidth. Set e.g. 100 to reproduce the old behaviour.
+    cfg.camRefWidthNs  = [];
 
     % Surplus lock-in periods PB runs beyond the nFrames the camera is asked for.
     % getBuffer only ever returns a COMPLETE burst, so if the camera wants even

@@ -29,7 +29,9 @@ if isfield(gmSEQ,'quarterBinNs') && ~isempty(gmSEQ.quarterBinNs)
 else
     Qbin = cfg.quarterBinNs;
 end
-wRef  = cfg.camRefWidthNs;       % CamRef TTL width (ns)
+% Quarter gaps here are NON-uniform (Qbin, tau/2, tau/2, Qbin), so the width must
+% be clamped against the SMALLEST gap, not Qbin.
+wRef  = hc_CamRefWidth(cfg, min(Qbin, gmSEQ.m / 2));   % CamRef TTL width (ns)
 laser = gmSEQ.readout;           % init/readout laser duration (ns)
 piDur = gmSEQ.pi;                % pi pulse duration (ns); 0 for plain S00 T1
 tau   = gmSEQ.m;                 % swept dark wait (ns)

@@ -21,7 +21,7 @@ gSG.bModSrc = 'External';
 
 cfg  = WidefieldConfig();
 Q    = gmSEQ.readout;            % quarter bin = GUI readout time (ns)
-wRef = cfg.camRefWidthNs;        % CamRef TTL width (ns)
+wRef = hc_CamRefWidth(cfg, Q);   % CamRef TTL width (ns); auto = Q/2
 
 % --- CamRef quarter-period train (one edge per quarter) ---------------------
 gmSEQ.CHN(1).PBN   = PBDictionary('CamRef');
