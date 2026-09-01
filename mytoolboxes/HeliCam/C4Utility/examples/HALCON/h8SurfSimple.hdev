@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="20.11.0.1">
+<procedure name="main">
+<interface/>
+<body>
+<c>* ***</c>
+<c>* file        h8SurfSimple.hdev</c>
+<c>* author      Silvan Murer</c>
+<c>* date        07 April 2021</c>
+<c>* copyright   Heliotis, 2021</c>
+<c>* version     1.0.2</c>
+<c>*</c>
+<c>* Simple HALCON example for heliInspect H8</c>
+<c>* ***</c>
+<l>H8IP := '192.168.2.71'</l>
+<l>GICDevice := ' | producer:diaphus.cti | device:DiaphusTL_DEV_' + H8IP</l>
+<c></c>
+<l>open_framegrabber ('GenICamTL', 0, 0, 0, 0, 0, 0, 'progressive', -1, 'default', -1, 'false', 'default', GICDevice, 0, -1, AcqHandle)</l>
+<l>try</l>
+<l>    initializeDevice (AcqHandle)</l>
+<l>catch (Exception)</l>
+<c>    * initialisation failed</c>
+<l>    stop()</l>
+<l>endtry</l>
+<c></c>
+<l>grab_image_start (AcqHandle, -1)</l>
+<c>* ready for measurement</c>
+<l>stop()</l>
+<c></c>
+<l>while (true)</l>
+<l>    try</l>
+<c>        * start measurement </c>
+<l>        set_framegrabber_param (AcqHandle, 'TriggerSelector', 'FrameStart')</l>
+<l>        set_framegrabber_param (AcqHandle, 'TriggerSoftware', 1)</l>
+<c>        </c>
+<c>        * acquire data</c>
+<l>        grab_data_async(Image, Region, Contours, AcqHandle, -1, ObjectModel13D)</l>
+<c>        </c>
+<c>        * look for float surface and amplitude component</c>
+<l>        get_framegrabber_param(AcqHandle, 'ChunkPartCount', nofParts)</l>
+<l>        for Index := 0 to (nofParts-1) by 1</l>
+<l>            set_framegrabber_param(AcqHandle, 'ChunkPartSelector', Index)</l>
+<l>            get_framegrabber_param(AcqHandle, 'ChunkPartType', partType)</l>
+<l>            if (partType == 'Surface')</l>
+<l>                select_obj(Image, surface, (Index+1))</l>
+<l>            endif</l>
+<l>            if (partType == 'Amplitude')</l>
+<l>                select_obj(Image, amplitude, (Index+1))</l>
+<l>            endif</l>
+<l>        endfor</l>
+<c>        </c>
+<c>        * display surface</c>
+<l>        dev_display(surface)</l>
+<l>    catch (Exception)</l>
+<c>        * acquisition error!</c>
+<l>        stop()</l>
+<l>    endtry</l>
+<l>endwhile</l>
+<c></c>
+<l>close_framegrabber (AcqHandle)</l>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="initializeDevice">
+<interface>
+<ic>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<c>* simple configuration example of heliInspect H8 using internal motion control</c>
+<c></c>
+<c>* Motion parameters in [mm] or [mm/s]</c>
+<l>scanPosition := -1.4</l>
+<l>scanRange := 0.5</l>
+<l>scanSpeed := 5.0</l>
+<l>generalSpeed := 10.0</l>
+<c>* exposure ration between 0.0 and 1.0 [1.0 = 100% exposure]</c>
+<l>exposureRatio := 1.0</l>
+<c></c>
+<c>* enable required components</c>
+<l>set_framegrabber_param(AcqHandle, 'ComponentSelector', 'Intensity')</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentEnable', false)</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentSelector', 'Range')</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentEnable', true)</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentSelector', 'Reflectance')</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentEnable', true)</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentSelector', 'Phase')</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentEnable', false)</l>
+<c></c>
+<c>* enable required chunk data (optional)</c>
+<l>set_framegrabber_param(AcqHandle, 'ChunkModeActive', true)</l>
+<l>set_framegrabber_param(AcqHandle, 'ChunkSelector', 'PartCount')</l>
+<l>set_framegrabber_param(AcqHandle, 'ChunkEnable', true)</l>
+<l>set_framegrabber_param(AcqHandle, 'ChunkSelector', 'PartType')</l>
+<l>set_framegrabber_param(AcqHandle, 'ChunkEnable', true)</l>
+<c></c>
+<c>* trigger configuration</c>
+<l>set_framegrabber_param(AcqHandle, 'TriggerSelector', 'RecordingStart')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerMode', 'On')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerSource', 'Stage')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerSelector', 'AcquisitionStart')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerMode', 'Off')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerSelector', 'FrameStart')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerMode', 'On')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerSource', 'Software')</l>
+<c>* Hint: The TriggerSource also controls the TriggerSoftware feature.</c>
+<c></c>
+<c>* encoder configuration</c>
+<l>set_framegrabber_param(AcqHandle, 'EncoderSelector', 'Camera')</l>
+<l>set_framegrabber_param(AcqHandle, 'EncoderInverter', true)</l>
+<c></c>
+<c>* motion and position configuration</c>
+<l>set_framegrabber_param(AcqHandle, 'ScanPosition', scanPosition)</l>
+<l>set_framegrabber_param(AcqHandle, 'ScanRange', scanRange)</l>
+<l>set_framegrabber_param(AcqHandle, 'ScanSpeed', scanSpeed)</l>
+<l>set_framegrabber_param(AcqHandle, 'GeneralSpeed', generalSpeed)</l>
+<c></c>
+<l>set_framegrabber_param(AcqHandle, 'ScanMode', 'Down')</l>
+<l>set_framegrabber_param(AcqHandle, 'StageInit', 1)</l>
+<c></c>
+<c>* additional camera and processing configuration</c>
+<l>set_framegrabber_param(AcqHandle, 'Scan3dExtractionMethod', 'AcceleratedCenterOfMassIQCorrection')</l>
+<l>set_framegrabber_param(AcqHandle, 'Scan3dScalingMethod', 'zTags')</l>
+<l>set_framegrabber_param(AcqHandle, 'Scan3dDistanceUnit', 'um')</l>
+<c></c>
+<l>set_framegrabber_param(AcqHandle, 'TargetVerticalSpacing', 4.0)</l>
+<l>set_framegrabber_param(AcqHandle, 'ExposureRatio', exposureRatio)</l>
+<c></c>
+<l>set_framegrabber_param(AcqHandle, 'FPNCorrection', 'AverageLastFrames')</l>
+<l>set_framegrabber_param(AcqHandle, 'FPNCorrectionNFrames', 8)</l>
+<l>set_framegrabber_param(AcqHandle, 'ExtSimpMaxHWin', 7)</l>
+<c></c>
+<c>* illumination control (D3)</c>
+<l>set_framegrabber_param(AcqHandle, 'LightControllerSelector', 'LightController0')</l>
+<l>set_framegrabber_param(AcqHandle, 'LightControllerSource', 'UserOutput0')</l>
+<l>set_framegrabber_param(AcqHandle, 'LightBrightness', 100.0)</l>
+<c>* illumination control (D2)</c>
+<c>* LineSelector = Line2</c>
+<c>* LineSource = UserOutput0</c>
+<c>* LineInverter = true</c>
+<c>* switch on the illumination (D2/D3)</c>
+<l>set_framegrabber_param(AcqHandle, 'UserOutputSelector', 'UserOutput0')</l>
+<l>set_framegrabber_param(AcqHandle, 'UserOutputValue', true)</l>
+<c></c>
+</body>
+<docu id="initializeDevice">
+<parameters>
+<parameter id="AcqHandle"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>

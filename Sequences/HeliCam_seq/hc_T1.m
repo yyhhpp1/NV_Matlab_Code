@@ -21,55 +21,52 @@ gSG.bModSrc = 'External';
 
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
 
-cfg = WidefieldConfig();
-% Init/readout quarter width: configurable here via gmSEQ.quarterBinNs (to be
-% linked to a GUI edit field); falls back to the WidefieldConfig default if unset.
-if isfield(gmSEQ,'quarterBinNs') && ~isempty(gmSEQ.quarterBinNs)
-    Qbin = gmSEQ.quarterBinNs;
-else
-    Qbin = cfg.quarterBinNs;
-end
-% Quarter gaps here are NON-uniform (Qbin, tau/2, tau/2, Qbin), so the width must
-% be clamped against the SMALLEST gap, not Qbin.
-wRef  = hc_CamRefWidth(cfg, min(Qbin, gmSEQ.m / 2));   % CamRef TTL width (ns)
-laser = gmSEQ.readout;           % init/readout laser duration (ns)
-piDur = gmSEQ.pi;                % pi pulse duration (ns); 0 for plain S00 T1
-tau   = gmSEQ.m;                 % swept dark wait (ns)
+% Default axes2/axes3 quantity: I - Q, the difference the lock-in quarters were
+% arranged to produce. Preserves what this sequence has always plotted, now as a
+% declared default rather than a hardcoded branch in DisplayWidefield. Selecting
+% this sequence seeds the 'WFcontrast' GUI box with this string; edit the box
+% (even mid-run) to plot something else.
+gmSEQ.WFcontrastExpr = 'I-Q';
 
-assert(laser <= Qbin, ...
-    'hc_T1: laser duration (%g ns) exceeds init quarter bin (%g ns).', laser, Qbin);
-assert(piDur <= Qbin - laser, ...
-    'hc_T1: pi pulse (%g ns) does not fit after init in Q1 (%g ns).', piDur, Qbin - laser);
+r = gmSEQ.CtrGateDur;   % CamRef TTL width (ns)
+i = gmSEQ.readout;           % init/readout laser duration (ns)
+p = gmSEQ.pi;                % pi pulse duration (ns); 0 for plain S00 T1
+m = gmSEQ.m;                 % swept dark wait (ns)
+d = gmSEQ.post_init_wait;
+u = gmSEQ.post_MW_wait;
 
-halfTau = tau / 2;
-% Quarter boundaries: Q1 start=0, Q2 start=Qbin, Q3 start=Qbin+halfTau, Q4 start=Qbin+tau
-tQ4 = Qbin + tau;
-periodLen = tQ4 + Qbin;
+Q = r+i+d+p+u+m;
+
 
 % --- CamRef quarter-period train --------------------------------------------
 gmSEQ.CHN(1).PBN   = PBDictionary('CamRef');
 gmSEQ.CHN(1).NRise = 4;
-gmSEQ.CHN(1).T     = [0, Qbin, Qbin + halfTau, tQ4];
-gmSEQ.CHN(1).DT    = wRef * ones(1, 4);
+gmSEQ.CHN(1).T     = [0, Q, Q*2, Q*3];
+gmSEQ.CHN(1).DT    = r * ones(1, 4);
 
 % --- Laser: Q1 (init/reference) and Q4 (readout/signal) ---------------------
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN   = PBDictionary('GreenAOM');
-gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 2;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T       = [0, tQ4];
-gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = [laser, laser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 3;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T       = [r, r+(i+d+p+u+m), r+(i+d+p+u+m)+(r+i+d+p+u+m)];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = [i, r+i, r+i];
 
 % --- Optional pi pulse in Q1, right after init ------------------------------
-if piDur > 0
+if p > 0
     gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN = PBDictionary('MWSwitch');
     gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
-    gmSEQ.CHN(numel(gmSEQ.CHN)).T     = laser;
-    gmSEQ.CHN(numel(gmSEQ.CHN)).DT    = piDur;
+    gmSEQ.CHN(numel(gmSEQ.CHN)).T     = r+i+d+m;
+    gmSEQ.CHN(numel(gmSEQ.CHN)).DT    = p;
+
+    gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN = PBDictionary('MWSwitchHP');
+    gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
+    gmSEQ.CHN(numel(gmSEQ.CHN)).T     = r+i+d+m-100;
+    gmSEQ.CHN(numel(gmSEQ.CHN)).DT    = p+200;
 end
 
 % --- Period length marker ---------------------------------------------------
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN   = PBDictionary('dummy1');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 2;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T       = [0, periodLen];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T       = [0, Q*4-1000];
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = [1000, 1000];
 
 ApplyDelays();

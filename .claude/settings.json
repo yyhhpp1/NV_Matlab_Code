@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash('/c/Program Files/MATLAB/R2023b/bin/matlab.exe' -batch ' *)",
+      "Bash(python -c \"import h5py,sys; print\\(h5py.__version__\\)\")",
+      "Bash(date; echo *)",
+      "Read(//c/Data/2026-8-25//**)",
+      "Read(//c/Data/**)"
+    ]
+  }
+}

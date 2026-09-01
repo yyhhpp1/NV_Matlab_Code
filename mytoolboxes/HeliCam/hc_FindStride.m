@@ -172,7 +172,7 @@ function s = hc_FindStride(src, j)
     end
 
     fprintf(['\nTo eyeball a candidate without changing any code:\n', ...
-             '    v = reshape(double(gWide.reference(:,:,%d)).'', [], 1);\n', ...
+             '    v = reshape(double(gWide.I(:,:,%d)).'', [], 1);\n', ...
              '    figure; imagesc(circshift(reshape(v, %d, []).'', [0 -%d])); axis image; colorbar\n'], ...
             j, best.L, s.shiftSuggested);
 
@@ -271,21 +271,9 @@ end
 
 % ---------------------------------------------------------------------------- %
 function [ref, label] = loadRef(src)
-    if isempty(src)
-        gW = getGlobalWide();
-        if isempty(gW) || ~isfield(gW, 'reference')
-            error('hc_FindStride: global gWide has no reference data yet.');
-        end
-        ref   = gW.reference;
-        label = 'global gWide';
-        return
-    end
-    p = char(string(src));
-    if ~isfile(p)
-        error('hc_FindStride: file not found: %s', p);
-    end
-    ref   = h5read(p, '/reference');
-    label = p;
+    % Shared loader: accepts the live gWide or a path, and both the current
+    % /I,/Q datasets and the pre-rename /reference,/rawsignal ones.
+    [ref, ~, label] = hc_LoadIQ(src, 'hc_FindStride');
 end
 
 % ---------------------------------------------------------------------------- %

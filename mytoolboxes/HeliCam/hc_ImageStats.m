@@ -34,7 +34,7 @@ function s = hc_ImageStats(src, j, dark)
 % correlated) image, and above 1 for alternating pixel patterns.
 %
 % For hc_Image specifically: laser is in Q1 only, so Q = Q2 - Q4 ~ 0 and
-% |rawsignal| / reference should be SMALL. A ratio near 1 means Q is picking up as
+% |Q| / |I| should be SMALL. A ratio near 1 means Q is picking up as
 % much as I, which contradicts the sequence and points at phase misalignment
 % (LockInReferenceTimeShift) rather than a real measurement.
 %
@@ -69,16 +69,17 @@ function s = hc_ImageStats(src, j, dark)
     if ~isempty(dark)
         D = resolveDark(dark);
         checkDarkSettings(D);
-        if ~isequal(size(D.reference), size(A))
+        [dI, dQ] = hc_DarkIQ(D);
+        if ~isequal(size(dI), size(A))
             error(['hc_ImageStats: dark reference is %dx%d but the image is ', ...
-                   '%dx%d.'], size(D.reference,1), size(D.reference,2), ...
+                   '%dx%d.'], size(dI,1), size(dI,2), ...
                    size(A,1), size(A,2));
         end
         fprintf('Dark subtraction: ON (pedestal mean %.6g removed)\n', ...
-                mean(D.reference(:), 'omitnan'));
-        A = A - D.reference;
-        if ~isempty(B) && isfield(D,'rawsignal') && isequal(size(D.rawsignal), size(B))
-            B = B - D.rawsignal;
+                mean(dI(:), 'omitnan'));
+        A = A - dI;
+        if ~isempty(B) && ~isempty(dQ) && isequal(size(dQ), size(B))
+            B = B - dQ;
         end
         s.darkApplied = true;
     else
@@ -88,13 +89,13 @@ function s = hc_ImageStats(src, j, dark)
     end
     fprintf('\n');
 
-    s.reference = describe(A, 'reference  (mean I)');
+    s.I = describe(A, 'I  (mean over frames of Q1-Q3)');
 
     if ~isempty(B)
-        s.rawsignal = describe(B, 'rawsignal  (-mean Q)');
+        s.Q = describe(B, 'Q  (mean over frames of Q2-Q4)');
         rr = mean(abs(B(:)), 'omitnan') / max(mean(abs(A(:)), 'omitnan'), eps);
         fprintf('-- Q vs I --\n');
-        fprintf('   mean|rawsignal| / mean|reference| = %.4g\n', rr);
+        fprintf('   mean|Q| / mean|I| = %.4g\n', rr);
         if rr > 0.3
             fprintf(2, ['   NOTE: for hc_Image the laser is in Q1 only, so Q should be\n', ...
                         '   near zero. A ratio this large contradicts the sequence --\n', ...
@@ -233,29 +234,10 @@ end
 
 % ---------------------------------------------------------------------------- %
 function [ref, raw, label] = loadStack(src)
-    if isempty(src)
-        gW = getGlobalWide();
-        if isempty(gW) || ~isfield(gW, 'reference')
-            error('hc_ImageStats: global gWide has no reference data yet.');
-        end
-        ref = gW.reference;
-        raw = [];
-        if isfield(gW, 'rawsignal'); raw = gW.rawsignal; end
-        label = 'global gWide';
-        return
-    end
-
-    p = char(string(src));
-    if ~isfile(p)
-        error('hc_ImageStats: file not found: %s', p);
-    end
-    ref = h5read(p, '/reference');
-    raw = [];
-    try
-        raw = h5read(p, '/rawsignal');
-    catch
-    end
-    label = p;
+    % One shared loader, so this and every other consumer read the quadratures
+    % the same way and both the current /I,/Q and the legacy
+    % /reference,/rawsignal spellings keep working.
+    [ref, raw, label] = hc_LoadIQ(src, 'hc_ImageStats');
 end
 
 % ---------------------------------------------------------------------------- %

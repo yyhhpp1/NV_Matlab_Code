@@ -1,0 +1,757 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project id="061e9455-1924-45a7-88b6-80b37633431d" version="8.0.291.0">
+  <flowchart id="ffc669b1-3fd2-40f0-9212-05cbaa27b805" name="MainFlowchart" isMainFlowchart="True" />
+  <operatorView id="376b687a-e2f0-43b6-9871-b082cd3386d3" name="OperatorView" type="normal" isMainOperatorView="True" />
+  <runtimeErrorHandlingMode>Restart</runtimeErrorHandlingMode>
+  <runtimeMessageNotificationMode>OnError</runtimeMessageNotificationMode>
+  <showRuntimeWaitBanner>True</showRuntimeWaitBanner>
+  <runtimeWaitBannerTime>1</runtimeWaitBannerTime>
+  <platform-configuration>
+    <emulation hardware="PC" default-system="M_SYSTEM_GIGE_VISION" />
+    <systems>
+      <project-system name="SystemHost" id="fe6de3e9-e9e1-4284-8b84-707d909bdb55">
+        <setting name="Descriptor" persistentState="NotPersistent" is-using-default="False" is-set="True" id="ee18f7bf-92d2-4ab3-99d4-cf8623edb9eb">
+          <value>M_SYSTEM_HOST</value>
+          <value-string>M_SYSTEM_HOST</value-string>
+        </setting>
+        <setting name="DeviceNumber" persistentState="NotPersistent" is-using-default="False" is-set="True" id="3ca80e5f-8929-45dd-b885-1f679687b9e2">
+          <value>0</value>
+          <value-string>DEV0</value-string>
+        </setting>
+        <isdefaultrtsys>False</isdefaultrtsys>
+        <rotaryencoders>
+          <project-rotaryencoder name="RotaryEncoder1" id="ee5ebd6a-3166-4861-93db-b60030c7c0da">
+            <setting name="Enabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="c3701aca-7bbc-4294-8983-cb07b46dd11b">
+              <value>False</value>
+              <value-string>False</value-string>
+            </setting>
+            <setting name="Bit0Source" persistentState="NotPersistent" is-using-default="False" is-set="False" id="5551554f-a96b-4d19-9122-bec1b3b84c3d" />
+            <setting name="Bit1Source" persistentState="NotPersistent" is-using-default="False" is-set="False" id="458fa307-f56d-4545-8215-3ef1fcd7d4d1" />
+            <setting name="OutputMode" persistentState="NotPersistent" is-using-default="True" is-set="True" id="29f79604-6b10-44c0-85c8-c609cc913b89" />
+            <setting name="PositionTrigger" persistentState="NotPersistent" is-using-default="True" is-set="True" id="565d148f-d59d-4ec1-b3a3-8c8c17ff13da" />
+            <setting name="ResetSource" persistentState="NotPersistent" is-using-default="True" is-set="True" id="8da2d7d0-a950-49cb-ab19-63580e6667cf" />
+            <setting name="ResetActivation" persistentState="NotPersistent" is-using-default="True" is-set="True" id="d0bc17d0-0cf8-4d86-9409-0845592d0d28" />
+          </project-rotaryencoder>
+          <project-rotaryencoder name="RotaryEncoder2" id="a04ac909-6353-48fd-b51d-ebb14e0d488c">
+            <setting name="Enabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="10f7b62a-1f0b-4ac9-8a7f-c385ca45ba4d">
+              <value>False</value>
+              <value-string>False</value-string>
+            </setting>
+            <setting name="Bit0Source" persistentState="NotPersistent" is-using-default="False" is-set="False" id="c766f4a8-c8d4-48e9-888a-f9d145ddda55" />
+            <setting name="Bit1Source" persistentState="NotPersistent" is-using-default="False" is-set="False" id="01d510ee-98db-4ebd-96a0-83898dc0182c" />
+            <setting name="OutputMode" persistentState="NotPersistent" is-using-default="True" is-set="True" id="9dc77eda-ee21-4551-9cb6-2addf73756aa" />
+            <setting name="PositionTrigger" persistentState="NotPersistent" is-using-default="True" is-set="True" id="3fe6c4f7-9058-4693-bb9e-46672c0cc6eb" />
+            <setting name="ResetSource" persistentState="NotPersistent" is-using-default="True" is-set="True" id="722b697c-ce8f-47d4-bfd8-1ef45b51480a" />
+            <setting name="ResetActivation" persistentState="NotPersistent" is-using-default="True" is-set="True" id="d60dcdfe-4143-40c5-a404-122eddc915e4" />
+          </project-rotaryencoder>
+        </rotaryencoders>
+        <iocommandlists>
+          <project-iocommandlist name="IOCommandList1" id="483b44f8-bdc5-4821-9545-bed579473b73">
+            <setting name="Enabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="4c01cdb5-4a3c-42dd-ad6e-04ca7a41fe24">
+              <value>True</value>
+              <value-string>True</value-string>
+            </setting>
+            <setting name="CounterSource" persistentState="NotPersistent" is-using-default="True" is-set="True" id="f9edde95-3af0-4531-9a12-291296f3987e" />
+            <latches>
+              <project-latch name="Latch1" id="c2d34842-b406-43b0-a8a6-a9efbf494715">
+                <setting name="Enabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="6ec88ab8-c1a4-4c3b-aa2b-ebd8aaa17b5c">
+                  <value>False</value>
+                  <value-string>False</value-string>
+                </setting>
+                <setting name="TriggerSource" persistentState="NotPersistent" is-using-default="False" is-set="False" id="08de2c08-2f03-4204-b594-e57e73db3a6e" />
+                <setting name="Activation" persistentState="NotPersistent" is-using-default="True" is-set="True" id="ab1ea612-1402-4f6d-b335-04f02b3b6148" />
+              </project-latch>
+              <project-latch name="Latch2" id="07e1a002-737b-4041-b086-25b66537dc2d">
+                <setting name="Enabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="241e71e3-a8c5-417d-ac76-0904469d9691">
+                  <value>False</value>
+                  <value-string>False</value-string>
+                </setting>
+                <setting name="TriggerSource" persistentState="NotPersistent" is-using-default="False" is-set="False" id="c6a5b191-0264-4bfd-82aa-a5abd69d1601" />
+                <setting name="Activation" persistentState="NotPersistent" is-using-default="True" is-set="True" id="b7a1cbbf-6cb7-4671-811a-1e1a7533bd02" />
+              </project-latch>
+              <project-latch name="Latch3" id="6f0945f8-5812-4d4d-8db9-9a4f8c9e3855">
+                <setting name="Enabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="7bf347f7-2e76-4de9-b6e0-133d08cd6c58">
+                  <value>False</value>
+                  <value-string>False</value-string>
+                </setting>
+                <setting name="TriggerSource" persistentState="NotPersistent" is-using-default="False" is-set="False" id="cb8c77fb-3c5d-4369-9b04-2afb1043075f" />
+                <setting name="Activation" persistentState="NotPersistent" is-using-default="True" is-set="True" id="c88a7656-912f-4e30-bd90-c1b13db3f82d" />
+              </project-latch>
+              <project-latch name="Latch4" id="c122531e-eb36-476c-8fee-35a0bc461dd5">
+                <setting name="Enabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="d1a97321-9928-4fdb-91ee-4bfa7243788b">
+                  <value>False</value>
+                  <value-string>False</value-string>
+                </setting>
+                <setting name="TriggerSource" persistentState="NotPersistent" is-using-default="False" is-set="False" id="c8afbde5-d56e-4ba6-96a9-236f0d69e597" />
+                <setting name="Activation" persistentState="NotPersistent" is-using-default="True" is-set="True" id="a6d6b8fa-0346-4964-af06-bf4bdb58e9ce" />
+              </project-latch>
+            </latches>
+          </project-iocommandlist>
+          <project-iocommandlist name="IOCommandList2" id="d75ae8cf-be95-45b4-b56c-724f5edae412">
+            <setting name="Enabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="5cd6863c-a406-42a0-a2dc-b0f02d5e6be1">
+              <value>False</value>
+              <value-string>False</value-string>
+            </setting>
+            <setting name="CounterSource" persistentState="NotPersistent" is-using-default="True" is-set="True" id="0206a9b6-12a1-497a-a9be-ec74f5ca2a04" />
+            <latches>
+              <project-latch name="Latch1" id="9b13c812-64b9-44f9-aa7b-7cb26e9648f8">
+                <setting name="Enabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="686a0123-6b42-43ad-b663-3b2e1d3658f8">
+                  <value>False</value>
+                  <value-string>False</value-string>
+                </setting>
+                <setting name="TriggerSource" persistentState="NotPersistent" is-using-default="False" is-set="False" id="ec3e990e-402d-4652-941d-1746dde27d2f" />
+                <setting name="Activation" persistentState="NotPersistent" is-using-default="True" is-set="True" id="8cb86ae5-6ba0-493f-b6c2-07cbd02d8b5a" />
+              </project-latch>
+              <project-latch name="Latch2" id="7184435e-c520-477a-a52a-4066cfcb4ab0">
+                <setting name="Enabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="a72a4b2d-e88b-4b98-98b4-d5673afd44a2">
+                  <value>False</value>
+                  <value-string>False</value-string>
+                </setting>
+                <setting name="TriggerSource" persistentState="NotPersistent" is-using-default="False" is-set="False" id="a8f645cd-258b-4b3f-86cc-1e33b1ef154f" />
+                <setting name="Activation" persistentState="NotPersistent" is-using-default="True" is-set="True" id="0ac4a7c6-40b8-405b-b754-ec15ec1b2234" />
+              </project-latch>
+              <project-latch name="Latch3" id="bb3c4b77-8100-497c-9d11-8a046eb781de">
+                <setting name="Enabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="4199ba78-d20b-4bcf-8dee-a33a316a5ec0">
+                  <value>False</value>
+                  <value-string>False</value-string>
+                </setting>
+                <setting name="TriggerSource" persistentState="NotPersistent" is-using-default="False" is-set="False" id="78abce11-094e-419e-b970-e60722bd7a1f" />
+                <setting name="Activation" persistentState="NotPersistent" is-using-default="True" is-set="True" id="97abb191-c0c2-4955-8c88-951b950d40fb" />
+              </project-latch>
+              <project-latch name="Latch4" id="1a10e88c-b90d-462d-b482-c04bdfcac834">
+                <setting name="Enabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="8cd1eec6-1eea-4bc0-ab92-49daefdd9be3">
+                  <value>False</value>
+                  <value-string>False</value-string>
+                </setting>
+                <setting name="TriggerSource" persistentState="NotPersistent" is-using-default="False" is-set="False" id="a11e3da9-9102-4bee-acba-5961d026ee61" />
+                <setting name="Activation" persistentState="NotPersistent" is-using-default="True" is-set="True" id="5dc56453-e0db-4c37-9e42-45e4d656e486" />
+              </project-latch>
+            </latches>
+          </project-iocommandlist>
+        </iocommandlists>
+        <timers />
+      </project-system>
+    </systems>
+    <cameras>
+      <project-thirdpartycamera name="PhysicalCamera1" id="12b4795d-0710-44b6-a87d-bb47871eab97">
+        <setting name="CameraType" persistentState="NotPersistent" is-using-default="False" is-set="True" id="204608bc-537a-4f96-8050-06c9e2030627">
+          <value>GenTLConsumer</value>
+          <value-string>GenTLConsumer</value-string>
+        </setting>
+        <setting name="AllocationMode" persistentState="NotPersistent" is-using-default="False" is-set="True" id="58d8786c-f2d7-411a-b68d-a32fec465889">
+          <value>ProducerLibraryName</value>
+          <value-string>Producer Library Name</value-string>
+        </setting>
+        <setting name="AllocationValue" persistentState="NotPersistent" is-using-default="False" is-set="True" id="bf83a07c-e517-4a06-980c-3aff1c325054">
+          <value>diaphus</value>
+          <value-string>diaphus</value-string>
+        </setting>
+        <setting name="GenTLDeviceAllocationMode" persistentState="NotPersistent" is-using-default="False" is-set="True" id="58c63ec7-2579-46df-9c03-ce660f345eb4">
+          <value>DeviceNumber</value>
+          <value-string>Device Number</value-string>
+        </setting>
+        <setting name="GenTLDeviceAllocationValue" persistentState="NotPersistent" is-using-default="False" is-set="True" id="c6adf90a-c72c-4c53-8968-300bce417dad">
+          <value>0</value>
+          <value-string>0</value-string>
+        </setting>
+        <setting name="APIVersion" persistentState="NotPersistent" is-using-default="False" is-set="True" id="50a07a03-f238-4121-965b-1d4276ccae09">
+          <value>N/A</value>
+          <value-string>N/A</value-string>
+        </setting>
+        <setting name="GrabReferenceSource" persistentState="NotPersistent" is-using-default="True" is-set="True" id="3dcbbad0-621c-4c79-aebc-a69d4f3a53f2" />
+        <setting name="GrabReferenceSystem" persistentState="NotPersistent" is-using-default="True" is-set="True" id="c176c45c-13c0-4eb4-8f33-4259040bdc61" />
+        <setting name="InternalGrabReferenceStamp" persistentState="NotPersistent" is-using-default="False" is-set="True" id="4f109654-e43b-42db-aac6-7cc9e594cd44">
+          <value>null</value>
+          <value-string>null</value-string>
+        </setting>
+        <setting name="PixelOffsetX" persistentState="NotPersistent" is-using-default="False" is-set="True" id="fd1630ac-d3c7-4202-ae21-4a1b80c29264">
+          <value>0</value>
+          <value-string>0</value-string>
+        </setting>
+        <setting name="PixelSizeX" persistentState="NotPersistent" is-using-default="False" is-set="True" id="6f29cf4b-e034-4063-81ce-245afad2f629">
+          <value>1</value>
+          <value-string>1</value-string>
+        </setting>
+        <setting name="PixelOffsetY" persistentState="NotPersistent" is-using-default="False" is-set="True" id="2e033a57-70b1-483a-ae0c-65f38353a5c9">
+          <value>0</value>
+          <value-string>0</value-string>
+        </setting>
+        <setting name="PixelSizeY" persistentState="NotPersistent" is-using-default="False" is-set="True" id="fa2f16d1-5695-4ee6-96da-145cf2dce39d">
+          <value>1</value>
+          <value-string>1</value-string>
+        </setting>
+        <setting name="TriggerMode" persistentState="NotPersistent" is-using-default="False" is-set="True" id="7e32adcc-1d67-4dfd-8d73-de52344cd934">
+          <value>Enabled</value>
+          <value-string>Enabled</value-string>
+        </setting>
+        <setting name="GrabQueueSize" persistentState="NotPersistent" is-using-default="False" is-set="True" id="4a4e4bb3-b538-4d3d-8fd3-202b73340f6d">
+          <value>2</value>
+          <value-string>2</value-string>
+        </setting>
+        <setting name="RangeMode" persistentState="NotPersistent" is-using-default="False" is-set="True" id="0cccdf2b-9c9a-4832-8e12-fb5f0fe5fa43">
+          <value>Undefined</value>
+          <value-string>Undefined</value-string>
+        </setting>
+        <setting name="GenICamFeatures" persistentState="NotPersistent" is-using-default="False" is-set="False" id="be06bc90-7d6f-49cd-8195-37f920eedca4" />
+      </project-thirdpartycamera>
+    </cameras>
+    <image-file-providers>
+      <project-imagefileprovider name="Set1" id="02a50a64-98c5-4295-99d6-09daf5202a5a">
+        <setting name="Type" persistentState="NotPersistent" is-using-default="False" is-set="True" id="330b1590-8278-43fc-93fd-34afcbfa6434">
+          <value>Folder</value>
+          <value-string>Folder</value-string>
+        </setting>
+        <setting name="Direction" persistentState="NotPersistent" is-using-default="False" is-set="True" id="0b37255f-1731-46e7-9e90-4b3da39f3914">
+          <value>Forward</value>
+          <value-string>Forward</value-string>
+        </setting>
+        <setting name="RuntimeSingleFile" persistentState="NotPersistent" is-using-default="False" is-set="True" id="08aed037-5583-4f11-8055-0bab091026ce">
+          <value></value>
+          <value-string></value-string>
+        </setting>
+        <setting name="DesignTimeSingleFile" persistentState="NotPersistent" is-using-default="False" is-set="True" id="66c62570-cd91-4727-92ba-416d03756509">
+          <value></value>
+          <value-string></value-string>
+        </setting>
+        <setting name="RuntimeSequenceFile" persistentState="NotPersistent" is-using-default="False" is-set="True" id="21dcff0f-bddf-489a-8da5-dffd7e0059b1">
+          <value></value>
+          <value-string></value-string>
+        </setting>
+        <setting name="DesignTimeSequenceFile" persistentState="NotPersistent" is-using-default="False" is-set="True" id="9786714f-23aa-47cc-8952-9b5eb25b53c0">
+          <value></value>
+          <value-string></value-string>
+        </setting>
+        <setting name="RuntimeNumberedFilesFolder" persistentState="NotPersistent" is-using-default="False" is-set="True" id="788f425c-1c42-46d1-9bb4-514c1afce062">
+          <value>C:\Users\adminsm\Documents\Matrox Design Assistant\Images</value>
+          <value-string compiler-error="False">{PATH("DA Documents")}\\Images</value-string>
+        </setting>
+        <setting name="DesignTimeNumberedFilesFolder" persistentState="NotPersistent" is-using-default="False" is-set="True" id="a287f383-63c8-4c2a-b2c8-5d1b63205cc1">
+          <value>C:\Program Files\Matrox Imaging\DA 8.0\Images</value>
+          <value-string compiler-error="False">{PATH("DA Install")}\\Images</value-string>
+        </setting>
+        <setting name="RootName" persistentState="NotPersistent" is-using-default="False" is-set="True" id="6cb83f4d-ef6d-432a-90c6-1c9322a8898e">
+          <value>Image</value>
+          <value-string>Image</value-string>
+        </setting>
+        <setting name="Extension" persistentState="NotPersistent" is-using-default="False" is-set="True" id="aa938cbd-2a80-4f26-988e-51efd5e0ec13">
+          <value>.mim</value>
+          <value-string>.mim</value-string>
+        </setting>
+        <setting name="FirstNumber" persistentState="NotPersistent" is-using-default="False" is-set="True" id="5cd454b9-ef82-4381-a2f1-4f4c2d26f7f6">
+          <value>-1</value>
+          <value-string>Smallest</value-string>
+        </setting>
+        <setting name="LastNumber" persistentState="NotPersistent" is-using-default="False" is-set="True" id="78826f4e-c92a-4c89-bf0a-fbb271e185d4">
+          <value>9223372036854775807</value>
+          <value-string>Biggest</value-string>
+        </setting>
+        <setting name="RuntimeFolder" persistentState="NotPersistent" is-using-default="False" is-set="True" id="2289b808-dd59-4948-9fc6-f06be4da4c36">
+          <value>C:\Users\adminsm\Documents\Matrox Design Assistant\Images</value>
+          <value-string compiler-error="False">{PATH("DA Documents")}\\Images</value-string>
+        </setting>
+        <setting name="DesignTimeFolder" persistentState="NotPersistent" is-using-default="False" is-set="True" id="c2988c5d-ba17-4d56-9c64-104b9145742c">
+          <value>C:\Program Files\Matrox Imaging\DA 8.0\Images</value>
+          <value-string compiler-error="False">{PATH("DA Install")}\\Images</value-string>
+        </setting>
+        <setting name="FolderFileTypes" persistentState="NotPersistent" is-using-default="False" is-set="True" id="a258d468-c19f-48fb-b02b-2c5661a29eee">
+          <value>All supported types</value>
+          <value-string>All supported types</value-string>
+        </setting>
+        <setting name="UpdateFileList" persistentState="NotPersistent" is-using-default="False" is-set="True" id="bd7a77ef-4c7d-4e73-b3a5-39acb4d3cde1">
+          <value>False</value>
+          <value-string>False</value-string>
+        </setting>
+        <setting name="SkipFileOnError" persistentState="NotPersistent" is-using-default="False" is-set="True" id="f0e7f9aa-bfce-4433-be7c-a2563f347895">
+          <value>False</value>
+          <value-string>False</value-string>
+        </setting>
+        <setting name="ConvertToGrayscale" persistentState="NotPersistent" is-using-default="False" is-set="True" id="cbd61ba6-3c1c-400e-9093-f6c6d7436af8">
+          <value>True</value>
+          <value-string>True</value-string>
+        </setting>
+        <setting name="ColorSpace" persistentState="NotPersistent" is-using-default="False" is-set="True" id="db4e8605-8d58-4e09-804c-2a012a88f4d1">
+          <value>RGB</value>
+          <value-string>RGB</value-string>
+        </setting>
+        <setting name="IncludeSubDirectories" persistentState="NotPersistent" is-using-default="False" is-set="True" id="db77b7bd-5b10-45c7-bd87-91d2fe7218e8">
+          <value>False</value>
+          <value-string>False</value-string>
+        </setting>
+        <setting name="AppendCurrentRecipe" persistentState="NotPersistent" is-using-default="False" is-set="True" id="342dc875-741a-464a-ac25-55d1f219c0c9">
+          <value>False</value>
+          <value-string>False</value-string>
+        </setting>
+        <setting name="DeleteRecipeFolder" persistentState="NotPersistent" is-using-default="False" is-set="True" id="506599e6-084c-4504-8ed3-f1a6e4b32f92">
+          <value>False</value>
+          <value-string>False</value-string>
+        </setting>
+        <setting name="RunMode" persistentState="NotPersistent" is-using-default="False" is-set="True" id="974c759e-47b8-475e-8640-2abb729d42c4">
+          <value>Continuous</value>
+          <value-string>Continuous</value-string>
+        </setting>
+        <setting name="AutoStart" persistentState="NotPersistent" is-using-default="False" is-set="True" id="36d5016d-7103-4124-8771-a775dd1f64a2">
+          <value>False</value>
+          <value-string>False</value-string>
+        </setting>
+        <setting name="CameraId" persistentState="NotPersistent" is-using-default="True" is-set="True" id="86de3cf8-71b9-4651-83ba-c245d1299177" />
+        <setting name="LoadReferenceSource" persistentState="NotPersistent" is-using-default="True" is-set="True" id="017eb568-d0c9-4125-8702-b7176a9d6156" />
+      </project-imagefileprovider>
+    </image-file-providers>
+    <communication isusingquickcomm="True">
+      <communication-node name="Profinet" id="69193400-2127-4d3f-94f5-ca5ee741c63f">
+        <setting name="InstanceName" persistentState="NotPersistent" is-using-default="False" is-set="True" id="d801b39c-25f4-424b-b35b-5b9080d92e78">
+          <value></value>
+          <value-string></value-string>
+        </setting>
+        <setting name="IsEnabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="29279989-2a82-4ddb-8389-05e1e1705cb4">
+          <value>False</value>
+          <value-string>False</value-string>
+        </setting>
+        <setting name="IsOnline" persistentState="NotPersistent" is-using-default="False" is-set="True" id="70b0144f-ca36-44d2-9da9-c5d1fdbb803a">
+          <value>True</value>
+          <value-string>True</value-string>
+        </setting>
+        <profinet-settings-fieldinfoCollection statusstep="(None)" module="Control" slot="3">
+          <fieldinfo-settings modulename="Control" name="PLCSoftEvent1" type="4" firstindex="0" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Control" name="PLCSoftEvent2" type="4" firstindex="0" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+        </profinet-settings-fieldinfoCollection>
+        <profinet-settings-fieldinfoCollection statusstep="Status" module="Status" slot="4" />
+        <profinet-settings-fieldinfoCollection statusstep="(None)" module="Camera1" slot="6">
+          <fieldinfo-settings modulename="Camera1" name="PLCCamera1SoftEvent1" type="4" firstindex="0" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera1" name="PLCCamera1SoftEvent2" type="4" firstindex="0" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+        </profinet-settings-fieldinfoCollection>
+        <profinet-settings-fieldinfoCollection statusstep="(None)" module="Camera2" slot="7">
+          <fieldinfo-settings modulename="Camera2" name="PLCCamera2SoftEvent1" type="4" firstindex="0" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera2" name="PLCCamera2SoftEvent2" type="4" firstindex="0" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+        </profinet-settings-fieldinfoCollection>
+        <profinet-settings-fieldinfoCollection statusstep="(None)" module="Camera3" slot="8">
+          <fieldinfo-settings modulename="Camera3" name="PLCCamera3SoftEvent1" type="4" firstindex="0" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera3" name="PLCCamera3SoftEvent2" type="4" firstindex="0" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+        </profinet-settings-fieldinfoCollection>
+        <profinet-settings-fieldinfoCollection statusstep="(None)" module="Camera4" slot="9">
+          <fieldinfo-settings modulename="Camera4" name="PLCCamera4SoftEvent1" type="4" firstindex="0" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera4" name="PLCCamera4SoftEvent2" type="4" firstindex="0" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+        </profinet-settings-fieldinfoCollection>
+        <profinet-settings-fieldinfoCollection statusstep="(None)" module="Camera5" slot="10">
+          <fieldinfo-settings modulename="Camera5" name="PLCCamera5SoftEvent1" type="4" firstindex="0" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera5" name="PLCCamera5SoftEvent2" type="4" firstindex="0" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+        </profinet-settings-fieldinfoCollection>
+        <profinet-settings-fieldinfoCollection statusstep="(None)" module="Camera6" slot="11">
+          <fieldinfo-settings modulename="Camera6" name="PLCCamera6SoftEvent1" type="4" firstindex="0" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera6" name="PLCCamera6SoftEvent2" type="4" firstindex="0" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+        </profinet-settings-fieldinfoCollection>
+        <profinet-settings-fieldinfoCollection statusstep="(None)" module="Camera7" slot="12">
+          <fieldinfo-settings modulename="Camera7" name="PLCCamera7SoftEvent1" type="4" firstindex="0" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera7" name="PLCCamera7SoftEvent2" type="4" firstindex="0" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+        </profinet-settings-fieldinfoCollection>
+        <profinet-settings-fieldinfoCollection statusstep="(None)" module="Camera8" slot="13">
+          <fieldinfo-settings modulename="Camera8" name="PLCCamera8SoftEvent1" type="4" firstindex="0" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera8" name="PLCCamera8SoftEvent2" type="4" firstindex="0" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+        </profinet-settings-fieldinfoCollection>
+        <profinet-settings-fieldinfoCollection statusstep="(None)" module="DataFromPLC" slot="2" />
+        <profinet-settings-fieldinfoCollection statusstep="(None)" module="DataToPLC" slot="1" />
+      </communication-node>
+      <communication-node name="EtherNetIP" id="08220750-277e-4a98-a9f1-f4b3ca582cd3">
+        <setting name="InstanceName" persistentState="NotPersistent" is-using-default="False" is-set="True" id="c0c8e996-9f14-480f-816c-1eb56744b55f">
+          <value></value>
+          <value-string></value-string>
+        </setting>
+        <setting name="IsEnabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="b04ba1a2-64b0-4023-a6c7-75e9d0b42384">
+          <value>False</value>
+          <value-string>False</value-string>
+        </setting>
+        <setting name="IsOnline" persistentState="NotPersistent" is-using-default="False" is-set="True" id="84617ac6-b953-48db-8eec-416cc9b83d8a">
+          <value>True</value>
+          <value-string>True</value-string>
+        </setting>
+        <ethernetip-settings-fieldinfoCollection name="Consumer" statusstep="(None)">
+          <fieldinfo-settings modulename="Control" name="PLCSoftEvent1" type="0" firstindex="0" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Control" name="PLCSoftEvent2" type="0" firstindex="0" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera1" name="PLCCamera1SoftEvent1" type="0" firstindex="16" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera1" name="PLCCamera1SoftEvent2" type="0" firstindex="16" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera2" name="PLCCamera2SoftEvent1" type="0" firstindex="18" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera2" name="PLCCamera2SoftEvent2" type="0" firstindex="18" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera3" name="PLCCamera3SoftEvent1" type="0" firstindex="20" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera3" name="PLCCamera3SoftEvent2" type="0" firstindex="20" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera4" name="PLCCamera4SoftEvent1" type="0" firstindex="22" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera4" name="PLCCamera4SoftEvent2" type="0" firstindex="22" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera5" name="PLCCamera5SoftEvent1" type="0" firstindex="24" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera5" name="PLCCamera5SoftEvent2" type="0" firstindex="24" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera6" name="PLCCamera6SoftEvent1" type="0" firstindex="26" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera6" name="PLCCamera6SoftEvent2" type="0" firstindex="26" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera7" name="PLCCamera7SoftEvent1" type="0" firstindex="28" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera7" name="PLCCamera7SoftEvent2" type="0" firstindex="28" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera8" name="PLCCamera8SoftEvent1" type="0" firstindex="30" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera8" name="PLCCamera8SoftEvent2" type="0" firstindex="30" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+        </ethernetip-settings-fieldinfoCollection>
+        <ethernetip-settings-fieldinfoCollection name="Producer" statusstep="(None)" />
+      </communication-node>
+      <communication-node name="Modbus" id="8c701c7d-9080-4926-ab23-dee23a1b4b8a">
+        <setting name="InstanceName" persistentState="NotPersistent" is-using-default="False" is-set="True" id="f73f0a8e-b125-425a-906b-1a307ac21a14">
+          <value></value>
+          <value-string></value-string>
+        </setting>
+        <setting name="IsEnabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="56efb912-eb38-4ca2-899d-bca89fef57cf">
+          <value>False</value>
+          <value-string>False</value-string>
+        </setting>
+        <setting name="IsOnline" persistentState="NotPersistent" is-using-default="False" is-set="True" id="c4f0fc06-f041-4d05-b234-6fce162d26a4">
+          <value>True</value>
+          <value-string>True</value-string>
+        </setting>
+      </communication-node>
+      <communication-node name="CCLink" id="bea202b2-c38a-4247-8234-bd64b112d43b">
+        <setting name="InstanceName" persistentState="NotPersistent" is-using-default="False" is-set="True" id="7bc9f9fa-f4b9-4800-b048-0d5f33a3e7e9">
+          <value></value>
+          <value-string></value-string>
+        </setting>
+        <setting name="IsEnabled" persistentState="NotPersistent" is-using-default="False" is-set="True" id="efdff973-eb19-4846-a416-cc99d3df2e1d">
+          <value>False</value>
+          <value-string>False</value-string>
+        </setting>
+        <setting name="IsOnline" persistentState="NotPersistent" is-using-default="False" is-set="True" id="b15d65cd-e8b4-48da-b0ae-b8d5c5c9b496">
+          <value>True</value>
+          <value-string>True</value-string>
+        </setting>
+        <cclink-settings-fieldinfoCollection statusstep="(None)" table-registers="RWR" />
+        <cclink-settings-fieldinfoCollection statusstep="(None)" table-registers="RWW">
+          <fieldinfo-settings modulename="Control" name="PLCSoftEvent1" type="0" firstindex="0" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Control" name="PLCSoftEvent2" type="0" firstindex="0" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera1" name="PLCCamera1SoftEvent1" type="0" firstindex="9" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera1" name="PLCCamera1SoftEvent2" type="0" firstindex="9" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera2" name="PLCCamera2SoftEvent1" type="0" firstindex="10" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera2" name="PLCCamera2SoftEvent2" type="0" firstindex="10" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera3" name="PLCCamera3SoftEvent1" type="0" firstindex="11" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera3" name="PLCCamera3SoftEvent2" type="0" firstindex="11" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera4" name="PLCCamera4SoftEvent1" type="0" firstindex="12" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera4" name="PLCCamera4SoftEvent2" type="0" firstindex="12" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera5" name="PLCCamera5SoftEvent1" type="0" firstindex="13" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera5" name="PLCCamera5SoftEvent2" type="0" firstindex="13" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera6" name="PLCCamera6SoftEvent1" type="0" firstindex="14" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera6" name="PLCCamera6SoftEvent2" type="0" firstindex="14" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera7" name="PLCCamera7SoftEvent1" type="0" firstindex="15" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera7" name="PLCCamera7SoftEvent2" type="0" firstindex="15" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera8" name="PLCCamera8SoftEvent1" type="0" firstindex="16" bitindex="5" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+          <fieldinfo-settings modulename="Camera8" name="PLCCamera8SoftEvent2" type="0" firstindex="16" bitindex="6" size="0" isinput="False" inquickcomm="True" isusingautomaticaction="False" triggingvalue="1" anyvalues="False" ignoreisonline="False" />
+        </cclink-settings-fieldinfoCollection>
+        <cclink-settings-fieldinfoCollection statusstep="(None)" table-registers="RX" />
+        <cclink-settings-fieldinfoCollection statusstep="(None)" table-registers="RY" />
+      </communication-node>
+    </communication>
+    <network-interfaces>
+      <project-networkinterface name="Network1" id="31ec5250-8826-4731-9521-40034b0b3dd1">
+        <setting name="ConnectionName" persistentState="NotPersistent" is-using-default="True" is-set="True" id="e9c1fe97-228f-4c7e-be1f-4b31dfe5c236" />
+      </project-networkinterface>
+    </network-interfaces>
+    <ios />
+    <serial-ports />
+    <robots />
+    <opcua name="OpcUaComponent" id="a93a110d-2df2-42d4-8259-edb127695274">
+      <setting name="IsEnabled" persistentState="NotPersistent" is-using-default="False" is-set="False" id="25177cf8-3158-4931-8d81-eb7a61c2029a" />
+    </opcua>
+    <CommsPlatformDisabledModes>None</CommsPlatformDisabledModes>
+    <last-used-platform type="PC" default-system="M_SYSTEM_GIGE_VISION" name="localhost" />
+  </platform-configuration>
+  <opcua-container id="3ae5035f-189b-4ef7-b9e5-7ca4d79c79d5" name="OpcUaContainer">
+    <opcua-project-collection name="OpcUaProjectCollections" type="Matrox.DesignAssistant.Core.Projects.PlatformConfigurationPackage.OpcUaComponent.OpcUaProjectCollections, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="0f2e3637-253f-4975-bcde-42be296d423d" Version="8.0.291.0">
+      <inputs>
+        <objectCollection name="Bindings" type="Matrox.DesignAssistant.Core.Platforms.OpcUaPackage.BindingNodeCollection, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="64abd6bb-883f-4341-9dda-ad599d7dccea" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <collectionItems />
+          <userXML />
+        </objectCollection>
+        <objectCollection name="EventObjects" type="Matrox.DesignAssistant.Core.Platforms.OpcUaPackage.EventObjectCollection, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="8972a2dd-fe6f-40a1-a366-3b04c0ceec08" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <collectionItems />
+          <userXML />
+        </objectCollection>
+        <objectCollection name="ExecutableFlowcharts" type="Matrox.DesignAssistant.Core.Platforms.OpcUaPackage.ExecutableFlowchartsCollection, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="3ba00d13-e5c7-4c3e-88d0-792c4fbf1161" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <collectionItems />
+          <userXML />
+        </objectCollection>
+      </inputs>
+      <userXML />
+    </opcua-project-collection>
+  </opcua-container>
+  <project-settings id="7c94310a-d44a-4781-9924-afefe8732cdd" name="ProjectSettings">
+    <setting name="RuntimeMonitoringSettings" type="Matrox.DesignAssistant.Core.Projects.RuntimeMonitoringSettings, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="82798a21-9324-4099-bb7c-d6c498e1e82f" Version="8.0.291.0">
+      <inputs>
+        <input name="EnableRuntimeMonitoring">
+          <expression>
+            <expression-string>True</expression-string>
+          </expression>
+        </input>
+        <input name="EnableRuntimeStatistics">
+          <expression>
+            <expression-string>True</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </setting>
+    <setting name="LabelSettings" type="Matrox.DesignAssistant.Core.Projects.LabelSettings, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="41bc7b8f-a988-4c58-bfa9-7137d00d19d5" Version="8.0.291.0">
+      <inputs>
+        <objectCollection name="UserLabels" type="Matrox.DesignAssistant.Core.Projects.LabelCollection, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="c793b187-73c9-4d78-ab3f-31dc6cefc7e6" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <collectionItems>
+            <subObject name="T" type="Matrox.DesignAssistant.Core.Projects.BaseLabel, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="b1309186-826b-4e98-9ec7-adcda2a3959b" Version="8.0.291.0">
+              <inputs>
+                <input name="Background">
+                  <expression>
+                    <expression-string>-5658199</expression-string>
+                  </expression>
+                </input>
+                <input name="Condition">
+                  <expression>
+                    <expression-string>None</expression-string>
+                  </expression>
+                </input>
+                <input name="DesignTimeVisible">
+                  <expression>
+                    <expression-string>False</expression-string>
+                  </expression>
+                </input>
+                <input name="Foreground">
+                  <expression>
+                    <expression-string>-1</expression-string>
+                  </expression>
+                </input>
+                <input name="RuntimeVisible">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="Type">
+                  <expression>
+                    <expression-string>Timestamp</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string need-link-container="True">DATETIME(Camera.Time, "H:mm:ss.ff")</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML>
+                <AutomaticName />
+              </userXML>
+            </subObject>
+          </collectionItems>
+          <userXML />
+        </objectCollection>
+      </inputs>
+      <userXML>
+        <AutomaticLabelProviders>
+          <AutomaticLabelProvider>
+            <StepID>79508921-73eb-454c-a77e-15098d801368</StepID>
+            <StepName>Status</StepName>
+            <FlowchartID>ffc669b1-3fd2-40f0-9212-05cbaa27b805</FlowchartID>
+            <FlowchartName>MainFlowchart</FlowchartName>
+          </AutomaticLabelProvider>
+        </AutomaticLabelProviders>
+      </userXML>
+    </setting>
+    <setting name="PerformanceSettings" type="Matrox.DesignAssistant.Core.Projects.PerformanceSettings, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="6ad98ea4-4bf6-4e37-a79d-424c693b15e6" Version="8.0.291.0">
+      <inputs>
+        <input name="GarbageCollectMode">
+          <expression>
+            <expression-string>EachInspection</expression-string>
+          </expression>
+        </input>
+        <input name="OverheadObjects">
+          <expression>
+            <expression-string>0</expression-string>
+          </expression>
+        </input>
+        <input name="UseLowLatency">
+          <expression>
+            <expression-string>True</expression-string>
+          </expression>
+        </input>
+        <subObject name="GarbageCollectSettings" type="Matrox.DesignAssistant.Core.Projects.GarbageCollectSettings, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="eff7d340-55a5-41e1-aef8-f174f1e9b4f5" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <inputs>
+            <input name="FullCollection">
+              <expression>
+                <expression-string>False</expression-string>
+              </expression>
+            </input>
+            <input name="Generation">
+              <expression>
+                <expression-string>0</expression-string>
+              </expression>
+            </input>
+            <input name="Mode">
+              <expression>
+                <expression-string>Optimized</expression-string>
+              </expression>
+            </input>
+          </inputs>
+          <userXML />
+        </subObject>
+        <input name="EnableFullGCNotification">
+          <expression>
+            <expression-string>False</expression-string>
+          </expression>
+        </input>
+        <input name="GarbageCollectionWatcher">
+          <expression>
+            <expression-string>Disable</expression-string>
+          </expression>
+        </input>
+        <input name="MaxCollectionTime">
+          <expression>
+            <expression-string>0.006</expression-string>
+          </expression>
+        </input>
+        <input name="JITWatcher">
+          <expression>
+            <expression-string>Disable</expression-string>
+          </expression>
+        </input>
+        <input name="InspectionTimeLogs">
+          <expression>
+            <expression-string>Disable</expression-string>
+          </expression>
+        </input>
+        <input name="MaxInspectionTime">
+          <expression>
+            <expression-string>0</expression-string>
+          </expression>
+        </input>
+        <input name="StopOnMaxInspection">
+          <expression>
+            <expression-string>False</expression-string>
+          </expression>
+        </input>
+        <input name="MaxRunTime">
+          <expression>
+            <expression-string>0</expression-string>
+          </expression>
+        </input>
+        <subObject name="LogSettings" type="Matrox.DesignAssistant.Core.Projects.LogSettings, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="1d0d29fd-07fd-4567-8b7d-e966a7ea1039" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <inputs>
+            <input name="LogFilePath">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+            </input>
+            <input name="Mode">
+              <expression>
+                <expression-string>MaxOnly</expression-string>
+              </expression>
+            </input>
+            <input name="WriteFrequency">
+              <expression>
+                <expression-string>1000</expression-string>
+              </expression>
+            </input>
+          </inputs>
+          <userXML />
+        </subObject>
+        <input name="InspectionIntervalHeapLog">
+          <expression>
+            <expression-string>0</expression-string>
+          </expression>
+        </input>
+        <input name="InspectionIntervalProcLog">
+          <expression>
+            <expression-string>0</expression-string>
+          </expression>
+        </input>
+        <input name="CollectPeriod">
+          <expression>
+            <expression-string>1</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </setting>
+    <setting name="InspectionSettings" type="Matrox.DesignAssistant.Core.Events.InspectionEventsSettings, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="679aab10-9a09-4b08-aadc-ae1a7a0224a0" Version="8.0.291.0">
+      <inputs>
+        <input name="EndEvent">
+          <expression>
+            <expression-string>Flowcharts("MainFlowchart").Loop.EndEvent</expression-string>
+          </expression>
+        </input>
+        <input name="StartEvent">
+          <expression>
+            <expression-string>Flowcharts("MainFlowchart").Camera.EndEvent</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </setting>
+    <setting name="ActionsContainer" type="Matrox.DesignAssistant.Core.Events.ActionsContainer, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="d4691150-8ab5-4a35-8da1-82bc1041bb5b" Version="8.0.291.0">
+      <inputs>
+        <objectCollection name="Actions" type="Matrox.DesignAssistant.Core.Events.ActionCollection, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="d46d3c66-897f-4b3a-9791-45ae6d6e1e7d" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <collectionItems>
+            <subObject name="PublishGroupAction" type="Matrox.DesignAssistant.Core.Events.PublishGroupAction, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="7fc25a11-efde-4375-9d6e-7f1587bf18dd" Version="8.0.291.0">
+              <inputs>
+                <input name="CanRun">
+                  <expression>
+                    <expression-string>None</expression-string>
+                  </expression>
+                </input>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="TriggerEvent">
+                  <expression>
+                    <expression-string>Inspection.EndEvent</expression-string>
+                  </expression>
+                </input>
+                <input name="WaitInspectionEnd">
+                  <expression>
+                    <expression-string>False</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML OWNNm="OperatorView" OWNType="OperatorView" Group="PublishingGroup" OperatorView="OperatorView" />
+            </subObject>
+          </collectionItems>
+          <userXML />
+        </objectCollection>
+        <objectCollection name="IPCommActions" type="Matrox.DesignAssistant.Core.Events.IPCommActionCollection, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="95a48ed6-df82-44d7-80aa-80b70877297b" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <collectionItems />
+          <userXML />
+        </objectCollection>
+      </inputs>
+      <userXML />
+    </setting>
+    <setting name="AnnotationGroupContainer" type="Matrox.DesignAssistant.Core.Annotations.Groups.AnnotationGroupContainer, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="970f80b7-53bd-407a-b924-6de78af6c2dc" Version="8.0.291.0">
+      <inputs>
+        <objectCollection name="AnnotationGroups" type="Matrox.DesignAssistant.Core.Annotations.Groups.SharedAnnotationGroupCollection, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="9ce1c58c-fa1b-41e1-ba31-c43efcfece67" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <collectionItems />
+          <userXML />
+        </objectCollection>
+      </inputs>
+      <userXML />
+    </setting>
+  </project-settings>
+</project>

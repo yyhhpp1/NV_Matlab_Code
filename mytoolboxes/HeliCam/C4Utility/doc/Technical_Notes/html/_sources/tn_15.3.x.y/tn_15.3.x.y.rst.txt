@@ -1,0 +1,156 @@
+.. raw:: html
+
+    <a href="../_pdf/tn_15.3.x.y.pdf" target="_blank">PDF version</a>
+    
+TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices
+*******************************************************************************
+
+Context and Challenge: Finding Root Causes of Non-Systematic Issues
+===================================================================
+
+HeliInspect H8, H9, or heliCam C4 devices may suddenly, sporadically, or gradually fail or deliver poor quality data. Hardware defects or environmental issues, including interactions on their interfaces, are possible root causes.
+
+The devices and software tools do, for the time being, not provide accessible log files or interactive monitoring of internal or external operating conditions. Finding root causes of such issues, therefore, requires high debugging efforts.
+
+Solution: Client-Based System Monitoring
+========================================
+
+Debugging of issues is simplified or made possible in the first place by collecting and possibly monitoring status information from the device. This should be implemented in the client (consumer) application that controls the heliCam/heliInspect device.
+
+The tables below point at useful status information. Client applications read it throught the standard camera interface at the configuration stage, after performing a measurement, or in case of an exception.
+Depending on the type of information and on user requirements, the application may implement monitoring and/or logging. 
+
+Permanently Available Status Information
+-----------------------------------------
+
+The client application can read the device and status information listed below at any time as long as it has an open connection to the device.
+
+
++----------------------------------------------------------------------------+-------------------------------------------------------------+
+| Feature                                                                    | Value (expected / healthy)                                  |
++============================================================================+=============================================================+
+| **DeviceFirmwareVersion**                                                  | camera embedded SW version (format e.g. 1.x.y)              |
++----------------------------------------------------------------------------+-------------------------------------------------------------+
+| **DeviceFPGAFwVersion**                                                    | camera fpga firmware version in cryptic format              |
++----------------------------------------------------------------------------+-------------------------------------------------------------+
+| **HeliDriverFirmwareVersion**                                              | heliDriver firmware version (format: e.g. 1.x)              |
++----------------------------------------------------------------------------+-------------------------------------------------------------+
+| **HeliDriverStatus**                                                       | status of the heliDriver in cryptic format                  |
++----------------------------------------------------------------------------+-------------------------------------------------------------+
+| **DeviceTemperature** [ DeviceTemperatureSelector= *Processor* ]           | :math:`< 80`                                                |
++----------------------------------------------------------------------------+-------------------------------------------------------------+
+| **DeviceMonitorActualValue** [ DeviceMonitorSelector = *VddVoltage* ]      | between :math:`21.5` and :math:`26.5`                       |
++----------------------------------------------------------------------------+-------------------------------------------------------------+
+| **DeviceMonitorActualValue** [ DeviceMonitorSelector = *VddCurrent* ]      | :math:`< 1.5`                                               |
++----------------------------------------------------------------------------+-------------------------------------------------------------+
+| **DeviceMonitorActualValue** [ DeviceMonitorSelector = *UserVddVoltage* ]  | between :math:`21.5` and :math:`26.5`                       |
++----------------------------------------------------------------------------+-------------------------------------------------------------+
+| **DeviceMonitorActualValue** [ DeviceMonitorSelector = *UserVddCurrent* ]  | :math:`< 0.15`                                              |
++----------------------------------------------------------------------------+-------------------------------------------------------------+
+
+.. note::  Refer to the feature description document for data types and detailed information about the features mentioned.
+
+.. note::  Some features are sensitive to values of selector features. Refer to the programmer's manual for more information on the concept.
+
+.. note::  Providing logged information in support requests to heliotis is very helpful. In particular, please contact heliotis for interpreting information in cryptic format.
+
+
+Status Information Relevant after Configuration
+------------------------------------------------
+
+The status information below is readable any time but its content is sensitive to configuration features. The client application may log it after configuring the device.
+
++-------------------------------------------------------------------------+--------------------------------------------------------------------------+
+| Feature                                                                 | Value (expected / healthy)                                               |
++=========================================================================+==========================================================================+
+| **ActualVerticalSpacing**                                               | near **TargetVerticalSpacing**                                           |
++-------------------------------------------------------------------------+--------------------------------------------------------------------------+
+| **FrameRate**                                                           | | H8,H9,C4 (542x512 pixel) devices: < 4000                               |
+|                                                                         | | H8M, H9M, C4M (1.1M pixel) devices: < 1000                             |
++-------------------------------------------------------------------------+--------------------------------------------------------------------------+
+| **RecordingNFrame**                                                     | appoximately: :math:`\frac{ ScanRange }{ActualVerticalSpacing}`          |
++-------------------------------------------------------------------------+--------------------------------------------------------------------------+
+| **TriggerPosition**                                                     | defined by **ScanMode**, **ScanPosition**, **ScanRange**                 |
++-------------------------------------------------------------------------+--------------------------------------------------------------------------+
+| **LightBrightness** [ LightControllerSelector = *LightController0* ]    | :math:`10\%` to :math:`100\%`                                            |
++-------------------------------------------------------------------------+--------------------------------------------------------------------------+
+
+.. note::  FrameRate maximum values are approximate. The exact maximum depends on further settings.
+
+Status Information of the Acquisition Engine
+--------------------------------------------
+
+The following status information represents the internal state of the acquisition engine. 
+In case of a timeout during recording, the client application could find out why the acquisition engine got stuck.
+
++-------------------------------------------------------------------------------+---------------------------------------------------+
+| Feature                                                                       | Value                                             |
++===============================================================================+===================================================+
+| **AcquisitionStatus** [ AcquisitionStatusSelector = *FrameTriggerWait* ]      | *True* : state active, *False* : state inactive   |
++-------------------------------------------------------------------------------+---------------------------------------------------+
+| **AcquisitionStatus** [ AcquisitionStatusSelector = *RecordingTriggerWait* ]  | *True* : state active, *False* : state inactive   |
++-------------------------------------------------------------------------------+---------------------------------------------------+
+| **AcquisitionStatus** [ AcquisitionStatusSelector = *FrameActive* ]           | *True* : state active, *False* : state inactive   |
++-------------------------------------------------------------------------------+---------------------------------------------------+
+| **AcquisitionStatus** [ AcquisitionStatusSelector = *RecordingActive* ]       | *True* : state active, *False* : state inactive   |
++-------------------------------------------------------------------------------+---------------------------------------------------+
+| **TransferStatus** [ TransferStatusSelector = *Streaming* ]                   | *True* : state active, *False* : state inactive   |
++-------------------------------------------------------------------------------+---------------------------------------------------+
+| **StageStatus** [ StageStatusSelector = *InMotion* ]                          | *True* : state active, *False* : state inactive   |
++-------------------------------------------------------------------------------+---------------------------------------------------+
+
+.. note::  All possible acquisition engine states are documented in the appendix of the feature description.
+
+Status Information Related to Measurement Data
+----------------------------------------------
+
+The following status information is related to measurement data. It should be read after a successful measurement and always relates to the latest measurement.
+
++--------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+| Feature                                                                        | Value (expected / healthy)                                                         |
++================================================================================+====================================================================================+
+| **LightCurrentMeasured** [ LightControllerSelector = *LightController0* ]      | :math:`LightCurrentRating[..] * \frac{ LightBrightness[..] }{ 100 \% }`            |
++--------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+| **ChunkZTagCount**                                                             | equal to **RecordingNFrame**                                                       |
++--------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+| **ChunkZTagValue** [ ChunkZTagSelector = *1* ]                                 | :math:`\frac{ TriggerPosition }{ EncoderResolution[Camera] }`                      |
++--------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+| **ChunkProcessingString**                                                      | (.json string) dump from on-camera data processing                                 |
++--------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+| **ChunkConfigString**                                                          | (.json string) dump of camera configuration                                        |
++--------------------------------------------------------------------------------+------------------------------------------------------------------------------------+
+
+.. note::  Make sure the illumination is enabled when reading the value of **LightCurrentMeasured**. Typical values for LED current rating are 1A (H8) or 2A (H9).
+
+Much of the measurement-related information are transmitted as GenTL ChunkData along with measurement data. The host application must enable transmission
+by setting the following configuration features already before the measurement, e.g. when initializing the camera:
+
+.. code-block::
+  :caption: Enable relevant chunk data
+
+  ChunkModeActive = True
+  ChunkSelector = "ZTagCount"
+  ChunkEnable = True
+  ChunkSelector = "ZTagValue"
+  ChunkEnable = True
+  ChunkSelector = "ProcessingString"
+  ChunkEnable = True
+  ChunkSelector = "ConfigString"
+  ChunkEnable = True
+
+
+.. note::  Some of the debugging chunk data like *ConfigurationString* could significantly increase the measurement cycle time. General enabling is not recommended.
+
+
+Document History
+================
+
++------------+--------------+------------------+-------------+
+| Version    | Date         | Changes          | Responsible |
++============+==============+==================+=============+
+| 15.3.0.0   | 14-11-2022   | initial version  | cl          | 
++------------+--------------+------------------+-------------+
+| 15.3.0.1   | 01-03-2024   | review/correction| sm          | 
++------------+--------------+------------------+-------------+
+
+

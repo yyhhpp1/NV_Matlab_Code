@@ -7,9 +7,18 @@ function hc_Image
 % so the reference channel (mean I) is simply the field-of-view image. Use this
 % to focus / align / check exposure before running hc_Rabi / hc_T1 / hc_ODMR.
 %
-% The quarter-bin width is set to the GUI readout time, and the laser fills Q1.
-% (Frame-rate constraint still applies: readout should exceed the per-bin
-% exposure plus ~2 us sensor overhead, else the camera drops data.)
+% The quarter period comes from the GUI QP box (hc_QuarterBin) and the camera
+% exposure from the GUI CtrGateDur box -- the same two sources every other hc_*
+% sequence uses. QP sets how often the camera is triggered; CtrGateDur sets how
+% long it integrates after each trigger.
+%
+% NOTE: this sequence no longer integrates the whole quarter automatically. It
+% used to be special-cased so that exposure tracked QP, which made it the only
+% sequence whose integration window could not be set independently. To recover
+% the old whole-bin behaviour, set CtrGateDur equal to QP.
+%
+% (Frame-rate constraint still applies: QP should exceed the per-bin exposure
+% plus ~2 us sensor overhead, else the camera drops data.)
 
 global gmSEQ gSG
 gSG.bfixedPow  = 1;
@@ -19,8 +28,14 @@ gSG.bModSrc = 'External';
 
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
 
+% Default axes2/axes3 quantity. Laser sits in Q1 (see below), so Q carries no
+% signal here and the plain intensity image is the useful picture. Selecting this
+% sequence seeds the 'WFcontrast' GUI box with this string; edit the box (even
+% mid-run) to plot something else.
+gmSEQ.WFcontrastExpr = 'I';
+
 cfg  = WidefieldConfig();
-Q    = gmSEQ.readout;            % quarter bin = GUI readout time (ns)
+Q    = hc_QuarterBin(cfg);       % quarter period (ns) = GUI QP field
 wRef = hc_CamRefWidth(cfg, Q);   % CamRef TTL width (ns); auto = Q/2
 
 % --- CamRef quarter-period train (one edge per quarter) ---------------------
@@ -31,9 +46,9 @@ gmSEQ.CHN(1).DT    = wRef * ones(1, 4);
 
 % --- Laser ON in Q1 only (init/reference); Q2/Q3/Q4 dark -------------------
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN   = PBDictionary('GreenAOM');
-gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 1;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T       = 0;
-gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = Q;     % laser fills Q1
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 2;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T       = [Q, 2*Q] - Q;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = [Q, Q];     % laser fills Q1
 
 % --- Period length marker (4 quarter bins) ----------------------------------
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN   = PBDictionary('dummy1');

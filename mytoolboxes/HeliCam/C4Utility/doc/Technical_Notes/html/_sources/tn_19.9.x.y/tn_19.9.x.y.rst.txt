@@ -1,0 +1,90 @@
+.. raw:: html
+
+    <a href="../_pdf/tn_19.9.x.y.pdf" target="_blank">PDF version</a>
+
+.. _first-last-surface-extraction:
+
+TN_19.9.0.0:  First/Last Surface Extraction
+*******************************************
+
+.. _first-last-surface-extraction-challenge:
+
+Challenge: Interference Envelope of Transparent Samples
+=======================================================
+
+For a single scan of transparent and semi-transparent samples a pixel's interference envelope 
+comprises one peak per reflective interface in the scan range (» :numref:`flSurface`).
+
+A single surface is, hence, not defined unambiguously. However, the application may either require measuring the first surface consistently or the last surface consistently.
+
+.. _flSurface:
+.. figure:: img/flsurface.png
+    :align: center
+    :scale: 50%
+    
+    Sample comprising a transparent layer: Typical intensity waveform of a pixel plotted in the z-direction with (1) first surface and (2) second surface
+
+.. _first-last-surface-extraction-solution:
+
+Solution: Amplitude Peak Detection and Thresholding
+===================================================
+
+* Use ``PeakDetectionMode`` to distinguish first and last occurrences of amplitude maxima along z in scan direction. Relevant entries are: ``FirstMax`` , ``LastMax`` , ``FilteredFirstMax`` , ``FilteredLastMax`` (The latter two use amplitude peak filtering. For more details refer to » :ref:`vertical-filtering-amplitude-peak`).
+
+
+.. note::
+
+   ``PeakDetectionMode`` configures the algorithm used for coarse surface detection. It has no influence when ``Scan3dExtractionMethod`` is rawIQ or rawAmp.
+
+* If selecting ``FilteredFirstMax`` or ``FilteredLastMax``, define a value for ``PeakDetectionFilterWidth``.
+* Define a suitable amplitude threshold value to enable the device to separate noise from the relevant signal and write it to ``PeakDetectionThreshold``. Iteratively optimize the threshold value. Noise-induced surface outliers appear at random height if the value is too low. No surface is detected (pixel's z data set to end of scanned range) if the threshold value it too high.
+
+
+.. note::
+
+   A good starting point for ``PeakDetectionThreshold`` can be found by first measuring in rawAmp mode and selecting an amplitude value between the noise floor and the envelope peak of interest.
+   A good starting point for the ``PeakDetectionFilterWidth`` is the width of the signal amplitude peak. Filtering slightly reduces peak amplitude. Reduce the value of ``PeakDetectionThreshold`` accordingly.
+
+..
+      _TODO add ref to (II.1.2. data set B or C").
+
+.. _first-last-surface-extraction-narrow-transparent-layers:
+
+Tips for Narrow Transparent Layers
+==================================
+When peak separation is a small multiple of peak width:
+
+* Use minimum vertical spacing (``TargetVerticalSpacing`` equal to wavelength if BackgroundSuppression = ‘off’, 1.5*wavelength otherwise)
+
+* Use unfiltered surface detection if peak amplitude is consistently well above noise level (``FirstMax`` or ``LastMax``).
+
+* When using filtered surface detection (``FilteredFirstMax``, ``FilteredLastMax``), use ``PeakDetectionFilterWidth`` values lower than the peak separation (in unit of frames)
+
+* Use ``ExtSimpMaxHWin`` values lower than the peak separation (in units of frames). ``ExtSimpMaxHwin`` defines the vertical size of the data window (around the detected peak, in unit of frames) used for (fine) surface extraction. If using a larger data window size, the peak is not properly isolated and adjacent peaks may alter the fine surface result.
+
+
+
+.. _first-last-surface-extraction-implementation:
+
+Implementation
+==============
+
+.. code-block::
+
+   # Enable first surface detection across the a-scan.
+   PeakDetectionMode = "FirstMax"
+
+   # Configure amplitude threshold
+   PeakDetectionThreshold = 84
+
+
+.. _first-last-surface-extraction-history:
+
+Document History
+================
+
++------------+--------------+------------------+-------------+
+| Version    | Date         | Changes          | Responsible |
++============+==============+==================+=============+
+| 19.9.0.0   | 07-04-2025   | Initial version  | cl          |
++------------+--------------+------------------+-------------+

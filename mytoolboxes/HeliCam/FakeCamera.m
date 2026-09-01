@@ -10,7 +10,9 @@ classdef FakeCamera < handle
 % contrast dips as a function of the current sweep value gmSEQ.m, giving a
 % visible 2D image AND a meaningful ROI-vs-sweep trace (a decaying Rabi-like
 % oscillation). Matches HeliCamInterface's I/Q sign convention:
-%   reference = mean(I, 3);  signal = -mean(Q, 3);  contrast = signal ./ reference.
+%   reference = mean(I, 3);  signal = mean(Q, 3);  contrast = signal ./ reference.
+% No extra minus sign -- readIQ returns already sign-corrected I/Q on the real
+% camera, so this one must too (see HeliCamInterface's header).
 
     properties (Access = public)
         Height (1,1) double = 512

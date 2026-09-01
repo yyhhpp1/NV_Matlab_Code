@@ -3,6 +3,8 @@ function out = hc_DarkRef(mode, pathOrData)
 %
 %   hc_DarkRef('save')          store the current gWide as the dark reference
 %   hc_DarkRef('save', path)    ... to an explicit .mat path
+%   hc_DarkRef('import', h5)    store a previously saved widefield .h5 as the
+%                               dark reference (settings read from its attrs)
 %   d = hc_DarkRef('load')      load it (errors if absent)
 %   d = hc_DarkRef('load', path)
 %   hc_DarkRef('clear')         delete the stored file
@@ -45,28 +47,79 @@ function out = hc_DarkRef(mode, pathOrData)
 
         case 'save'
             p  = defaultPath(pathOrData);
-            gW = getGlobalWide();
-            if isempty(gW) || ~isfield(gW, 'reference')
-                error('hc_DarkRef: global gWide has no data to store as dark.');
-            end
-            j = firstValidSlice(gW.reference);
+            % hc_LoadIQ handles both the current I/Q fields and the legacy
+            % reference/rawsignal ones, so this works on a gWide from either era.
+            [gI, gQ] = hc_LoadIQ([], 'hc_DarkRef');
+            j = firstValidSlice(gI);
             if isnan(j)
                 error('hc_DarkRef: gWide contains no completed slice.');
             end
 
+            % Stored as I/Q. Readers accept the old names too, so an existing
+            % wf_darkref.mat keeps working without being recaptured.
+            %
+            % DIVIDED BY nFrames. gWide now holds frame SUMS, but a dark
+            % reference is the pedestal of ONE frame -- that is what
+            % AcquireDarkRef produces (mean(I,3)) and what the sweep subtracts
+            % nF of. Storing the summed slice unscaled would make this dark
+            % nFrames times too large, and it would fail silently: the run would
+            % simply over-subtract. Falls back to storing unscaled if the frame
+            % count was not recorded, with a warning, rather than guessing.
             dark = struct();
-            dark.reference = double(gW.reference(:,:,j));
-            if isfield(gW, 'rawsignal')
-                dark.rawsignal = double(gW.rawsignal(:,:,j));
-            end
             dark.settings = captureSettings();
+            nFdark = NaN;
+            if isfield(dark.settings,'nFrames'); nFdark = dark.settings.nFrames; end
+            if ~isfinite(nFdark) || nFdark < 1
+                nFdark = 1;
+                fprintf(2, ['[hc_DarkRef] WARNING: no nFrames recorded, so the ', ...
+                            'frame-sum could not be converted to a per-frame ', ...
+                            'pedestal. This dark may be nFrames times too large.\n']);
+            end
+
+            dark.I = double(gI(:,:,j)) / nFdark;
+            if ~isempty(gQ)
+                dark.Q = double(gQ(:,:,j)) / nFdark;
+            end
+            dark.frameReduction = 'mean';   % what this file holds: ONE frame's pedestal
             dark.slice    = j;
 
             d = fileparts(p);
             if ~isempty(d) && ~exist(d, 'dir'); mkdir(d); end
             save(p, '-struct', 'dark');
             fprintf('[hc_DarkRef] Saved dark reference (%dx%d, slice %d) to\n   %s\n', ...
-                    size(dark.reference,1), size(dark.reference,2), j, p);
+                    size(dark.I,1), size(dark.I,2), j, p);
+            describeSettings(dark.settings);
+            out = dark;
+
+        case 'import'
+            % Promote an already-saved widefield .h5 to THE dark reference.
+            % Settings come from the file's own attributes rather than the
+            % current gmSEQ, so importing an old run cannot mislabel it with
+            % whatever happens to be loaded in the GUI right now.
+            if isempty(pathOrData) || ~(ischar(pathOrData) || isstring(pathOrData))
+                error('hc_DarkRef: ''import'' needs a path to a widefield .h5.');
+            end
+            src = char(string(pathOrData));
+            if ~isfile(src)
+                error('hc_DarkRef: file not found: %s', src);
+            end
+
+            dark = struct();
+            [hI, hQ] = hc_LoadIQ(src, 'hc_DarkRef');
+            dark.I = double(hI(:,:,1));
+            if ~isempty(hQ)
+                dark.Q = double(hQ(:,:,1));
+            end
+            dark.settings = settingsFromH5(src);
+            dark.slice    = 1;
+            dark.source   = src;
+
+            p = defaultPath('');
+            d = fileparts(p);
+            if ~isempty(d) && ~exist(d, 'dir'); mkdir(d); end
+            save(p, '-struct', 'dark');
+            fprintf('[hc_DarkRef] Imported %s\n   as dark reference (%dx%d) -> %s\n', ...
+                    src, size(dark.I,1), size(dark.I,2), p);
             describeSettings(dark.settings);
             out = dark;
 
@@ -128,6 +181,33 @@ function s = captureSettings()
             if isfield(gmSEQ, f{i}) && ~isempty(gmSEQ.(f{i}))
                 v = gmSEQ.(f{i});
                 if isnumeric(v) && isscalar(v); s.(f{i}) = double(v); end
+            end
+        end
+    catch
+    end
+end
+
+% ---------------------------------------------------------------------------- %
+function s = settingsFromH5(src)
+% Same fields captureSettings() records, read back off a saved .h5 instead of
+% the live gmSEQ. Scalars come from root attributes; readout/sensitivity fall
+% back to params_json, which carries the full gmSEQ of that run.
+    s = struct('exposureSeconds', NaN, 'nPeriods', NaN, 'nFrames', NaN, ...
+               'readout', NaN, 'sensitivity', NaN);
+    attrMap = {'exposureSeconds','exposure_s'; 'nPeriods','n_periods'; ...
+               'nFrames','n_frames'; 'sensitivity','sensitivity'};
+    for i = 1:size(attrMap,1)
+        try
+            s.(attrMap{i,1}) = double(h5readatt(src, '/', attrMap{i,2}));
+        catch
+        end
+    end
+    try
+        j = jsondecode(char(h5readatt(src, '/', 'params_json')));
+        f = fieldnames(s);
+        for i = 1:numel(f)
+            if isnan(s.(f{i})) && isfield(j, f{i}) && isscalar(j.(f{i})) && isnumeric(j.(f{i}))
+                s.(f{i}) = double(j.(f{i}));
             end
         end
     catch

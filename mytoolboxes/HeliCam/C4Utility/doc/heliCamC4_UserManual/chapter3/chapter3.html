@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B) Get Started &mdash; heliCam C4 - User Manual v1.0.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=38fd80f2" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=411a527d"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="C) Basics of Application Software Development" href="../chapter4/chapter4.html" />
+    <link rel="prev" title="A) Set Up" href="../chapter2/chapter2.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            heliCam C4 - User Manual
+              <img src="../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v1.0.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Chapter 1</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter1/chapter1.html">Introducing the heliCam<sup>TM</sup> C4 Lock-In Camera</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 2</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter2/chapter2.html">A) Set Up</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 3</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">B) Get Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#outline-of-starter-lock-in-measurement">Outline of Starter Lock-In Measurement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setup-preparation">Setup Preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#choice-of-application-software">Choice of Application Software</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-heliviewertm">Using heliViewer<sup>TM</sup></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#enable-lock-in-camera-mode">Enable Lock-In Camera Mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-measurement-recipe">Create Measurement Recipe</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#lock-in-camera-settings">Lock-In Camera Settings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lock-in-wizard">Lock-In Wizard</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#key-parameters">Key Parameters</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#light-control">Light Control</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#coupling">Coupling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sensitivity">Sensitivity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#recording-start">Recording Start</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#reference-signal">Reference Signal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#time-constant">Time Constant</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#frame-rate">Frame Rate</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#measurement-data">Measurement Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#fixed-pattern-noise">Fixed Pattern Noise</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#estimating-offset-from-fit">Estimating Offset from Fit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#measuring-offset">Measuring Offset</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#conversion-to-polar-coordinates">Conversion to Polar Coordinates</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 4</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter4/chapter4.html">C) Basics of Application Software Development</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 5</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter5/chapter5.html">D) Advanced Concepts and Control</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 6</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter6/chapter6.html">Graphical Summary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 7</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter7/chapter7.html">Worldwide Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 8</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter8/chapter8.html">Document History</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 9</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter9/chapter9.html">Annex</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">heliCam C4 - User Manual</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">B) Get Started</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="b-get-started">
+<span id="b"></span><h1>B) Get Started<a class="headerlink" href="#b-get-started" title="Link to this heading"></a></h1>
+<p>The following section describes a simple starter experiment to test your
+setup and to get familiar with the heliCam<sup>TM</sup> C4 as well as the
+application software used for its control.</p>
+<section id="outline-of-starter-lock-in-measurement">
+<h2>Outline of Starter Lock-In Measurement<a class="headerlink" href="#outline-of-starter-lock-in-measurement" title="Link to this heading"></a></h2>
+<p>The LED included in the standard shipment is used to produce a
+continuous, sinusoid optical signal with a well-controlled carrier
+frequency of ten kilohertz and constant modulation amplitude.
+The heliCam<sup>TM</sup> C4 can demodulate this input. We use a
+camera-internally generated reference signal with a slight frequency
+mismatch of a few ten Hertz compared to the carrier. As a result, a
+so-called sinusoid “beat” across the sequence of acquired frames is
+produced in the I and Q output components. For a detailed explanation of
+this phenomenon, which is mathematically related to its namesake in
+acoustics, the curious reader is referred to the paragraph
+<a class="reference internal" href="../chapter5/chapter5.html#idealized-signal-processing"><span class="std std-ref">Idealized Signal Processing</span></a> in the next section.</p>
+</section>
+<section id="setup-preparation">
+<h2>Setup Preparation<a class="headerlink" href="#setup-preparation" title="Link to this heading"></a></h2>
+<p>To embark on the starter experiment, the hardware and software must
+be set up as described in the previous two chapters.
+Make sure that the LED Module shines through the heliCam<sup>TM</sup>
+C4’s sensor opening onto the image sensor, as shown in <a class="reference internal" href="../chapter2/chapter2.html#hardware-wiring"><span class="std std-numref">Fig. 6</span></a>.</p>
+<p>If you wish to follow the experiment step-by-step as it is described
+below, you will need to have <a class="reference internal" href="../chapter2/chapter2.html#heliotis-software-download"><span class="std std-ref">downloaded and installed the
+heliViewer™</span></a> in addition to
+C4Utility.</p>
+</section>
+<section id="choice-of-application-software">
+<h2>Choice of Application Software<a class="headerlink" href="#choice-of-application-software" title="Link to this heading"></a></h2>
+<p>The starter experiment is readily realizable with two choices of software to
+operate the heliCam<sup>TM</sup> C4.</p>
+<ul>
+<li><p>If you wish, you can learn how to control the heliCam<sup>TM</sup> C4
+in a software development environment right from the start. Scripts in
+different programming languages named “c4DemodSimple” implement the
+starter experiment.</p>
+<ul>
+<li><p>When interacting with the heliCam<sup>TM</sup> C4 via the C4 Handler Library
+(C4Hdl) from Heliotis, these examples are found in C4Utility’s dedicated C4Hdl
+folder (C: &gt; Program Files &gt; C4Utitlity &gt; c4hdl &gt; %os-folder% &gt; examples).</p></li>
+<li><p>If you use a third-party library to control the
+heliCam<sup>TM</sup> C4 through its generic camera interface directly, you find them
+with the general examples (C: &gt; Program Files &gt; C4Utitlity &gt; examples).</p>
+<p>There, you may also obtain the well-documented, interactive <em>Jupyter Notebook</em>
+“c4DemodAdvanced.ipynb”, verbally detailing the starter experiment and more advanced
+configuration options alongside Python code. It uses the freely available,
+user-friendly PyPI-package <em>Harvesters</em> to interface with the heliCam<sup>TM</sup> C4.
+More setup instructions are available in its “README.md” document.</p>
+</li>
+</ul>
+</li>
+<li><p>Here on the other hand, we showcase how the GUI-based application
+software heliViewer<sup>TM</sup> can be employed to perform basic
+lock-in experiments. The heliViewer<sup>TM</sup> is well-suited for
+such standard tasks and first-time users might do well to use it for
+replicating the experiment before moving on.</p></li>
+</ul>
+<p>For a complete overview of the possible software options to interact
+with the heliCam<sup>TM</sup> C4, see the <a class="reference internal" href="../chapter2/chapter2.html#software-organization-and-integration-options"><span class="std std-ref">previous section on integration
+options</span></a>.</p>
+</section>
+<section id="using-heliviewertm">
+<h2>Using heliViewer<sup>TM</sup><a class="headerlink" href="#using-heliviewertm" title="Link to this heading"></a></h2>
+<p>It is beyond the scope of this text to discuss all functionalities of
+heliViewer<sup>TM</sup> systematically or comprehensively. The aim here is
+rather that you learn about heliViewer<sup>TM</sup> ’s core features in
+passing as you see them applied in a step-by-step user guide for making a first
+measurement. That said,
+before undertaking the lock-in measurement, there are a few purely
+heliViewer<sup>TM</sup>-specific preparatory steps in the procedure.</p>
+<section id="enable-lock-in-camera-mode">
+<h3>Enable Lock-In Camera Mode<a class="headerlink" href="#enable-lock-in-camera-mode" title="Link to this heading"></a></h3>
+<p>Heliotis devices other than the heliCam<sup>TM</sup> C4 can be controlled
+with the heliViewer<sup>TM</sup>. At first use, you need to specify explicitly
+that you operate a heliCam<sup>TM</sup> C4 (and not the interferometers
+heliInspect<sup>TM</sup> H8/H9 which the heliViewer<sup>TM</sup> ’s base
+settings support). To do so, open the heliViewer<sup>TM</sup> and set the
+device operation mode to “lockInCam” with the switch in toolbar. In older versions,
+this is achieved via the menu bar (Tools &gt; System Settings &gt; System) from
+“Default” to “LockInCam” and confirm your choice (see <a class="reference internal" href="#lock-in-configuration"><span class="std std-numref">Fig. 15</span></a>). The
+heliViewer<sup>TM</sup> layout will change to accommodate the operation of
+the heliCam<sup>TM</sup> C4. These settings are saved for the future.</p>
+<figure class="align-center" id="lock-in-configuration">
+<a class="reference internal image-reference" href="../_images/lockIn_configuration.png"><img alt="../_images/lockIn_configuration.png" src="../_images/lockIn_configuration.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 15 </span><span class="caption-text">Enabling the heliViewer<sup>TM</sup> ’s Lock-In Camera Mode</span><a class="headerlink" href="#lock-in-configuration" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="create-measurement-recipe">
+<h3>Create Measurement Recipe<a class="headerlink" href="#create-measurement-recipe" title="Link to this heading"></a></h3>
+<p>The heliViewer<sup>TM</sup> offers the possibility to save specific camera
+configurations as measurement “recipes”. To make the starter experiment
+easily reproducible, we show here how to store the corresponding
+operating instructions for the heliCam<sup>TM</sup> C4 in this form.</p>
+<p>Clicking on “3D-heliCam &gt; Manage Configuration” opens a
+dialog box allowing you to manage your recipes. The simplest way to
+create a recipe for the experiment at hand is to start from the example
+“C4 LockInCam_internalRef”. Ideally, you duplicate it to work with the
+copy as shown in <a class="reference internal" href="#create-recipe"><span class="std std-numref">Fig. 16</span></a>.</p>
+<figure class="align-center" id="create-recipe">
+<a class="reference internal image-reference" href="../_images/create_recipe.png"><img alt="../_images/create_recipe.png" src="../_images/create_recipe.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 16 </span><span class="caption-text">Loading and Duplicating Heliotis Example Recipe</span><a class="headerlink" href="#create-recipe" title="Link to this image"></a></p>
+<div class="legend">
+<ol class="arabic simple">
+<li><p>Open the configuration manager using the menu bar (“3D-heliCam &gt;
+Manage Configuration”).</p></li>
+<li><p>Click on the “Add examples” button, select the example recipe “C4
+LockInCam_internalRef” and confirm.</p></li>
+<li><p>Select the new recipe, which should have appeared in the
+configuration manager, and press “Duplicate”. Give the copy a
+name and press “OK”.</p></li>
+</ol>
+</div>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="lock-in-camera-settings">
+<h2>Lock-In Camera Settings<a class="headerlink" href="#lock-in-camera-settings" title="Link to this heading"></a></h2>
+<p>By default, this example recipe does not yet configure all parameters
+according to the outlined experiment. It must be adapted slightly to
+introduce a small mismatch between the respective frequencies of the
+modulation carrier and the reference signal.</p>
+<section id="lock-in-wizard">
+<h3>Lock-In Wizard<a class="headerlink" href="#lock-in-wizard" title="Link to this heading"></a></h3>
+<p>In the configuration manager, select your recipe by clicking
+on it. The menu to edit the recipe is then accessible via the corresponding
+button. (See <a class="reference internal" href="#edit-recipe"><span class="std std-numref">Fig. 17</span></a>, ditto for the following steps.)
+The recipe is thus shown as a list of heliCam<sup>TM</sup> C4 configurations,
+which can be manipulated directly. It is more straightforward, however,
+to use the dedicated graphical user interface “Lock-In Wizard” for this
+purpose.</p>
+<figure class="align-center" id="edit-recipe">
+<a class="reference internal image-reference" href="../_images/edit_recipe.png"><img alt="../_images/edit_recipe.png" src="../_images/edit_recipe.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 17 </span><span class="caption-text">Graphical User Interface for Configuration of Lock-In Camera</span><a class="headerlink" href="#edit-recipe" title="Link to this image"></a></p>
+<div class="legend">
+<ol class="arabic simple">
+<li><p>To alter an existing recipe, select it in the configuration manager and press “Edit”.</p></li>
+<li><p>The opening window shows the list of its configuration commands. (If you changed the heliCam<sup>TM</sup> ’s IP address, make sure that it matches the one in the box “SN”.) Open the “Lock-In Wizard” with the corresponding button. It allows you to change the heliCam<sup>TM</sup> C4 ’s key settings interactively.</p></li>
+<li><p>Where necessary, change the Lock-In Wizzard configurations according to <a class="reference internal" href="#recommended-settings"><span class="std std-numref">Table 7</span></a>. Note that the same settings are depicted in this figure except for the “Sensitivity Level”, which may differ depending on your camera version.</p></li>
+<li><p>By clicking on the signal generator symbol, a separate dialog opens, enabling you to control the LED module.</p></li>
+</ol>
+</div>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The “Settings” button in the toolbar gives you quick access to the same menu.
+In that case, however, any changes you make are saved to the to the “ad-hoc” configuration,
+which is also listed in the configuration manager, instead of the chosen recipe.</p>
+</div>
+<p>In the lock-in wizard’s main user interface, you can configure the principal
+lock-in amplification parameters. A set of valid parameters is proposed in
+see <a class="reference internal" href="#recommended-settings"><span class="std std-numref">Table 7</span></a>. Note that the adequate the camera exposure (Sensitivity)
+setting changes if you have a non-standard version of the heliCam™ C4’s
+in terms of pixel size, full well capacity, or equipment with micro lenses
+(see <a class="reference internal" href="../chapter1/chapter1.html#helisens"><span class="std std-numref">Table 1</span></a>). In this way, one achieves an appropriate
+signal level and avoids saturation.</p>
+<span id="recommended-settings"></span><table class="docutils align-default" id="id2">
+<caption><span class="caption-number">Table 7 </span><span class="caption-text">Recommended Settings</span><a class="headerlink" href="#id2" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><table class="docutils align-default">
+<colgroup>
+<col style="width: 42.9%" />
+<col style="width: 14.3%" />
+<col style="width: 14.3%" />
+<col style="width: 14.3%" />
+<col style="width: 14.3%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head" colspan="5"><p class="centered">
+<strong><em>Lock-In Wizzard Configurations</em></strong></p></th>
+</tr>
+<tr class="row-even"><th class="head"></th>
+<th class="head"><p>C4.0-S40</p></th>
+<th class="head"><p>C4.0-S40U</p></th>
+<th class="head"><p>C4.0-S41U</p></th>
+<th class="head"><p>C4M.0-S4M0</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>Sensitivity
+(Level)</p></td>
+<td><div class="line-block">
+<div class="line">50 %</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">20 %</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">5 %</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">25 %</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><p>Coupling</p></td>
+<td colspan="4"><div class="line-block">
+<div class="line">DC</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><p>Time Constant
+# Periods</p></td>
+<td colspan="4"><div class="line-block">
+<div class="line">10</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><p>Reference
+Input</p></td>
+<td colspan="4"><div class="line-block">
+<div class="line">Internal</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><p>Reference
+Frequency</p></td>
+<td colspan="4"><div class="line-block">
+<div class="line">10000 Hz</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><p># Frames</p></td>
+<td colspan="4"><div class="line-block">
+<div class="line">60</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><p>Light
+Controller
+Source</p></td>
+<td colspan="4"><div class="line-block">
+<div class="line">Signal Generator</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><table class="docutils align-default">
+<colgroup>
+<col style="width: 42.9%" />
+<col style="width: 14.3%" />
+<col style="width: 14.3%" />
+<col style="width: 14.3%" />
+<col style="width: 14.3%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head" colspan="5"><p class="centered">
+<strong><em>Signal Generator Configurations</em></strong></p></th>
+</tr>
+<tr class="row-even"><th class="head"></th>
+<th class="head"><p>C4.0-S40</p></th>
+<th class="head"><p>C4.0-S40U</p></th>
+<th class="head"><p>C4.0-S41U</p></th>
+<th class="head"><p>C4M.0-S4M0</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>Modulation
+Mode</p></td>
+<td colspan="4"><div class="line-block">
+<div class="line">On</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><p>Frequency</p></td>
+<td colspan="4"><div class="line-block">
+<div class="line">9975 Hz</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><p>Amplitude</p></td>
+<td colspan="4"><div class="line-block">
+<div class="line">10 %</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><p>Offset</p></td>
+<td colspan="4"><div class="line-block">
+<div class="line">20 %</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The signal generator driving the test illumination can be configured
+in a separate window, which opens when you click on its symbol in the
+block diagram, see <a class="reference internal" href="#signal-generator"><span class="std std-numref">Fig. 18</span></a>. Replicate the settings
+in <a class="reference internal" href="#recommended-settings"><span class="std std-numref">Table 7</span></a> / <a class="reference internal" href="#signal-generator"><span class="std std-numref">Fig. 18</span></a> manually, where they deviate from the default.</p>
+<figure class="align-center" id="signal-generator">
+<a class="reference internal image-reference" href="../_images/signal_generator.png"><img alt="../_images/signal_generator.png" src="../_images/signal_generator.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 18 </span><span class="caption-text">Signal Generator Configuration</span><a class="headerlink" href="#signal-generator" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<hr class="docutils" />
+<section id="key-parameters">
+<h3>Key Parameters<a class="headerlink" href="#key-parameters" title="Link to this heading"></a></h3>
+<p><em>The heliCam™ C4 is primarily a research tool. It is used in diverse
+experimental settings and hence supports a wide range of applications.
+With this focus on general applicability comes a relatively large set
+of configuration and control options. Navigating this landscape is not
+trivial, especially for first-time users. In most applications,
+however, you only need a small subset of what is possible.</em></p>
+<p><em>The “Lock-in Wizard” summarizes the heliCam™ C4‘s most important
+settings. Here, we briefly walk you through them even though you
+might not need to alter them for the starter experiment. Concepts and
+parameter names generalize largely beyond the heliViewer™ to
+software developing environments. Configurable lock-in camera parameters and selection
+options are highlighted in</em> <strong>bold</strong> <em>in the following.</em></p>
+<p><em>A deeper understanding of this passage requires a familiarity
+with the basic concepts of lock-in amplification and, at times,
+with the specific implementation of the principle in the heliCam™ C4.
+If necessary, an extensive discussion can be found in section</em>
+<a class="reference internal" href="../chapter5/chapter5.html#d"><span class="std std-ref">D) Advanced Concepts and Control</span></a>.</p>
+<section id="light-control">
+<h4>Light Control<a class="headerlink" href="#light-control" title="Link to this heading"></a></h4>
+<p><em>By means of the “Light Control” field, you can configure the
+illumination with the Heliotis LED module. The switch</em> <strong>Light Controller Source</strong> <em>lets you
+choose the source of the driving current to the LED module.</em></p>
+<ul class="simple">
+<li><p><strong>Signal Generator</strong>: <em>The heliDriver™ D3 comprises an signal generator, which can be configured in a separate window, see</em> <a class="reference internal" href="#signal-generator"><span class="std std-numref">Fig. 18</span></a>. <em>It produces a sinusoidal modulation signal whose characteristics like</em> <strong>Frequency</strong>, <strong>Amplitude</strong>, <em>and</em> <strong>Offset</strong> <em>you can control.</em></p></li>
+</ul>
+<blockquote>
+<div><p><em>Furthermore, the internal signal generator features three principal</em> <strong>Modulation Modes:</strong></p>
+<blockquote>
+<div><ul>
+<li><p><strong>On</strong>: <em>With this setting enabled, the signal generator produces a continuous output. This behavior is chosen in our starter experiment.</em></p></li>
+<li><p><strong>Off</strong>: <em>The oscillating portion is disabled such that only a constant, non-zero</em> <strong>Offset</strong> <em>remains.</em></p></li>
+<li><p><strong>Pulsed:</strong> <em>In the pulsed mode, the LED emits sinusoidal bursts. In between individual bursts, the illumination is constant and given by the</em> <strong>Offset</strong>. <em>Additional parameters govern the pulse characteristics.</em></p>
+<blockquote>
+<div><ul class="simple">
+<li><p><em>The</em> <strong>Pulse Duration</strong> <em>of individual bursts can be set.</em></p></li>
+<li><p><strong>Trigger Source</strong> <em>specifies the pin on the heliDriver™ D3’s communication interface, whose signal can be used to trigger the next burst. In ‘Auto’ mode, the trigger is generated automatically as soon as the set</em> <strong>Pulse Duration</strong> <em>and</em> <strong>Trigger Delay</strong> <em>allow it.</em></p></li>
+<li><p><strong>Trigger Activation</strong> <em>specifies the flank of the trigger signal, which is detected.</em></p></li>
+<li><p><strong>Trigger Delay</strong> <em>introduces a delay of the modulation burst with respect to the trigger event, which causes it.</em></p></li>
+<li><p><em>Triggered modulation bursts can be subjected to a common</em> <strong>Phase Shift</strong>.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please note that you specify (peak-to-peak) <strong>Amplitude</strong> and <strong>Offset</strong> as a percentage value of the full scale. Part of the signal will therefore be cropped if,</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{Offset} - \frac{\mathbf{Amplitude}}{2} &lt; 0 \% \ \ \ \ \ or \ \ \ \ \ \mathbf{Offset} + \frac{\mathbf{Amplitude}}{2} &gt; 100 \%\]</div>
+</div>
+</div></blockquote>
+<ul class="simple">
+<li><p><strong>External</strong>: <em>A signal from an external source is routed to the current source supply of the LED module. The default pin on the heliDriver™ D3’s communication interface to feed in the electrical input (0-5 V, e.g. sine wave) is SFIO 5, cf. the heliDriver™</em> <a class="reference external" href="https://www.heliotis.com/download/helidriver-d3-product-data-sheet/">D3 data sheet, Section Lock-In Amplifier Module</a>.</p></li>
+<li><p><strong>Off</strong>: <em>The driving current is disabled, the only software configuration that leaves the LED completely dark.</em></p></li>
+</ul>
+</section>
+<section id="coupling">
+<h4>Coupling<a class="headerlink" href="#coupling" title="Link to this heading"></a></h4>
+<p><em>The</em> <strong>Coupling</strong> <em>controls the activation of background subtraction.
+If it is set to</em> <strong>AC</strong>, <em>the potentially large DC component in the input is removed.
+Thus, the sensor’s full well capacity is available for integrating the modulated,
+AC component, without becoming saturated by DC light.
+The background is not suppressed, when the mode</em> <strong>DC</strong> <em>coupling is enabled.
+The background suppression affects the signal-to-noise ratio negatively
+and should therefore only be used when necessary. For more detailed information
+see the relevant paragraph on</em> <a class="reference internal" href="../chapter5/chapter5.html#background-suppression"><span class="std std-ref">Background Suppression</span></a>.</p>
+</section>
+<section id="sensitivity">
+<h4>Sensitivity<a class="headerlink" href="#sensitivity" title="Link to this heading"></a></h4>
+<p><em>The</em> <strong>Sensitivity</strong> <em>(level) controls the heliCam™ C4’s exposure. Roughly speaking, it determines the fraction of the
+measurement time during which the sensor light sensitive. A more technical explanation
+is given in the paragraph</em> <a class="reference internal" href="../chapter5/chapter5.html#in-pixel-processing"><span class="std std-ref">Processing in Pixel</span></a> <em>et seq.</em></p>
+</section>
+<section id="recording-start">
+<h4>Recording Start<a class="headerlink" href="#recording-start" title="Link to this heading"></a></h4>
+<p><em>You may also choose the trigger, which causes the camera to start a recording. (In the heliViewer™, this can be done via “Input &gt; Trigger Source”)</em></p>
+<ul class="simple">
+<li><p><strong>Internal</strong>: <em>A software command from the computer connected to the camera directly triggers the onset of a measurement.</em></p></li>
+<li><p><strong>External</strong>: <em>An electric signal (rect pulse, 0-5 V) relayed to the heliCam™ C4 via a selectable pin on the heliDriver™ D3’s communication interface triggers the recording.</em></p></li>
+</ul>
+</section>
+<section id="reference-signal">
+<h4>Reference Signal<a class="headerlink" href="#reference-signal" title="Link to this heading"></a></h4>
+<p><em>The synthesis of the effective reference signal from configurable
+parameters and (possibly) a reference input signal is technically sophisticated
+and complex in its details. Here, you will be shown in a simplistic way how to
+choose parameter values. A comprehensive and mechanistic explanation can be found in
+paragraph</em> <a class="reference internal" href="../chapter5/chapter5.html#reference-signal-synthesis"><span class="std std-ref">Reference Signal Synthesis</span></a> <em>of section</em> <a class="reference internal" href="../chapter5/chapter5.html#d"><span class="std std-ref">D) Advanced Concepts and Control</span></a>.</p>
+<p><em>The</em> <strong>Reference Frequency</strong> <em>(“Input &gt; Frequency”) must be set to the frequency of the reference signal.</em></p>
+<p><em>The heliCam™ C4 lock-in camera can derive the pace of demodulation from an
+internal or an external clock. Which mode is enabled depends on the</em>
+<strong>Reference Input</strong> <em>setting (configurable in lock-in wizard under “Input &gt; Reference Input”):</em></p>
+<ul class="simple">
+<li><p><strong>Internal</strong>: <em>The heliCam™ C4 synthesizes an effective dual-phase, pulse wave reference signal with a reference frequency as specified by the corresponding parameter.</em></p></li>
+<li><p><strong>External</strong>: <em>An external reference input (rect wave, 0-5 V) is provided to the heliCam™ C4 via a pin on the heliDriver™ D3’s communication interface. As a first approximation, the injected pulse wave can be considered as the in-phase portion of the reference signal with which the optical input is mixed in lock-in amplification. In the external mode, additional parameters are used to configure and modify the reference input.</em></p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p><em>The</em> <strong>Reference (Trigger) Source</strong> <em>selects from which pin the reference input is drawn.</em></p></li>
+<li><p><em>The</em> <strong>Reference (Frequency) Scaler</strong> <em>multiplies or divides the frequency of the reference input by a select factor. Its original frequency multiplied or divided by this factor must be equal to that of the carrier of the optical input signal.</em></p></li>
+<li><p><em>The</em> <strong>Phase Delay</strong> <em>parameter specifies the delay of the reference trigger input introduced on the way to the image sensor.</em></p></li>
+<li><p><em>The maximum</em> <strong>(Expected) Frequency Deviation</strong> <em>makes the measurement tolerant to unsteadiness of the reference input frequency up to the specified value in percent.</em></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please note that the idea of considering the reference input directly as the reference signal has its limits. Attributes other than its frequency, such as amplitude, offset, and duty cycle are ignored. Also, you must specify the <strong>Reference Frequency</strong> parameter correctly even when you use an external reference input.</p>
+</div>
+</div></blockquote>
+</section>
+<section id="time-constant">
+<h4>Time Constant<a class="headerlink" href="#time-constant" title="Link to this heading"></a></h4>
+<p><em>The</em> <strong>Time Constant</strong> <em>defines the number of periods over which the mixed signal is
+integrated into a frame. Thus, it serves a double role as the filter width and the
+sampling period. Increasing this parameter gives you a stronger signal and makes
+it more selective for the target reference frequency.</em></p>
+</section>
+<section id="frame-rate">
+<h4>Frame Rate<a class="headerlink" href="#frame-rate" title="Link to this heading"></a></h4>
+<p><em>A frame rate violation can occur with default settings if the following inequality is not satisfied.</em></p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\frac{\mathbf{Time}\ \mathbf{Constant}\ -0.5+int\left(\mathbf{Coupling}\ ==\ \mathbf{AC}\right)}{\mathbf{Reference}\ \mathbf{Frequency}\times\left(1+int\left(\mathbf{Reference}\ \mathbf{Input}\ ==\ \mathbf{External}\right)\times\frac{\mathbf{Frequency}\ \mathbf{Deviation}}{100 \%}\right)} \\ -\ \left( \mathbf{Time}\ \mathbf{Constant} - 0.5\right)\times 6.3 \times {10}^{-6}s&gt;\frac{1}{f_{lim}}\end{split}\]</div>
+<p><em>, where</em> <span class="math notranslate nohighlight">\(f_{lim} = 4960\ Hz\)</span> <em>in the case of the heliCam™ C4 and</em> <span class="math notranslate nohighlight">\(f_{lim} = 1390\ Hz\)</span> <em>for the megapixel heliCam™ C4M</em>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the set frame rate is too high for the lock-in camera, it does not
+transfer measurement data. With conventionally accessible settings,
+the lock-in camera is not fully optimized to achieve high frame rates.
+A corresponding mode will become available with future software updates.</p>
+</div>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="measurement-data">
+<h2>Measurement Data<a class="headerlink" href="#measurement-data" title="Link to this heading"></a></h2>
+<p>Now ready to start the measurement, click “Acquire” in the toolbar and
+wait a few seconds. The heliCam<sup>TM</sup> C4 should acquire a three
+dimensional “data volume matrix”, i.e., a sequence of frames - 60 by
+default. Each frame can be thought of as an image with “complex pixel
+values”, whose real and complex parts part represent the I and Q
+components resulting from dual-phase lock-in amplification, respectively.
+The expected result is shown in <a class="reference internal" href="#measurement-rawi"><span class="std std-numref">Fig. 19</span></a>. With baseline settings, the
+heliViewer<sup>TM</sup> exclusively displays sections through the “raw I
+volume”.</p>
+<figure class="align-center" id="measurement-rawi">
+<a class="reference internal image-reference" href="../_images/measurement_rawI.png"><img alt="../_images/measurement_rawI.png" src="../_images/measurement_rawI.png" style="width: 90%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 19 </span><span class="caption-text">Expected Raw I/Q Result of Starter Lock-In Measurement</span><a class="headerlink" href="#measurement-rawi" title="Link to this image"></a></p>
+<div class="legend">
+<p>After completing the heliCam<sup>TM</sup> C4 ’ s configuration, press “Acquire”
+in the tool bar to take a measurement. HeliViewer<sup>TM</sup> will show the
+raw I component of your measurement. You should expect a similar
+result with a distinct sinusoid tendency across the series of
+acquired frames. The beat frequency, <span class="math notranslate nohighlight">\(f_b\)</span> is expected to coincide
+with the carrier/reference frequency mismatch, here 25 Hz. That
+this is so can be checked by estimating
+the beat period, <span class="math notranslate nohighlight">\(T_b\)</span>. For the data presented in this manual, we have:</p>
+<div class="math notranslate nohighlight">
+\[f_b=\frac{1}{T_b}\approx\frac{1}{40\ ms}=25\ Hz\]</div>
+</div>
+</figcaption>
+</figure>
+<section id="fixed-pattern-noise">
+<h3>Fixed Pattern Noise<a class="headerlink" href="#fixed-pattern-noise" title="Link to this heading"></a></h3>
+<p>The raw I and Q measurement data is not centered at zero. For one, these
+data are offset by half the full scale of possible values, i.e., FS/2 =
+1024/2. Additionally, they are affected by fixed pattern noise (FPN, see
+<a class="reference internal" href="#id1"><span class="std std-numref">Fig. 20</span></a> a). This type of lateral noise is due to small differences in
+the offset of individual pixel units across the image sensor array. The
+pixel-specific offset it introduces depends on camera settings like the
+sensitivity and environmental parameters, such as the operation
+temperature but is otherwise constant.</p>
+<section id="estimating-offset-from-fit">
+<h4>Estimating Offset from Fit<a class="headerlink" href="#estimating-offset-from-fit" title="Link to this heading"></a></h4>
+<p>In this experiment, the I/Q components of any single pixel are known in
+advance to vary sinusoidally with time. Each pixel’s individual offset,
+including the FPN component, can thus be estimated easily by fitting the
+expected time dependence function (see <a class="reference internal" href="#id1"><span class="std std-numref">Fig. 20</span></a> b). In
+heliViewer<sup>TM</sup>, this option is available by default to convert
+raw I/Q values to offset-free I/Q values proper by subtraction.</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/fixed_pattern_noise.png"><img alt="../_images/fixed_pattern_noise.png" src="../_images/fixed_pattern_noise.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 20 </span><span class="caption-text">Offset in Raw I/Q Measurement Data</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+<div class="legend">
+<ol class="loweralpha simple">
+<li><p>Offset in single pixel</p></li>
+<li><p>Offset removal by sinusoid fit</p></li>
+</ol>
+<p><em>FS = Full Scale, FPN = Fixed Pattern Noise</em></p>
+</div>
+</figcaption>
+</figure>
+</section>
+<section id="measuring-offset">
+<h4>Measuring Offset<a class="headerlink" href="#measuring-offset" title="Link to this heading"></a></h4>
+<p>More generally, the offset can be measured by illuminating the sensor
+with the DC part of the input alone, under the same experimental
+conditions otherwise.</p>
+<p>The constant illumination component should be kept on when evaluating
+the offset, because said offset also depends on the total amount of
+incoming light the pixel is exposed to. That is because the DC
+attenuation factor inherent to the lock-in principle is finite and the
+constant part is often much larger than the time dependent one.</p>
+<p>In the case at hand, you can set the <strong>Modulation Mode</strong> to
+“Off” (see <a class="reference internal" href="#signal-generator-configure-offset"><span class="std std-numref">Fig. 21</span></a>) to disable the illumination’s AC part.</p>
+<figure class="align-center" id="signal-generator-configure-offset">
+<a class="reference internal image-reference" href="../_images/signal_generator_configure_offset.png"><img alt="../_images/signal_generator_configure_offset.png" src="../_images/signal_generator_configure_offset.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 21 </span><span class="caption-text">Signal Generator Setting for Offset Measurement</span><a class="headerlink" href="#signal-generator-configure-offset" title="Link to this image"></a></p>
+<div class="legend">
+<p>To measure the offset, set the signal generator’s Modulation Mode to “Off”
+in the lock-in wizard (Settings &gt; Lock-In Wizard). Do not
+forget to turn it back on after having recorded the offset.</p>
+</div>
+</figcaption>
+</figure>
+<p>Trigger another acquisition afterwards. In the heliViewer<sup>TM</sup>, such
+background data can be saved as an “offset map”, according to which the
+offset can be removed automatically in subsequent measurements (for step-by-step instructions, see
+<a class="reference internal" href="#set-offset-correction-map"><span class="std std-numref">Fig. 22</span></a>).</p>
+</section>
+</section>
+<section id="conversion-to-polar-coordinates">
+<h3>Conversion to Polar Coordinates<a class="headerlink" href="#conversion-to-polar-coordinates" title="Link to this heading"></a></h3>
+<p>It is especially important to remove the offset, <span class="math notranslate nohighlight">\(I_{0}\)</span> and
+<span class="math notranslate nohighlight">\(Q_{0}\)</span>, from the raw measurement results <span class="math notranslate nohighlight">\(I_{raw}\)</span> and
+<span class="math notranslate nohighlight">\(Q_{raw}\)</span> before you convert to polar coordinates (see
+heliViewer<sup>TM</sup> example in <a class="reference internal" href="#amplitude-result"><span class="std std-numref">Fig. 23</span></a>), so that you obtain correct
+values for amplitude <span class="math notranslate nohighlight">\(A\)</span> and phase <span class="math notranslate nohighlight">\(\varphi\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[A = \sqrt{I^{2} + Q^{2}}\]</div>
+<div class="math notranslate nohighlight">
+\[\varphi = arctan2(Q,I)\]</div>
+<p>, where <span class="math notranslate nohighlight">\({I\  = I}_{raw} - I_{0}\)</span> and
+<span class="math notranslate nohighlight">\({Q\  = Q}_{raw} - Q_{0}\)</span>.</p>
+<figure class="align-center" id="set-offset-correction-map">
+<a class="reference internal image-reference" href="../_images/set_offset_correction_map.png"><img alt="../_images/set_offset_correction_map.png" src="../_images/set_offset_correction_map.png" style="width: 85%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 22 </span><span class="caption-text">Offset Measurement and Subtraction</span><a class="headerlink" href="#set-offset-correction-map" title="Link to this image"></a></p>
+<div class="legend">
+<ol class="arabic simple">
+<li><p>After setting the carrier amplitude to zero, make a measurement of the offset.</p></li>
+<li><p>Set the recorded data as “offset map”.</p></li>
+<li><p>Open the “Algorithm” dialogue box.</p></li>
+<li><p>Add a new algorithm command that uses the offset map to convert raw data.</p></li>
+<li><p>Remove/comment the default conversion method based on a sinusoid fit function.</p></li>
+<li><p>Confirm your changes.</p></li>
+</ol>
+</div>
+</figcaption>
+</figure>
+<figure class="align-center" id="amplitude-result">
+<a class="reference internal image-reference" href="../_images/amplitude_result.png"><img alt="../_images/amplitude_result.png" src="../_images/amplitude_result.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 23 </span><span class="caption-text">Expected Amplitude Result of Starter Lock-In Measurement</span><a class="headerlink" href="#amplitude-result" title="Link to this image"></a></p>
+<div class="legend">
+<p>The conversion to polar coordinates, either with offsets from the
+default sine fit or a set offset map, is seamless in the
+heliViewer<sup>TM</sup>. Simply choose in which form you wish to display
+the results on the right-hand side of the heliViewer<sup>TM</sup>. You may
+also show phase or offset-corrected I/Q values via the same menu.</p>
+</div>
+</figcaption>
+</figure>
+<div class="admonition-trouble-shooting admonition">
+<p class="admonition-title">Trouble Shooting</p>
+<p>We encourage you to get in touch with <a class="reference external" href="mailto:support&#37;&#52;&#48;heliotis&#46;com">Heliotis support</a> without hesitation
+in case you face difficulties with the starter experiment. Error analysis
+is difficult without further clues, however. Here are a few hints for
+collecting indications about the source of the problem, debugging common
+issues, and getting effective help.</p>
+<p>No Data Received:</p>
+<ul class="simple">
+<li><p><em>Power Cycle</em>: If you do not get any data after launching an acquisition, switch the power supply to the heliCam<sup>TM</sup> C4 off and on again and proceed by <a class="reference internal" href="../chapter2/chapter2.html#checking-the-software-setup"><span class="std std-ref">Checking the Software Setup</span></a> as described previously before you try once more.</p></li>
+<li><p><em>Enabling heliViewer™ Log</em>: The heliViewer<sup>TM</sup> can display a log with status messages (see <a class="reference internal" href="#show-log"><span class="std std-numref">Fig. 24</span></a>). They can often point you to the source of the issue. Please include a copy of the heliViewer<sup>TM</sup> log when you work with the heliViewer<sup>TM</sup> and contact Heliotis for support.</p></li>
+</ul>
+<figure class="align-center" id="show-log">
+<a class="reference internal image-reference" href="../_images/show_log.png"><img alt="../_images/show_log.png" src="../_images/show_log.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 24 </span><span class="caption-text">heliViewer<sup>TM</sup> Log</span><a class="headerlink" href="#show-log" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Deviating Results:</p>
+<ul class="simple">
+<li><p><em>Potential Causes</em>: Various issues can make your starter experiment results differ from the data presented in this manual.</p></li>
+</ul>
+<blockquote>
+<div><ul>
+<li><p>Example: It is common that you run into saturation issues - especially if you have an image sensor which features a signal enhancing micro-lens array. Saturation manifests itself in cropped I and Q signals when they exceed the full scale or, in severe cases with large DC input components, even flat signals (cf. <a class="reference internal" href="../chapter5/chapter5.html#background-suppression"><span class="std std-ref">Background Suppression</span></a>).</p>
+<blockquote>
+<div><p><span class="math notranslate nohighlight">\(\Rightarrow\)</span> Reduce the signal generator <strong>Amplitude</strong>, the <strong>Sensitivity</strong> (level) / enable the background suppression by setting the <strong>Coupling</strong> to <strong>AC</strong> in the <a class="reference external" href="#lock-in-wizard">Lock-In Wizard</a>.</p>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p><em>Sharing Data:</em> If you wish to consult the Heliotis support team with regards to your data, consider sharing them in the “.hdat” -format (heliViewer<sup>TM</sup> menu bar &gt; file &gt; Save Measurement) via file transfer. In this form, your heliCam<sup>TM</sup> C4 settings are saved alongside as metadata, which helps Heliotis considerably.</p></li>
+</ul>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../chapter2/chapter2.html" class="btn btn-neutral float-left" title="A) Set Up" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../chapter4/chapter4.html" class="btn btn-neutral float-right" title="C) Basics of Application Software Development" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

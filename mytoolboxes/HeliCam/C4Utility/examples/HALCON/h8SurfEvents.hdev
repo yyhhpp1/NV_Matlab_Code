@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="20.11.0.1">
+<procedure name="main">
+<interface/>
+<body>
+<c>* ***</c>
+<c>* file        h8SurfEvents.hdev</c>
+<c>* author      Silvan Murer</c>
+<c>* date        13 April 2021</c>
+<c>* copyright   Heliotis, 2021</c>
+<c>* version     1.0.0</c>
+<c>*</c>
+<c>* Simple HALCON example for heliInspect H8 registering camera events</c>
+<c>* ***</c>
+<l>global tuple acqRun</l>
+<l>H8IP := '192.168.2.71'</l>
+<l>GICDevice := ' | producer:diaphus.cti | device:DiaphusTL_DEV_' + H8IP</l>
+<c></c>
+<l>open_framegrabber ('GenICamTL', 0, 0, 0, 0, 0, 0, 'progressive', -1, 'default', -1, 'false', 'default', GICDevice, 0, -1, AcqHandle)</l>
+<l>try</l>
+<c>    * h8SurfSimple initialisation</c>
+<l>    initializeDevice (AcqHandle)</l>
+<c>    </c>
+<c>    * event specific configuration</c>
+<c>    </c>
+<c>    * enable FrameStart and FrameTransferEnd Events on the device</c>
+<l>    set_framegrabber_param(AcqHandle, 'EventSelector', 'FrameStart')</l>
+<l>    set_framegrabber_param(AcqHandle, 'EventNotification', 'On')</l>
+<l>    set_framegrabber_param(AcqHandle, 'EventSelector', 'FrameTransferEnd')</l>
+<l>    set_framegrabber_param(AcqHandle, 'EventNotification', 'On')</l>
+<c>    </c>
+<c>    * setup HALCON specific event configuration</c>
+<c>    * Create message queue to handle the events coming from the interface</c>
+<c>    * HALCON GenTL implementation writes to the queue and the Halcon Event Thread reads the data</c>
+<l>    create_message_queue (EventQueueHandle)</l>
+<c></c>
+<c>    * register features from EventFrameStartData and</c>
+<c>    * EventFrameTransferEndData category</c>
+<l>    set_framegrabber_param (AcqHandle, 'event_selector', 'EventFrameStart')</l>
+<l>    set_framegrabber_param (AcqHandle, 'event_message_queue', EventQueueHandle)</l>
+<c>    * append additional event data (triggered by the same event)</c>
+<l>    set_framegrabber_param (AcqHandle, 'event_data', 'EventFrameStartTimestamp')</l>
+<c>    </c>
+<l>    set_framegrabber_param (AcqHandle, 'event_selector', 'EventFrameTransferEnd')</l>
+<l>    set_framegrabber_param (AcqHandle, 'event_message_queue', EventQueueHandle)</l>
+<c>    * append additional event data (triggered by the same event)</c>
+<l>    set_framegrabber_param (AcqHandle, 'event_data', 'EventFrameTransferEndTimestamp')</l>
+<c>       </c>
+<c>    * generate and start an acquisition and an event handling thread</c>
+<l>    acqRun := true</l>
+<l>    par_start&lt;AcqThreadID&gt; : acquireData (AcqHandle)</l>
+<l>    par_start&lt;EventThreadID&gt; : waitEvent (EventQueueHandle)</l>
+<c></c>
+<l>    par_join (AcqThreadID)</l>
+<l>    par_join (EventThreadID)</l>
+<c>    </c>
+<l>catch (Exception)</l>
+<c>    * initialisation failed</c>
+<l>    stop()</l>
+<l>endtry</l>
+<c></c>
+<l>close_framegrabber (AcqHandle)</l>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="initializeDevice">
+<interface>
+<ic>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<c>* simple configuration example of heliInspect H8 using internal motion control</c>
+<c></c>
+<c>* Motion parameters in [mm] or [mm/s]</c>
+<l>scanPosition := -1.4</l>
+<l>scanRange := 0.5</l>
+<l>scanSpeed := 5.0</l>
+<l>generalSpeed := 10.0</l>
+<c>* exposure ration between 0.0 and 1.0 [1.0 = 100% exposure]</c>
+<l>exposureRatio := 1.0</l>
+<c></c>
+<c>* enable required components</c>
+<l>set_framegrabber_param(AcqHandle, 'ComponentSelector', 'Intensity')</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentEnable', false)</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentSelector', 'Range')</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentEnable', true)</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentSelector', 'Reflectance')</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentEnable', true)</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentSelector', 'Phase')</l>
+<l>set_framegrabber_param(AcqHandle, 'ComponentEnable', false)</l>
+<c></c>
+<c>* enable required chunk data (optional)</c>
+<l>set_framegrabber_param(AcqHandle, 'ChunkModeActive', true)</l>
+<l>set_framegrabber_param(AcqHandle, 'ChunkSelector', 'PartCount')</l>
+<l>set_framegrabber_param(AcqHandle, 'ChunkEnable', true)</l>
+<l>set_framegrabber_param(AcqHandle, 'ChunkSelector', 'PartType')</l>
+<l>set_framegrabber_param(AcqHandle, 'ChunkEnable', true)</l>
+<c></c>
+<c>* trigger configuration</c>
+<l>set_framegrabber_param(AcqHandle, 'TriggerSelector', 'RecordingStart')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerMode', 'On')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerSource', 'Stage')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerSelector', 'AcquisitionStart')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerMode', 'Off')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerSelector', 'FrameStart')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerMode', 'On')</l>
+<l>set_framegrabber_param(AcqHandle, 'TriggerSource', 'Software')</l>
+<c>* Hint: The TriggerSource also controls the TriggerSoftware feature.</c>
+<c></c>
+<c>* encoder configuration</c>
+<l>set_framegrabber_param(AcqHandle, 'EncoderSelector', 'Camera')</l>
+<l>set_framegrabber_param(AcqHandle, 'EncoderInverter', true)</l>
+<c></c>
+<c>* motion and position configuration</c>
+<l>set_framegrabber_param(AcqHandle, 'ScanPosition', scanPosition)</l>
+<l>set_framegrabber_param(AcqHandle, 'ScanRange', scanRange)</l>
+<l>set_framegrabber_param(AcqHandle, 'ScanSpeed', scanSpeed)</l>
+<l>set_framegrabber_param(AcqHandle, 'GeneralSpeed', generalSpeed)</l>
+<c></c>
+<l>set_framegrabber_param(AcqHandle, 'ScanMode', 'Down')</l>
+<l>set_framegrabber_param(AcqHandle, 'StageInit', 1)</l>
+<c></c>
+<c>* additional camera and processing configuration</c>
+<l>set_framegrabber_param(AcqHandle, 'Scan3dExtractionMethod', 'AcceleratedCenterOfMassIQCorrection')</l>
+<l>set_framegrabber_param(AcqHandle, 'Scan3dScalingMethod', 'zTags')</l>
+<l>set_framegrabber_param(AcqHandle, 'Scan3dDistanceUnit', 'um')</l>
+<c></c>
+<l>set_framegrabber_param(AcqHandle, 'TargetVerticalSpacing', 4.0)</l>
+<l>set_framegrabber_param(AcqHandle, 'ExposureRatio', exposureRatio)</l>
+<c></c>
+<l>set_framegrabber_param(AcqHandle, 'FPNCorrection', 'AverageLastFrames')</l>
+<l>set_framegrabber_param(AcqHandle, 'FPNCorrectionNFrames', 8)</l>
+<l>set_framegrabber_param(AcqHandle, 'ExtSimpMaxHWin', 7)</l>
+<c></c>
+<c>* illumination control (D3)</c>
+<l>set_framegrabber_param(AcqHandle, 'LightControllerSelector', 'LightController0')</l>
+<l>set_framegrabber_param(AcqHandle, 'LightControllerSource', 'UserOutput0')</l>
+<l>set_framegrabber_param(AcqHandle, 'LightBrightness', 100.0)</l>
+<c>* illumination control (D2)</c>
+<c>* LineSelector = Line2</c>
+<c>* LineSource = UserOutput0</c>
+<c>* LineInverter = true</c>
+<c>* switch on the illumination (D2/D3)</c>
+<l>set_framegrabber_param(AcqHandle, 'UserOutputSelector', 'UserOutput0')</l>
+<l>set_framegrabber_param(AcqHandle, 'UserOutputValue', true)</l>
+<c></c>
+</body>
+<docu id="initializeDevice">
+<parameters>
+<parameter id="AcqHandle"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="waitEvent">
+<interface>
+<ic>
+<par name="EventQueueHandle" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<l>global tuple acqRun</l>
+<c>* simple example and write event data to a logfile</c>
+<l>open_file ('eventLog.txt', 'output', FileHandle)</l>
+<l>fnew_line(FileHandle)</l>
+<l>fwrite_string (FileHandle, '* Start Event Thread')</l>
+<l>fnew_line(FileHandle)</l>
+<c></c>
+<l>while (acqRun)</l>
+<l>    try</l>
+<c>        * Wait until a new message is available</c>
+<l>        dequeue_message (EventQueueHandle, 'timeout', 1.0, MessageHandle)</l>
+<l>    catch (Exception)</l>
+<l>        if (Exception[0] == 9400)</l>
+<c>            * timeout</c>
+<l>            continue</l>
+<l>        elseif (Exception[0] == 2890)</l>
+<l>            throw (Exception)</l>
+<l>        else</l>
+<l>            throw (Exception)</l>
+<l>        endif</l>
+<l>    endtry</l>
+<c></c>
+<c>    </c>
+<c>    * Get the event data from the message and append it to the logfile</c>
+<l>    get_message_param (MessageHandle, 'message_keys', [], Keys)</l>
+<l>    Text := ''</l>
+<l>    for x := 0 to |Keys| - 1 by 1</l>
+<l>        get_message_tuple (MessageHandle, Keys[x], EventData)</l>
+<l>        Text := Text + ' ' + Keys[x] + ': ' + EventData + ' '</l>
+<l>    endfor</l>
+<l>    fwrite_string (FileHandle, Text)</l>
+<l>    fnew_line(FileHandle)</l>
+<l>    clear_message (MessageHandle)</l>
+<l>endwhile</l>
+<c></c>
+<l>fnew_line(FileHandle)</l>
+<l>fwrite_string (FileHandle, '* Stop Event Thread')</l>
+<l>fnew_line(FileHandle)</l>
+<l>close_file (FileHandle)</l>
+<l>return ()</l>
+</body>
+<docu id="waitEvent">
+<parameters>
+<parameter id="EventQueueHandle"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="acquireData">
+<interface>
+<ic>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<l>global tuple acqRun</l>
+<l>grab_image_start (AcqHandle, -1)</l>
+<c></c>
+<l>for Index := 1 to 5 by 1</l>
+<c>    * trigger single measurement </c>
+<l>    set_framegrabber_param (AcqHandle, 'TriggerSelector', 'FrameStart')</l>
+<l>    set_framegrabber_param (AcqHandle, 'TriggerSoftware', 1)</l>
+<c></c>
+<c>    * acquire data</c>
+<l>    grab_data_async (Image, Region, Contours, AcqHandle, -1, ObjectModel13D)</l>
+<l>endfor</l>
+<c></c>
+<l>acqRun := false</l>
+<l>return ()</l>
+</body>
+<docu id="acquireData">
+<parameters>
+<parameter id="AcqHandle"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>

@@ -1349,9 +1349,23 @@ gConfocal.V_per_um='V_per_um.txt';
 ReadStartingFile(handles);
 
 
-%%% connect to attocube motor
-IP = PortMap('attocube_motor_host');
-gPiezo.amc = AMC_connect(IP);
+if ~libisloaded('EO0x2DDrive')
+    disp('Matlab: Load EO-Drive.dll')
+    warning('off')
+    loadlibrary('EO-Drive.dll', 'eo-drive.h');
+    %loadlibrary('EO-Drive');
+    warning('on')
+end
+global eohandle;
+eohandle = calllib('EO0x2DDrive', 'EO_InitHandle');
+if eohandle==0
+    disp('Failed To Get EO Drive Handle');
+end
+
+
+% %%% connect to attocube motor
+% IP = PortMap('attocube_motor_host');
+% gPiezo.amc = AMC_connect(IP);
 
 
 %%Load PI MATLAB Driver GCS2 (Piezo) added by Weijie 09/21/2021
@@ -1639,7 +1653,8 @@ WriteVoltage(PortMap('Galvo x'),gScan.FixVx + gConfocal.XOffSet);
 WriteVoltage(PortMap('Galvo y'),gScan.FixVy + gConfocal.YOffSet);
 
 
-using_attocube = 1;
+using_attocube = 0;
+using_PFM450 = 0;
 if using_attocube
     %%%%%assumes attocube is already connected
     amc = gPiezo.amc;
@@ -1679,7 +1694,7 @@ if using_attocube
     end
 
     
-else    % else we are using the RT set up, use the following piezo
+elseif using_PFM450    % else we are using the RT set up, use the following piezo
     
     % returns position in um
     z0 = piezoPFM450FunctionPool('getposition');
@@ -1734,6 +1749,87 @@ else    % else we are using the RT set up, use the following piezo
         KillAllTasks;
         rethrow(ME);
     end
+else
+    WriteVoltage('Obj_Piezo',gScan.FixVz);
+
+    try
+        dt = 0.1;
+        NRead = 10;
+        DT = dt;
+        TimeOut = DT * NRead * 1.1;
+        Freq = 1/DT;
+        [status, hPulse] = DigPulseTrainCont(Freq,0.5,NRead+1);
+
+        hCounter = SetCounter(NRead+1, Freq);
+
+        hCPS.hCounter = hCounter;
+        hCPS.hPulse = hPulse;
+
+        % tracking start
+        disp('z position calibration starts.');
+        z0 = gScan.FixVz;
+
+        offset=[gConfocal.XOffSet gConfocal.YOffSet 0];
+
+        device = 'Obj_Piezo';
+        scan = zscan; % change y
+        count =zeros(1,NN);
+        for j=1:NN
+            WriteVoltage(device, scan(j) + offset(3));
+            if j==1
+                pause(3);
+            else
+                pause(.5);
+            end
+            %%%%% measure count rate %%%%%%
+
+            dt = 0.1;
+            NRead = 10;
+            DT = dt;
+            TimeOut = DT * NRead * 1.1;
+            Freq = 1/DT;
+
+            [~, hPulse] = DigPulseTrainCont(Freq,0.5,NRead+1);
+
+            hCounter = SetCounter(NRead+1, 10000);
+
+            hCPS.hCounter = hCounter;
+            hCPS.hPulse = hPulse;
+
+            status = DAQmxStartTask(hCounter);  DAQmxErr(status);
+            status = DAQmxStartTask(hPulse);    DAQmxErr(status);
+
+            DAQmxWaitUntilTaskDone(hCounter,TimeOut);
+            DAQmxStopTask(hPulse);
+
+            A = ReadCounter(hCounter,NRead+1);
+            DAQmxStopTask(hCounter);
+            A=ProcessDataVector(A,1);
+            count(j)=ProcessDataCPS(A, NRead, DT);
+
+            DAQmxClearTask(hPulse);
+            DAQmxClearTask(hCounter);
+
+            plot(handles.axes1, scan,count,'.r')
+            % plot(scan,count,'.r',scan,f(scan),'-b')
+            xlim([min(scan) max(scan)])
+            xlabel( ' z(um)')
+            ylabel('Counts ')
+
+            if get(handles.StopTracking, 'Value'), break; end
+        end
+
+        gScan.FixVz = z0;
+        set(handles.FixVz,'String',num2str(z0));
+
+        %go to new position
+        WriteVoltage('Obj_Piezo',z0);
+
+    catch ME
+        KillAllTasks;
+        rethrow(ME);
+    end
+
 end
 
 function atto_Move(amc,axis,target)
@@ -3372,43 +3468,38 @@ switch what
         Device = PortMap('Galvo y');
     case {3,'Obj_Piezo'}
         %%% Haopu added on 11/20/2024 since we want to manually control Z
-        disp('Z is controlled manually')
-        return
-        %%%
-        
-        if Voltage > gPiezo.maxposition
-            Voltage = gPiezo.maxposition;
-        end
-        if Voltage < gPiezo.minposition
-            Voltage = gPiezo.minposition;
-        end
-%         % for piezo in closed loop config, voltage is actually 
-%         % a position value in um
-
-        if 0
-        piezoPFM450FunctionPool('setposition', Voltage);
-        pause(1);
-        pos = piezoPFM450FunctionPool('getposition');
-        fprintf('Current Z position: %s\n', pos);
-        end
-        %         % #EO
-        %         if Voltage > gPiezo.maximumPosition
-        %             Voltage = gPiezo.maximumPosition;
-        %         end
-        %         if Voltage < gPiezo.minimumPosition
-        %             Voltage = gPiezo.minimumPosition;
-        %         end
+        % disp('Z is controlled manually')
+        %         return
+        %         %%%
         %
-        %         gPiezo.PIdevice.MOV ( gPiezo.axis, Voltage );
-        %         % wait for motion to stop
-        %         while(gPiezo.PIdevice.IsMoving () ~= 0)
-        %             pause ( 0.1 );
-        %             % disp('.')
+        %         if Voltage > gPiezo.maxposition
+        %             Voltage = gPiezo.maxposition;
         %         end
-        %         % pause(1); % It seems that this value is crucial for the piezo to be stable after moving
-        
+        %         if Voltage < gPiezo.minposition
+        %             Voltage = gPiezo.minposition;
+        %         end
+        % %         % for piezo in closed loop config, voltage is actually
+        % %         % a position value in um
+        %
+        %         if 0
+        %         piezoPFM450FunctionPool('setposition', Voltage);
+        %         pause(1);
+        %         pos = piezoPFM450FunctionPool('getposition');
+        %         fprintf('Current Z position: %s\n', pos);
+        %         end
+        % #EO
+        global eohandle;
+
+        errorval = calllib('EO0x2DDrive', 'EO_Move', eohandle, Voltage); 
+        lastcommandpos = 0.0;
+        [errorval, lastcommandpos] = calllib('EO0x2DDrive', 'EO_GetCommandPosition', eohandle, lastcommandpos);
+        EOShowErrorInfo(errorval);
+        disp('Last commanded position is ');
+        disp(lastcommandpos);
+       
+
         return;
-        
+
     case 4
         return;
         %     case 'ao_2'

@@ -1,0 +1,75 @@
+.. Heliotis Template documentation master file, created by
+   sphinx-quickstart on Thu Feb 18 08:40:47 2021.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+======================================================
+\ heliCam\ :sup:`TM` C4 - Lock-In Camera - User Manual
+======================================================
+
+.. toctree::
+   :maxdepth: 5
+   :hidden:
+   :caption: Contents
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Chapter 1
+
+   chapter1/chapter1.rst
+
+..
+.. toctree::
+   :maxdepth: 5
+   :caption: Chapter 2
+
+   chapter2/chapter2.rst
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Chapter 3
+
+   chapter3/chapter3.rst
+
+.. toctree::
+   :maxdepth: 5
+   :caption:   Chapter 4
+
+   chapter4/chapter4.rst
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Chapter 5
+
+   chapter5/chapter5.rst
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Chapter 6
+
+   chapter6/chapter6.rst
+
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Chapter 7
+
+   chapter7/chapter7.rst
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Chapter 8
+
+   chapter8/chapter8.rst
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Chapter 9
+
+   chapter9/chapter9.rst
+
+
+.. raw:: latex
+
+   \listoffigures
+   \listoftables

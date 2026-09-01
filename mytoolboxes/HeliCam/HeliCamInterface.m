@@ -14,13 +14,20 @@ classdef HeliCamInterface < handle
 %   f = readActualRefFrequency()
 %
 % Data extraction (see notes):
-%   reference = mean(I, 3);  signal = -mean(Q, 3);  contrast = signal ./ reference
+%   reference = mean(I, 3);  signal = mean(Q, 3);  contrast = signal ./ reference
+%
+% NO extra minus sign: readIQ below already negates at decode, because the C4's
+% demodulation weight is the negative of the manual's Eq. 5.54 (so the naive
+% I = q1-q3, Q = q2-q4 comes out inverted). Everything this class returns is
+% therefore already sign-corrected -- I = q3-q1, Q = q4-q2. Negating again
+% downstream flips the data back and, where a dark frame is involved, doubles the
+% pedestal instead of removing it. See docs/helicam_polarity_inversion.md.
 %
 % Reference example: C4Utility/c4hdl/win64-x64/examples/MATLAB/c4DemodSimple.m
 
     properties (Access = public)
-        Height (1,1) double = 512    % sensor height (pixels); updated after first readIQ
-        Width  (1,1) double = 542    % sensor width  (pixels); updated after first readIQ
+        Height (1,1) double = 542    % sensor height (pixels); updated after first readIQ
+        Width  (1,1) double = 512    % sensor width  (pixels); updated after first readIQ
     end
 
     properties (Access = private)
@@ -71,6 +78,15 @@ classdef HeliCamInterface < handle
 
             [fRefCfg, nGrid, tExp] = HeliCamInterface.exposureToReferenceFrequency( ...
                 cfg.exposureSeconds, cfg.sensitivity);
+
+            % The trigger features below are "Writable in Acquisition Mode:
+            % False", so a still-running acquisition makes them throw
+            % "Node TriggerMode is not writable!". That state survives an
+            % aborted run, a readIQ timeout, or another process (e.g. the
+            % Python script) leaving the camera armed -- none of which this
+            % function can see. Stop first, exactly as armExternalRecording
+            % does; stopAcq is safe when nothing is running.
+            obj.stopAcq();
 
             % --- RecordingStart trigger (optional one-shot on FI3) ---
             obj.c4dev.writeString("TriggerSelector", "RecordingStart");
@@ -142,14 +158,19 @@ classdef HeliCamInterface < handle
                      '(n=%d, f_ref %.1f Hz, actual %.1f Hz), %d periods, %d frames.\n'], ...
                     tExp, nGrid, fRefCfg, actualFreq, cfg.nPeriods, cfg.nFrames);
 
-            % Read the camera's own view back. nBlank especially: if the write
-            % above was rejected, the edge budget is wrong and the only other
-            % symptom is a bare timeout.
-            nBlankActual = obj.readBlankPeriods();
-            fprintf(['[HeliCam]   ref line %s, blank periods %s, deviation %g%%, ', ...
-                     'edges needed = 4*(%d+%s)*%d.\n'], ...
-                    refSig, num2str(nBlankActual), dPct, cfg.nPeriods, ...
-                    num2str(nBlankActual), cfg.nFrames);
+            % Read the camera's own view back. These decide the edge budget: if
+            % either write was clamped or rejected, PB supplies too few CamRef
+            % edges and the only symptom is a bare readIQ timeout.
+            [nPerActual, nBlankActual] = obj.readActualPeriods();
+            fprintf(['[HeliCam]   ref line %s, ACTUAL periods %s + blank %s, ', ...
+                     'deviation %g%%, edges needed = 4*(%s+%s)*%d.\n'], ...
+                    refSig, num2str(nPerActual), num2str(nBlankActual), dPct, ...
+                    num2str(nPerActual), num2str(nBlankActual), cfg.nFrames);
+            if ~isnan(nPerActual) && nPerActual ~= cfg.nPeriods
+                fprintf(2, ['[HeliCam]   NOTE: requested %d demodulation periods but the ', ...
+                            'camera reports %g. The edge budget follows the camera.\n'], ...
+                        cfg.nPeriods, nPerActual);
+            end
         end
 
         % ------------------------------------------------------------------ %
@@ -286,8 +307,8 @@ classdef HeliCamInterface < handle
             end
 
             % Fixed-point decode: strip sign bit, scale by 1/4.
-            Iraw = double(mod(Iraw, 2^15)) / 2^2;
-            Qraw = double(mod(Qraw, 2^15)) / 2^2;
+            Iraw = -double(mod(Iraw, 2^15)) / 2^2;
+            Qraw = -double(mod(Qraw, 2^15)) / 2^2;
 
             % Drop warmup frames.
             nd = min(obj.nDiscard, nFrames - 1);
@@ -342,7 +363,9 @@ classdef HeliCamInterface < handle
             obj.showFeature('LockInTargetReferenceFrequency');
             obj.showFeature('LockInActualReferenceFrequency');
             obj.showFeature('LockInTargetTimeConstantNPeriods');
+            obj.showFeature('LockInActualTimeConstantNPeriods');
             obj.showFeature('LockInTargetBlankDurationNPeriods');
+            obj.showFeature('LockInActualBlankDurationNPeriods');
             obj.showFeature('LockInCoupling');
             obj.showFeature('AcquisitionBurstFrameCount');
 
@@ -389,12 +412,45 @@ classdef HeliCamInterface < handle
         function n = readBlankPeriods(obj)
         % n = readBlankPeriods()  Blank periods per frame the camera currently
         % holds, or NaN if the feature is unreadable. Each one costs 4 extra
-        % CamRef edges per frame.
+        % CamRef edges per frame. Prefers the ACTUAL (effective) value over the
+        % target we wrote -- see readActualPeriods for why that distinction
+        % decides whether the burst starves.
             n = NaN;
             try
-                n = double(obj.c4dev.readInteger("LockInTargetBlankDurationNPeriods"));
+                n = double(obj.c4dev.readInteger("LockInActualBlankDurationNPeriods"));
             catch
+                try
+                    n = double(obj.c4dev.readInteger("LockInTargetBlankDurationNPeriods"));
+                catch
+                end
             end
+        end
+
+        % ------------------------------------------------------------------ %
+        function [nPer, nBlank] = readActualPeriods(obj)
+        % [nPer, nBlank] = readActualPeriods()  Periods per frame the camera is
+        % EFFECTIVELY using, as opposed to the targets we wrote.
+        %
+        % LockInActualTimeConstantNPeriods is a read-only register: per the
+        % feature doc it "returns the effective lock-in filter time constant",
+        % configured *towards* by LockInTargetTimeConstantNPeriods. The camera
+        % is free to land somewhere else, and the manual defines the periods
+        % per frame as ActualTimeConstant + ActualBlankDuration -- so the CamRef
+        % edge budget PB has to supply follows the ACTUAL pair. Budgeting from
+        % the targets instead leaves the burst one or more periods short, which
+        % surfaces only as "Timeout, no data available!" from readIQ.
+        %
+        % Falls back to the target if the Actual register is unreadable.
+            nPer = NaN;
+            try
+                nPer = double(obj.c4dev.readInteger("LockInActualTimeConstantNPeriods"));
+            catch
+                try
+                    nPer = double(obj.c4dev.readInteger("LockInTargetTimeConstantNPeriods"));
+                catch
+                end
+            end
+            nBlank = obj.readBlankPeriods();
         end
 
         % ------------------------------------------------------------------ %
@@ -466,11 +522,24 @@ classdef HeliCamInterface < handle
             if nargin < 2 || isempty(sensitivity); sensitivity = 1.0; end
             tClock = 12.5e-9;                          % 80 MHz sensor clock cycle
             fRefMin = 306;                             % camera GenICam minimum (Hz)
+            fRefMax = 134228;                          % camera GenICam maximum (Hz)
             % Largest grid index whose f_ref still satisfies the 306 Hz floor
             % (n=65536 would give ~305.18 Hz, just below the limit).
             nMax = min(65536, floor(sensitivity / (fRefMin * 4 * tClock)));
+            % Smallest grid index whose f_ref still satisfies the 134228 Hz
+            % CEILING. This bound used to be a hard-coded 146, which is one grid
+            % step too small: n = 146 maps to 136986.30 Hz, and the camera does not
+            % clamp that, it throws --
+            %   "Value 136986.301370 must be smaller than or equal 134228.000000".
+            % So every exposure at or below 146*t_c = 1825 ns aborted the run at
+            % the LockInTargetReferenceFrequency write instead of quietly landing
+            % on the shortest legal exposure. n = 149 is out too (134228.19 Hz,
+            % a hair over), leaving n = 150 -> 1875 ns as the real minimum
+            % exposure at sensitivity 1. Derived rather than typed so a different
+            % sensitivity, which scales f_ref, moves the bound with it.
+            nMin = max(1, ceil(sensitivity / (fRefMax * 4 * tClock)));
             nGrid  = round(tExpSeconds / (sensitivity * tClock));
-            nGrid  = min(max(nGrid, 146), nMax);       % external-ref usable grid bounds
+            nGrid  = min(max(nGrid, nMin), nMax);      % external-ref usable grid bounds
             fRef   = sensitivity / (nGrid * 4 * tClock);
             tExpActual = sensitivity * nGrid * tClock;
 

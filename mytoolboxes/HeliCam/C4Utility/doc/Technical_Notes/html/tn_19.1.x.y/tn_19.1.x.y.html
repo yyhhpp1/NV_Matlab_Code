@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TN_19.1.0.1: UserSet - A short Introduction &mdash; Technical Notes for heliotis gen4 Devices 2025.09 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=0ac42c78" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=200dd705"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TN_19.10.0.1: Configuring Offset (FPN) Correction" href="../tn_19.10.x.y/tn_19.10.x.y.html" />
+    <link rel="prev" title="TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices" href="../tn_15.3.x.y/tn_15.3.x.y.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Technical Notes for heliotis gen4 Devices
+              <img src="../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.1.x.y/tn_15.1.x.y.html">TN_15.1.0.1: heliBrd B4 SD Card Re-Writing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.2.x.y/tn_15.2.x.y.html">TN_15.2.0.0: Adjust 3D Data Scaling and Offset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.3.x.y/tn_15.3.x.y.html">TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TN_19.1.0.1: UserSet - A short Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#context-and-challenge-storing-gen4-device-configurations">Context and Challenge: Storing gen4 Device Configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#solution-userset">Solution: UserSet</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#storing-or-creating-a-userset">Storing (or Creating) a UserSet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#loading-a-userset">Loading a UserSet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#default-userset">Default UserSet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-transfer">File Transfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#additional-features">Additional Features</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#automatedstageinit">AutomatedStageInit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#check-file-transfer">Check File Transfer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.10.x.y/tn_19.10.x.y.html">TN_19.10.0.1: Configuring Offset (FPN) Correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.2.x.y/tn_19.2.x.y.html">TN_19.2.0.1: Configuring the Optic Type</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.3.x.y/tn_19.3.x.y.html">TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.4.x.y/tn_19.4.x.y.html">TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.9.x.y/tn_19.9.x.y.html">TN_19.9.0.0:  First/Last Surface Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_51.1.x.y/tn_51.1.x.y.html">TN_51.1.0.0: Heliotis Gen4 Device Fieldbus Reference for D3</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Technical Notes for heliotis gen4 Devices</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">TN_19.1.0.1: UserSet - A short Introduction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <a href="../_pdf/tn_19.1.x.y.pdf" target="_blank">PDF version</a><section id="tn-19-1-0-1-userset-a-short-introduction">
+<h1>TN_19.1.0.1: UserSet - A short Introduction<a class="headerlink" href="#tn-19-1-0-1-userset-a-short-introduction" title="Link to this heading"></a></h1>
+<section id="context-and-challenge-storing-gen4-device-configurations">
+<h2>Context and Challenge: Storing gen4 Device Configurations<a class="headerlink" href="#context-and-challenge-storing-gen4-device-configurations" title="Link to this heading"></a></h2>
+<p>Heliotis Gen4 devices offer highly customizable configurations through device features. In some cases, one may
+not want to specify the entire configuration for an inspection task in the control application.</p>
+<p>Additionally, some configurations are explored in a lab environment before being applied in production.
+The standard approach is to implement the new configuration directly in the user application. However,
+in certain situations, modifying the user application is not feasible/permitted.</p>
+<p>In these cases, it becomes necessary to store specific configurations directly on the device.</p>
+</section>
+<section id="solution-userset">
+<h2>Solution: UserSet<a class="headerlink" href="#solution-userset" title="Link to this heading"></a></h2>
+<p>To address these scenarios, Gen4 devices support the <em>UserSet</em> functionality, as defined by GenICam and described in
+the Standard Feature Naming Convention (SFNC) of GenICam <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. This technical note outlines various use cases and
+procedures for configuring Heliotis Gen4 devices through UserSets.</p>
+<p>Heliotis devices offer two custom UserSets: <em>UserSet0</em> and <em>UserSet1</em>, which serve as independent storage locations for
+full device configurations. A third option, <em>Default</em>, is available through the <code class="docutils literal notranslate"><span class="pre">UserSetSelector</span></code> feature. The <em>Default</em>
+option is read-only and represents the factory default configuration.</p>
+<p>The primary UserSet operations include:</p>
+<ul class="simple">
+<li><p><em>Store</em> – Saves the current configuration to the selected storage location on the device.</p></li>
+<li><p><em>Load</em> – Loads a previously stored configuration from the selected storage location.</p></li>
+</ul>
+<p>Additionally, users can define which UserSet (<em>UserSet0</em>, <em>UserSet1</em>, or <em>Default</em>) should automatically
+load upon device boot-up or reset.</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>EMVA GenICam SFNC: <a class="reference external" href="https://www.emva.org/wp-content/uploads/GenICam_SFNC_v2_7.pdf">https://www.emva.org/wp-content/uploads/GenICam_SFNC_v2_7.pdf</a></p>
+</aside>
+</aside>
+<section id="storing-or-creating-a-userset">
+<h3>Storing (or Creating) a UserSet<a class="headerlink" href="#storing-or-creating-a-userset" title="Link to this heading"></a></h3>
+<p>To <em>store</em> a UserSet, an application or script must connect to the Gen4 device and configure it appropriately.
+Matching feature values can be determined using a GenICam Viewer or the Heliotis-specific heliViewer. Further
+recommendations may be provided by Heliotis.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>A UserSet must be stored while the device is in configuration mode (i.e. not during an acquisition) and
+before the device connection is closed (which triggers a reset).</p>
+<ol class="arabic simple">
+<li><p>First, select the desired UserSet using <code class="docutils literal notranslate"><span class="pre">UserSetSelector</span></code>.</p></li>
+<li><p>Then, execute the corresponding save operation (e.g., <code class="docutils literal notranslate"><span class="pre">UserSetSave</span></code>).</p></li>
+</ol>
+</div>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-number">Listing 9 </span><span class="caption-text">Store a UserSet</span><a class="headerlink" href="#id5" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UserSetSelector</span> <span class="o">=</span> <span class="s2">&quot;UserSet0&quot;</span>
+<span class="n">UserSetSave</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="loading-a-userset">
+<h3>Loading a UserSet<a class="headerlink" href="#loading-a-userset" title="Link to this heading"></a></h3>
+<p>To apply a previously stored UserSet, the application must execute the Load operation after establishing a device
+connection. This process loads the full camera configuration, overwriting any previously set feature values.</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-number">Listing 10 </span><span class="caption-text">Load a UserSet</span><a class="headerlink" href="#id6" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UserSetSelector</span> <span class="o">=</span> <span class="s2">&quot;UserSet0&quot;</span>
+<span class="n">UserSetLoad</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="default-userset">
+<h3>Default UserSet<a class="headerlink" href="#default-userset" title="Link to this heading"></a></h3>
+<p>Gen4 devices support configuring a <em>Default UserSet</em> that loads automatically upon boot-up, reset, or reconnection.
+This allows users to define default values for the device.</p>
+<p>The feature name for configuring the <em>Default UserSet</em> is <code class="docutils literal notranslate"><span class="pre">UserSetDefault</span></code>. Unlike most other features, <code class="docutils literal notranslate"><span class="pre">UserSetDefault</span></code>
+is non-volatile, meaning its value remains unchanged even after device resets, reconnections, or firmware updates.</p>
+<p>Available options for <code class="docutils literal notranslate"><span class="pre">UserSetDefault</span></code>:</p>
+<ul class="simple">
+<li><p>UserSet0</p></li>
+<li><p>UserSet1</p></li>
+<li><p>Default (factory default setting)</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-number">Listing 11 </span><span class="caption-text">Configure the default UserSet</span><a class="headerlink" href="#id7" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UserSetDefault</span> <span class="o">=</span> <span class="s2">&quot;UserSet0&quot;</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="file-transfer">
+<span id="id3"></span><h3>File Transfer<a class="headerlink" href="#file-transfer" title="Link to this heading"></a></h3>
+<p>Users may need to transfer a stored <em>UserSet</em> from one device to another. Gen4 devices support <em>UserSet</em> transfers
+through the <em>FileAccess</em> interface, as defined by GenICam.</p>
+<p>Most GenICam-compatible applications support file transfer. Additionally, Heliotis provides <em>updateTool</em>, which
+facilitates UserSet transfers to and from devices.</p>
+<p>Within updateTool, users can access the <em>Manage Files</em> dialog to select a device and define the desired UserSet
+through <em>FileSelector</em>. The transfer process from and to the file specified in <em>Local File</em> can then be initiated
+using <em>Write to Device</em> or <em>Read from Device</em>.</p>
+<p>See also (see <a class="reference internal" href="#check-file-transfer"><span class="std std-ref">Check File Transfer</span></a>)</p>
+<figure class="align-center" id="id8">
+<span id="transfer"></span><a class="reference internal image-reference" href="../_images/FileTransfer.png"><img alt="../_images/FileTransfer.png" src="../_images/FileTransfer.png" style="width: 685.5px; height: 342.0px;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 5 </span><span class="caption-text">File Transfer support in the updateTool</span><a class="headerlink" href="#id8" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p><strong>Limitations</strong></p>
+<p>1. The target device must have the exact same hardware configuration as the source device, since certain
+features depend on hardware compatibility.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Example: External Xenax stages require IP address definitions that other stage types do not support.</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>The target device must have firmware that is the same or newer than the source device’s firmware.</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>While older UserSets can be migrated to newer firmware versions during file transfer, newer UserSets cannot be read by older firmware.</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p>The File Transfer process does not provide an error notification when an unsupported UserSet is sent to a device.</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>see <a class="reference internal" href="#check-file-transfer"><span class="std std-ref">Check File Transfer</span></a></p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="additional-features">
+<h3>Additional Features<a class="headerlink" href="#additional-features" title="Link to this heading"></a></h3>
+<section id="automatedstageinit">
+<h4>AutomatedStageInit<a class="headerlink" href="#automatedstageinit" title="Link to this heading"></a></h4>
+<p>When using heliInspect, the initial configuration after a power-up requires executing the <code class="docutils literal notranslate"><span class="pre">StageInit</span></code> command to initialize
+the stage. This procedure is not automated by default since additional configuration steps (e.g., defining an IP address)
+may be required.</p>
+<p>With the <em>UserSet</em> mechanism, the full configuration - including IP address - becomes available at boot time, allowing automated
+stage initialization. Users can enable this feature by setting <code class="docutils literal notranslate"><span class="pre">AutomatedStageInit</span> <span class="pre">=</span> <span class="pre">true</span></code>.</p>
+</section>
+<section id="check-file-transfer">
+<span id="id4"></span><h4>Check File Transfer<a class="headerlink" href="#check-file-transfer" title="Link to this heading"></a></h4>
+<p>The File Transfer implementation does not generate an error message if an unsupported UserSet is transferred to a device.</p>
+<p>To verify whether the transfer was successful, users can access <em>log</em> information using the <em>File Manager</em> in <em>updateTool</em>.</p>
+<ol class="arabic simple">
+<li><p>Select Read from Device to retrieve the logs.</p></li>
+<li><p>Store the logs as a .tar.gz file on the host computer.</p></li>
+<li><p>Open the log file to check for error messages.</p></li>
+</ol>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-number">Listing 12 </span><span class="caption-text">Example of an Error message when the UserSet transfer fails</span><a class="headerlink" href="#id9" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mf">185582.447516</span><span class="p">]</span>       <span class="n">Global</span> <span class="mi">1956635728</span>       <span class="n">ERROR</span>   <span class="n">Failed</span> <span class="n">to</span> <span class="n">update</span> <span class="n">UserSet0</span><span class="p">:</span> <span class="n">Could</span> <span class="ow">not</span> <span class="n">convert</span> <span class="n">file</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">heliService</span><span class="o">/</span><span class="n">userSets</span><span class="o">/</span><span class="n">userSet0</span><span class="o">.</span><span class="n">json</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="document-history">
+<h2>Document History<a class="headerlink" href="#document-history" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Version</p></th>
+<th class="head"><p>Date</p></th>
+<th class="head"><p>Changes</p></th>
+<th class="head"><p>Responsible</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>19.1.0.0</p></td>
+<td><p>22-11-2024</p></td>
+<td><p>initial version</p></td>
+<td><p>sm</p></td>
+</tr>
+<tr class="row-odd"><td><p>19.1.0.1</p></td>
+<td><p>12-06-2025</p></td>
+<td><p>editing</p></td>
+<td><p>bm</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../tn_15.3.x.y/tn_15.3.x.y.html" class="btn btn-neutral float-left" title="TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tn_19.10.x.y/tn_19.10.x.y.html" class="btn btn-neutral float-right" title="TN_19.10.0.1: Configuring Offset (FPN) Correction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

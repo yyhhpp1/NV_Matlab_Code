@@ -22,7 +22,7 @@ function varargout = Experiment_PB_DAQ(varargin)
 
 % Edit the above text to modify the response to help Experiment_PB_DAQ
 
-% Last Modified by GUIDE v2.5 02-Jul-2025 18:41:56
+% Last Modified by GUIDE v2.5 31-Aug-2026 15:59:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2720,3 +2720,168 @@ function bSlackUpload_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of bSlackUpload
+
+
+
+function nPeriods_Callback(hObject, eventdata, handles)
+% hObject    handle to nPeriods (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of nPeriods as text
+%        str2double(get(hObject,'String')) returns contents of nPeriods as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function nPeriods_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to nPeriods (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function nFrames_Callback(hObject, eventdata, handles)
+% hObject    handle to nFrames (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of nFrames as text
+%        str2double(get(hObject,'String')) returns contents of nFrames as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function nFrames_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to nFrames (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in takeDarkRef.
+function takeDarkRef_Callback(hObject, eventdata, handles)
+% hObject    handle to takeDarkRef (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of takeDarkRef
+
+
+
+function QP_Callback(hObject, eventdata, handles)
+% hObject    handle to QP (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of QP as text
+%        str2double(get(hObject,'String')) returns contents of QP as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function QP_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to QP (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function WFContrast_Callback(hObject, eventdata, handles)
+% hObject    handle to WFContrast (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of WFContrast as text
+%        str2double(get(hObject,'String')) returns contents of WFContrast as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function WFContrast_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to WFContrast (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in overwriteExpr.
+function overwriteExpr_Callback(hObject, eventdata, handles)
+% hObject    handle to overwriteExpr (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of overwriteExpr
+
+
+
+function colorBarMin_Callback(hObject, eventdata, handles)
+% hObject    handle to colorBarMin (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of colorBarMin as text
+%        str2double(get(hObject,'String')) returns contents of colorBarMin as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function colorBarMin_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to colorBarMin (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function colorBarMax_Callback(hObject, eventdata, handles)
+% hObject    handle to colorBarMax (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of colorBarMax as text
+%        str2double(get(hObject,'String')) returns contents of colorBarMax as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function colorBarMax_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to colorBarMax (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in overwriteColorBar.
+function overwriteColorBar_Callback(hObject, eventdata, handles)
+% hObject    handle to overwriteColorBar (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of overwriteColorBar

@@ -1,0 +1,64 @@
+extern public String IPAddress = "192.168.2.71"
+
+//:SECTIONSVISIBILITY Visible
+//:USETYPE WORKERTASK
+public Main()
+{
+
+section INITIALIZE:
+	//:HIDDENPORT[inGeneralSpeed] TRUE
+	InitHeliCam
+	(
+		inIPAddress: IPAddress
+		inScanSpeed: 5.000000
+		inScanRange: 1.000000
+		inGeneralSpeed: 10.000000
+		inExposureRatio: 1.000000
+		inLightBrightness: 100.000000
+		inHeliDriverType: "D3"
+	)
+
+	//:HIDDENPORT[inTargetVerticalSpacing] TRUE
+	InitOptics
+	(
+		inOpticsType: "WLI8-2x"
+		inIPAddress: IPAddress
+		inTargetVerticalSpacing: Nil
+	)
+
+section ACQUIRE:
+	AcquireHeliCam
+	(
+		inIPAddress: IPAddress
+		inScanPosition: 0.000000
+		outSurface: con_7d7d5702_bf82_48c8_bd09_c285a9656a45
+		outAmplitude: con_df10140c_b0d2_4555_a76b_f3cf8314cc75
+	)
+
+section PROCESS:
+	//:HIDDENPORT[inXOffset] TRUE
+	//:HIDDENPORT[inXScale] TRUE
+	//:HIDDENPORT[inYOffset] TRUE
+	//:HIDDENPORT[inYScale] TRUE
+	//:HIDDENPORT[inZOffset] TRUE
+	//:HIDDENPORT[inZScale] TRUE
+	MakeSurfaceFromImage
+	(
+		inImage: con_7d7d5702_bf82_48c8_bd09_c285a9656a45
+		inRoi: Nil
+		inXOffset: 0.000000D
+		inXScale: 1.000000D
+		inYOffset: 0.000000D
+		inYScale: 1.000000D
+		inZOffset: 0.000000D
+		inZScale: 1.000000D
+		outSurface: con_603fb5a6_54b7_4e32_81ae_643e0faa0252
+	)
+
+section FINALIZE:
+	ReleaseHeliCam
+	(
+		inIPAddress: IPAddress
+	)
+}
+

@@ -56,3 +56,6 @@ InactiveCode/Slack/
 .env
 .env.*
 !.env.example
+
+# PyInstaller output for the widefield viewer (42 MB; rebuild with analysis/build_wf_viewer.ps1)
+analysis/wf_viewer.exe

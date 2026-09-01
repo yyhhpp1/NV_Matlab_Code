@@ -1,0 +1,304 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="C:\Program Files\NeuroCheck 6.2\XSL\CFGX_DP_Detailed.xsl" type="text/xsl"?>
+<neurocheck_dp_configuration name="Data Processing Configuration" xml:lang="en" xmlns="http://www.neurocheck.com/xml">
+   <!-- ################################  Header information. Do not change!  ################################# -->
+   <header name="Header information">
+      <meaning_of_contents name="File contains data of type">Configuration of NeuroCheck data processing</meaning_of_contents>
+      <created_by_name name="Name of creating program">C:\Program Files\NeuroCheck 6.2\NeuroCheck.DataProcessing.dll</created_by_name>
+      <created_by_dir name="NeuroCheck installation directory">C:\Program Files\NeuroCheck 6.2\</created_by_dir>
+      <created_by_version name="NeuroCheck version">6.2.19.0</created_by_version>
+      <created_date_time name="Date/time of creation of this file">2022-12-15 - 10:44:01</created_date_time>
+      <file_version name="Version identification of this file">6.2.19.0</file_version>
+      <copyright name="Copyright">NeuroCheck GmbH, 71686 Remseck, Germany</copyright>
+      <license_level name="License level">Premium</license_level>
+      <license_number name="NeuroCheck license number">220176</license_number>
+      <dongle_number name="Serial number dongle">12008355</dongle_number>
+   </header>
+   <body name="Configuration data">
+      <!-- ++++++++++++++++++++++++++++++++++++++++++++++  Device manager  +++++++++++++++++++++++++++++++++++++++++++++++ -->
+      <device_manager name="Device manager">
+         <dm_list_of_devices name="List of configured devices" size="1">
+            <dm_hardware_device name="Device" category="7" display="Camera3D">
+               <dm_device_alias name="Device alias">c4brd[430003]-diaphus.cti</dm_device_alias>
+               <dm_name name="Device name">c4brd (diaphus.cti)</dm_name>
+               <dm_serial_number name="Serial number">430003</dm_serial_number>
+               <dm_device_name name="User defined name">c4brd (diaphus.cti) [430003]</dm_device_name>
+               <dm_driver_assemby_location name="Assembly location" display="C:\Program Files\NeuroCheck 6.2\Nc3D.NeuroCheck.Generic.UI.dll">Nc3D.NeuroCheck.Generic.UI.dll</dm_driver_assemby_location>
+               <dm_dll_name name="Assembly name" productVersion="6.2.9.0-preview">Nc3D.NeuroCheck.Generic.UI, Version=6.2.9.0, Culture=neutral, PublicKeyToken=null</dm_dll_name>
+               <dm_property_string name="Property string" disabled="1">&lt;Camera3DDeviceSettings xmlns="http://www.neurocheck.com/xml"&gt;&lt;parameter id="22100" name="GCSettings" producer="diaphus.cti"&gt;&lt;parameter id="22101" name="System" /&gt;&lt;parameter id="22102" name="Interface" /&gt;&lt;parameter id="22103" name="Device" /&gt;&lt;parameter id="22104" name="DeviceRemote"&gt;&lt;parameter name="AcquisitionMode" value="SingleFrame" /&gt;&lt;parameter name="ChunkModeActive" value="True" /&gt;&lt;parameter name="UserOutputValueAll" value="1" /&gt;&lt;parameter name="ExtractionMinConfidence" value="0.5" /&gt;&lt;parameter name="ExtractionTimeout" value="1" /&gt;&lt;parameter name="ExtractionExpectedSurfaceFlatness" value="1" /&gt;&lt;parameter name="ExtractionConfidenceEpsilon" value="0.00100000004749745" /&gt;&lt;parameter name="ExtractionMismatchEpsilon" value="0.00100000004749745" /&gt;&lt;parameter name="ExtractionAssumedRMSImageNoise" value="0" /&gt;&lt;parameter name="ExtractionEnvelopeUncertaintyFactor" value="1" /&gt;&lt;parameter name="ExtractionPhaseUncertaintyFactor" value="1" /&gt;&lt;parameter name="ExtractionEnvelopeUncertaintyAtLowSignalFactor" value="1" /&gt;&lt;parameter name="ExtractionExpectedEnvelopePhaseMismatch" value="0.100000001490116" /&gt;&lt;parameter name="ExtSimpMaxHWin" value="7" /&gt;&lt;parameter name="FPNCorrection" value="AverageLastFrames" /&gt;&lt;parameter name="FPNCorrectionNFrames" value="8" /&gt;&lt;parameter name="PeakDetectionMode" value="GlobalMax" /&gt;&lt;parameter name="PeakDetectionThreshold" value="100" /&gt;&lt;parameter name="PeakDetectionFilterWidth" value="4" /&gt;&lt;parameter name="ReverseX" value="False" /&gt;&lt;parameter name="ReverseY" value="False" /&gt;&lt;parameter name="Rotation" value="0" /&gt;&lt;parameter name="LogLevel" value="warning" /&gt;&lt;parameter name="DeviceOperationMode" value="Topography" /&gt;&lt;parameter name="LowLevelMode" value="Off" /&gt;&lt;parameter name="ScanMode" value="Down" /&gt;&lt;parameter name="Position" value="-17.0499992370605" /&gt;&lt;parameter name="TargetPosition" value="0" /&gt;&lt;parameter name="MotionMode" value="Immediate" /&gt;&lt;parameter name="GeneralSpeed" value="5" /&gt;&lt;parameter name="AccelerationRamp" value="0.200000002980232" /&gt;&lt;parameter name="AutomatedStageInit" value="False" /&gt;&lt;parameter name="MC5004ProxyIndex" value="0" /&gt;&lt;parameter name="MC5004ProxySize" value="4" /&gt;&lt;parameter name="MC5004ProxySubindex" value="0" /&gt;&lt;parameter name="MC5004ProxyValue" value="0" /&gt;&lt;parameter name="StageInitMode" value="Force" /&gt;&lt;parameter name="iCtw8ProxyAddress" value="0" /&gt;&lt;parameter name="iCtw8ProxySize" value="2" /&gt;&lt;parameter name="iCtw8ProxyValue" value="0" /&gt;&lt;parameter name="Scan3dExtractionMethod" value="AcceleratedCenterOfMassIQCorrection" /&gt;&lt;parameter name="Scan3dScalingMethod" value="zTags" /&gt;&lt;parameter name="Scan3dDistanceUnit" value="um" /&gt;&lt;parameter name="Scan3dOutputMode" value="CalibratedC" /&gt;&lt;parameter name="BackgroundSuppression" value="On" /&gt;&lt;parameter name="WavelengthCorrection" value="1" /&gt;&lt;parameter name="ScanSpeed" value="5" /&gt;&lt;parameter name="TargetVerticalSpacing" value="2" /&gt;&lt;parameter name="ExposureRatio" value="1" /&gt;&lt;parameter name="NCTimeout" value="5000" /&gt;&lt;parameter name="NCComputeXYZImage" value="False" /&gt;&lt;parameter name="TriggerMode" value="Off"&gt;&lt;selector name="TriggerSelector" value="AcquisitionStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerMode" value="On"&gt;&lt;selector name="TriggerSelector" value="FrameStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerMode" value="Off"&gt;&lt;selector name="TriggerSelector" value="FrameBurstStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerMode" value="On"&gt;&lt;selector name="TriggerSelector" value="RecordingStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerMode" value="Off"&gt;&lt;selector name="TriggerSelector" value="Reference" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="True"&gt;&lt;selector name="ChunkSelector" value="PartCount" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="False"&gt;&lt;selector name="ChunkSelector" value="PartFixpointScaling" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="False"&gt;&lt;selector name="ChunkSelector" value="PartFrameNo" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="True"&gt;&lt;selector name="ChunkSelector" value="PartType" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="False"&gt;&lt;selector name="ChunkSelector" value="ZTagCount" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="False"&gt;&lt;selector name="ChunkSelector" value="ZTagValue" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="False"&gt;&lt;selector name="ChunkSelector" value="Scan3dDistanceUnit" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="False"&gt;&lt;selector name="ChunkSelector" value="Scan3dOutputMode" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="False"&gt;&lt;selector name="ChunkSelector" value="Scan3dCoordinateScale" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="False"&gt;&lt;selector name="ChunkSelector" value="Scan3dCoordinateOffset" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="False"&gt;&lt;selector name="ChunkSelector" value="ProcessingString" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="False"&gt;&lt;selector name="ChunkSelector" value="ConfigString" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="False"&gt;&lt;selector name="ChunkSelector" value="Timestamp" /&gt;&lt;/parameter&gt;&lt;parameter name="ChunkEnable" value="False"&gt;&lt;selector name="ChunkSelector" value="FrameID" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="Line0" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="Line1" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="Line2" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="Line3" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="RTIO2" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="RTIO3" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="RTIO4" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO1" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO2" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO3" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO4" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO5" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO6" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO7" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO8" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO10" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO11" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO12" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO13" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO14" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO15" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO16" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="DIO17" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="RTIO6" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="RTIO7" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="FI2" /&gt;&lt;/parameter&gt;&lt;parameter name="LineInverter" value="False"&gt;&lt;selector name="LineSelector" value="FI3" /&gt;&lt;/parameter&gt;&lt;parameter name="LineSource" value="Off"&gt;&lt;selector name="LineSelector" value="Line2" /&gt;&lt;/parameter&gt;&lt;parameter name="LineSource" value="Off"&gt;&lt;selector name="LineSelector" value="Line3" /&gt;&lt;/parameter&gt;&lt;parameter name="LineSource" value="Off"&gt;&lt;selector name="LineSelector" value="RTIO2" /&gt;&lt;/parameter&gt;&lt;parameter name="LineSource" value="Off"&gt;&lt;selector name="LineSelector" value="RTIO3" /&gt;&lt;/parameter&gt;&lt;parameter name="LineSource" value="Off"&gt;&lt;selector name="LineSelector" value="DIO10" /&gt;&lt;/parameter&gt;&lt;parameter name="LineSource" value="Off"&gt;&lt;selector name="LineSelector" value="DIO11" /&gt;&lt;/parameter&gt;&lt;parameter name="LineSource" value="Off"&gt;&lt;selector name="LineSelector" value="DIO12" /&gt;&lt;/parameter&gt;&lt;parameter name="LineSource" value="Off"&gt;&lt;selector name="LineSelector" value="DIO13" /&gt;&lt;/parameter&gt;&lt;parameter name="LineSource" value="Off"&gt;&lt;selector name="LineSelector" value="DIO14" /&gt;&lt;/parameter&gt;&lt;parameter name="LineSource" value="Off"&gt;&lt;selector name="LineSelector" value="DIO15" /&gt;&lt;/parameter&gt;&lt;parameter name="LineSource" value="Off"&gt;&lt;selector name="LineSelector" value="DIO16" /&gt;&lt;/parameter&gt;&lt;parameter name="LineSource" value="Off"&gt;&lt;selector name="LineSelector" value="DIO17" /&gt;&lt;/parameter&gt;&lt;parameter name="LineFormat" value="HighSide"&gt;&lt;selector name="LineSelector" value="RTIO2" /&gt;&lt;/parameter&gt;&lt;parameter name="LineFormat" value="HighSide"&gt;&lt;selector name="LineSelector" value="RTIO3" /&gt;&lt;/parameter&gt;&lt;parameter name="LineFormat" value="HighSide"&gt;&lt;selector name="LineSelector" value="DIO10" /&gt;&lt;/parameter&gt;&lt;parameter name="LineFormat" value="HighSide"&gt;&lt;selector name="LineSelector" value="DIO11" /&gt;&lt;/parameter&gt;&lt;parameter name="LineFormat" value="HighSide"&gt;&lt;selector name="LineSelector" value="DIO12" /&gt;&lt;/parameter&gt;&lt;parameter name="LineFormat" value="HighSide"&gt;&lt;selector name="LineSelector" value="DIO13" /&gt;&lt;/parameter&gt;&lt;parameter name="LineFormat" value="HighSide"&gt;&lt;selector name="LineSelector" value="DIO14" /&gt;&lt;/parameter&gt;&lt;parameter name="LineFormat" value="HighSide"&gt;&lt;selector name="LineSelector" value="DIO15" /&gt;&lt;/parameter&gt;&lt;parameter name="LineFormat" value="HighSide"&gt;&lt;selector name="LineSelector" value="DIO16" /&gt;&lt;/parameter&gt;&lt;parameter name="LineFormat" value="HighSide"&gt;&lt;selector name="LineSelector" value="DIO17" /&gt;&lt;/parameter&gt;&lt;parameter name="UserOutputValue" value="True"&gt;&lt;selector name="UserOutputSelector" value="UserOutput0" /&gt;&lt;/parameter&gt;&lt;parameter name="UserOutputValue" value="False"&gt;&lt;selector name="UserOutputSelector" value="UserOutput1" /&gt;&lt;/parameter&gt;&lt;parameter name="UserOutputValue" value="False"&gt;&lt;selector name="UserOutputSelector" value="UserOutput2" /&gt;&lt;/parameter&gt;&lt;parameter name="UserOutputValue" value="False"&gt;&lt;selector name="UserOutputSelector" value="UserOutput3" /&gt;&lt;/parameter&gt;&lt;parameter name="UserOutputValue" value="False"&gt;&lt;selector name="UserOutputSelector" value="UserOutput4" /&gt;&lt;/parameter&gt;&lt;parameter name="UserOutputValue" value="False"&gt;&lt;selector name="UserOutputSelector" value="UserOutput5" /&gt;&lt;/parameter&gt;&lt;parameter name="UserOutputValue" value="False"&gt;&lt;selector name="UserOutputSelector" value="UserOutput6" /&gt;&lt;/parameter&gt;&lt;parameter name="UserOutputValue" value="False"&gt;&lt;selector name="UserOutputSelector" value="UserOutput7" /&gt;&lt;/parameter&gt;&lt;parameter name="ComponentEnable" value="True"&gt;&lt;selector name="ComponentSelector" value="Intensity" /&gt;&lt;/parameter&gt;&lt;parameter name="ComponentEnable" value="False"&gt;&lt;selector name="ComponentSelector" value="Range" /&gt;&lt;/parameter&gt;&lt;parameter name="ComponentEnable" value="False"&gt;&lt;selector name="ComponentSelector" value="Phase" /&gt;&lt;/parameter&gt;&lt;parameter name="ComponentEnable" value="True"&gt;&lt;selector name="ComponentSelector" value="Reflectance" /&gt;&lt;/parameter&gt;&lt;parameter name="ComponentEnable" value="False"&gt;&lt;selector name="ComponentSelector" value="Confidence" /&gt;&lt;/parameter&gt;&lt;parameter name="ComponentEnable" value="False"&gt;&lt;selector name="ComponentSelector" value="Precision" /&gt;&lt;/parameter&gt;&lt;parameter name="ComponentEnable" value="False"&gt;&lt;selector name="ComponentSelector" value="UnwrappingGroup" /&gt;&lt;/parameter&gt;&lt;parameter name="ComponentEnable" value="False"&gt;&lt;selector name="ComponentSelector" value="AdditionalRangeInfo" /&gt;&lt;/parameter&gt;&lt;parameter name="LightControllerSource" value="UserOutput0"&gt;&lt;selector name="LightControllerSelector" value="LightController0" /&gt;&lt;/parameter&gt;&lt;parameter name="LightBrightness" value="100"&gt;&lt;selector name="LightControllerSelector" value="LightController0" /&gt;&lt;/parameter&gt;&lt;parameter name="SoftlimitEnable" value="True"&gt;&lt;selector name="SoftlimitSelector" value="HardwareLower" /&gt;&lt;/parameter&gt;&lt;parameter name="SoftlimitEnable" value="True"&gt;&lt;selector name="SoftlimitSelector" value="HardwareUpper" /&gt;&lt;/parameter&gt;&lt;parameter name="SoftlimitEnable" value="True"&gt;&lt;selector name="SoftlimitSelector" value="UserLower" /&gt;&lt;/parameter&gt;&lt;parameter name="SoftlimitEnable" value="True"&gt;&lt;selector name="SoftlimitSelector" value="UserUpper" /&gt;&lt;/parameter&gt;&lt;parameter name="SoftlimitPosition" value="-2147483.75"&gt;&lt;selector name="SoftlimitSelector" value="UserLower" /&gt;&lt;/parameter&gt;&lt;parameter name="SoftlimitPosition" value="2147483.75"&gt;&lt;selector name="SoftlimitSelector" value="UserUpper" /&gt;&lt;/parameter&gt;&lt;parameter name="NumericalAperture" value="1"&gt;&lt;selector name="OpticControllerSelector" value="Fixed" /&gt;&lt;/parameter&gt;&lt;parameter name="Magnification" value="1"&gt;&lt;selector name="OpticControllerSelector" value="Fixed" /&gt;&lt;/parameter&gt;&lt;parameter name="Scan3dCoordinateScale" value="1"&gt;&lt;selector name="Scan3dCoordinateSelector" value="CoordinateC" /&gt;&lt;/parameter&gt;&lt;parameter name="Scan3dCoordinateOffset" value="0"&gt;&lt;selector name="Scan3dCoordinateSelector" value="CoordinateA" /&gt;&lt;/parameter&gt;&lt;parameter name="Scan3dCoordinateOffset" value="0"&gt;&lt;selector name="Scan3dCoordinateSelector" value="CoordinateB" /&gt;&lt;/parameter&gt;&lt;parameter name="Scan3dCoordinateOffset" value="0"&gt;&lt;selector name="Scan3dCoordinateSelector" value="CoordinateC" /&gt;&lt;/parameter&gt;&lt;parameter name="ScanRange" value="0.501143991947174"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment0" /&gt;&lt;/parameter&gt;&lt;parameter name="ScanRange" value="0"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment1" /&gt;&lt;/parameter&gt;&lt;parameter name="ScanRange" value="0"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment2" /&gt;&lt;/parameter&gt;&lt;parameter name="ScanRange" value="0"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment3" /&gt;&lt;/parameter&gt;&lt;parameter name="TargetScanRange" value="0.5"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment0" /&gt;&lt;/parameter&gt;&lt;parameter name="TargetScanRange" value="0.00999999977648258"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment1" /&gt;&lt;/parameter&gt;&lt;parameter name="TargetScanRange" value="0.00999999977648258"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment2" /&gt;&lt;/parameter&gt;&lt;parameter name="TargetScanRange" value="0.00999999977648258"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment3" /&gt;&lt;/parameter&gt;&lt;parameter name="VerticalSegmentEnable" value="True"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment0" /&gt;&lt;/parameter&gt;&lt;parameter name="VerticalSegmentEnable" value="False"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment1" /&gt;&lt;/parameter&gt;&lt;parameter name="VerticalSegmentEnable" value="False"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment2" /&gt;&lt;/parameter&gt;&lt;parameter name="VerticalSegmentEnable" value="False"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment3" /&gt;&lt;/parameter&gt;&lt;parameter name="ScanPosition" value="-16.6000003814697"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment0" /&gt;&lt;/parameter&gt;&lt;parameter name="ScanPosition" value="-1"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment1" /&gt;&lt;/parameter&gt;&lt;parameter name="ScanPosition" value="-2"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment2" /&gt;&lt;/parameter&gt;&lt;parameter name="ScanPosition" value="-3"&gt;&lt;selector name="VerticalSegmentSelector" value="Segment3" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerSource" value="Software"&gt;&lt;selector name="TriggerSelector" value="AcquisitionStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerSource" value="Software"&gt;&lt;selector name="TriggerSelector" value="FrameStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerSource" value="Software"&gt;&lt;selector name="TriggerSelector" value="FrameBurstStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerSource" value="Stage"&gt;&lt;selector name="TriggerSelector" value="RecordingStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerSource" value="FI2"&gt;&lt;selector name="TriggerSelector" value="Reference" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerActivation" value="RisingEdge"&gt;&lt;selector name="TriggerSelector" value="AcquisitionStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerActivation" value="RisingEdge"&gt;&lt;selector name="TriggerSelector" value="FrameStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerActivation" value="RisingEdge"&gt;&lt;selector name="TriggerSelector" value="FrameBurstStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerActivation" value="RisingEdge"&gt;&lt;selector name="TriggerSelector" value="RecordingStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerActivation" value="RisingEdge"&gt;&lt;selector name="TriggerSelector" value="Reference" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerOverlap" value="PreviousFrame"&gt;&lt;selector name="TriggerSelector" value="AcquisitionStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerOverlap" value="Off"&gt;&lt;selector name="TriggerSelector" value="FrameStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerOverlap" value="Off"&gt;&lt;selector name="TriggerSelector" value="FrameBurstStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerOverlap" value="Off"&gt;&lt;selector name="TriggerSelector" value="RecordingStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerOverlap" value="Off"&gt;&lt;selector name="TriggerSelector" value="Reference" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerDelay" value="0"&gt;&lt;selector name="TriggerSelector" value="AcquisitionStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerDelay" value="0"&gt;&lt;selector name="TriggerSelector" value="FrameStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerDelay" value="0"&gt;&lt;selector name="TriggerSelector" value="FrameBurstStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerDelay" value="0"&gt;&lt;selector name="TriggerSelector" value="RecordingStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerDelay" value="0"&gt;&lt;selector name="TriggerSelector" value="Reference" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerDivider" value="1"&gt;&lt;selector name="TriggerSelector" value="AcquisitionStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerDivider" value="1"&gt;&lt;selector name="TriggerSelector" value="FrameStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerDivider" value="1"&gt;&lt;selector name="TriggerSelector" value="FrameBurstStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerDivider" value="1"&gt;&lt;selector name="TriggerSelector" value="RecordingStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerDivider" value="1"&gt;&lt;selector name="TriggerSelector" value="Reference" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerMultiplier" value="1"&gt;&lt;selector name="TriggerSelector" value="AcquisitionStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerMultiplier" value="1"&gt;&lt;selector name="TriggerSelector" value="FrameStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerMultiplier" value="1"&gt;&lt;selector name="TriggerSelector" value="FrameBurstStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerMultiplier" value="1"&gt;&lt;selector name="TriggerSelector" value="RecordingStart" /&gt;&lt;/parameter&gt;&lt;parameter name="TriggerMultiplier" value="1"&gt;&lt;selector name="TriggerSelector" value="Reference" /&gt;&lt;/parameter&gt;&lt;/parameter&gt;&lt;parameter id="22105" name="DataStream" /&gt;&lt;/parameter&gt;&lt;parameter id="22200" name="Custom Settings" /&gt;&lt;/Camera3DDeviceSettings&gt;</dm_property_string>
+               <dm_comment name="Comment">&lt; Type your comment here &gt;</dm_comment>
+               <dm_list_of_sub_devices name="Sub-Devices" size="2">
+                  <dm_hardware_device name="Camera">
+                     <dm_enabled name="Enabled" display="Yes">1</dm_enabled>
+                     <dm_device_name name="User defined name">Intensity [c4brd (diaphus.cti) [430003]]</dm_device_name>
+                     <dm_property_string name="Property string" disabled="1">
+                     </dm_property_string>
+                     <dm_comment name="Comment">&lt; Type your comment here &gt;</dm_comment>
+                  </dm_hardware_device>
+                  <dm_hardware_device name="Camera">
+                     <dm_enabled name="Enabled" display="Yes">1</dm_enabled>
+                     <dm_device_name name="User defined name">Reflectance [c4brd (diaphus.cti) [430003]]</dm_device_name>
+                     <dm_property_string name="Property string" disabled="1">
+                     </dm_property_string>
+                     <dm_comment name="Comment">&lt; Type your comment here &gt;</dm_comment>
+                  </dm_hardware_device>
+               </dm_list_of_sub_devices>
+            </dm_hardware_device>
+         </dm_list_of_devices>
+      </device_manager>
+      <!-- +++++++++++++++++++++++++++++++++++++++  Data Format Converter Manager  +++++++++++++++++++++++++++++++++++++++ -->
+      <data_format_converter_manager name="Data Format Converter Manager" type="list" size="0" />
+      <!-- ++++++++++++++++++++++++++++++++++++++++++++++  Remote control  +++++++++++++++++++++++++++++++++++++++++++++++ -->
+      <remote_control name="Remote control">
+         <rc_start_signal_options name="Options of 'Start signal'">
+            <rc_start_signal_source name="Signal source" display="Timer, automatic">1</rc_start_signal_source>
+            <rc_timer_mode name="Start mode for start signal timer" display="After a period of seconds">2</rc_timer_mode>
+            <rc_timer_delay_ms name="Period [ms]" disabled="1">0</rc_timer_delay_ms>
+            <rc_timer_delay name="Period [s]">1</rc_timer_delay>
+            <rc_start_check name="Key code" disabled="1">0</rc_start_check>
+            <rc_cycle_time name="Polling time of start signal [ms]" disabled="1">20</rc_cycle_time>
+         </rc_start_signal_options>
+         <rc_input_signals name="Input signals" type="list" size="0" />
+         <rc_sys_alive_options name="Options of 'System alive'">
+            <rc_sys_alive_behavior name="Behavior of 'System alive'" display="Normal">0</rc_sys_alive_behavior>
+         </rc_sys_alive_options>
+         <rc_output_signals name="Output signals" type="list" size="0" />
+      </remote_control>
+      <!-- +++++++++++++++++++++++++++++++++++++++++++  Data Register Manager  +++++++++++++++++++++++++++++++++++++++++++ -->
+      <data_register_manager name="Data Register Manager" type="list" size="1">
+         <register name="Register" type="vector" index="0">
+            <cat_name name="Cat. name">3DTransformation</cat_name>
+            <cat_bk_color name="Cat. color" html_color="#ffffff">16777215</cat_bk_color>
+            <reg_id name="ID">0</reg_id>
+            <data_type name="Data type" display="String">0</data_type>
+            <description name="Description">3D Transformation of the Suface</description>
+            <curr_value name="Current value">[ 12; 0; 0; 0; 0; 12; 0; 0; 0; 0; 1; 0]</curr_value>
+            <pin_conn_in_list name="List of input pin connections" type="vector" size="0" />
+            <pin_conn_out_list name="List of output pin connections" type="vector" size="0" />
+         </register>
+      </data_register_manager>
+      <!-- ++++++++++++++++++++++++++++++++++++++++  Offline Mode Configuration  +++++++++++++++++++++++++++++++++++++++++ -->
+      <offline_mode_configuration name="Offline Mode Configuration">
+         <omc_devices name="List of device replacements" size="0" />
+         <omc_dfcs name="List of configurations" size="0" />
+         <omc_rc name="Remote control signal">
+            <rc_start_signal_options name="Options of 'Start signal'">
+               <rc_start_signal_source name="Signal source" display="Input-Pin">0</rc_start_signal_source>
+               <rc_timer_mode name="Start mode for start signal timer" disabled="1" display="Immediately after check routine has executed">0</rc_timer_mode>
+               <rc_timer_delay_ms name="Period [ms]" disabled="1">0</rc_timer_delay_ms>
+               <rc_timer_delay name="Period [s]" disabled="1">0</rc_timer_delay>
+               <rc_start_check name="Key code" disabled="1">0</rc_start_check>
+               <rc_cycle_time name="Polling time of start signal [ms]" disabled="1">0</rc_cycle_time>
+            </rc_start_signal_options>
+            <rc_input_signals name="Input signals" type="list" size="0" />
+         </omc_rc>
+         <omc_userpreferences name="User preferences">
+            <automatic_start name="Start automatic mode after Offline Mode activation" display="No">0</automatic_start>
+         </omc_userpreferences>
+      </offline_mode_configuration>
+      <!-- +++++++++++++++++++++++++++++++++++++++++++++  Software Settings  +++++++++++++++++++++++++++++++++++++++++++++ -->
+      <general_settings name="Software Settings">
+         <lang_options name="Language configuration">
+            <switch_activated name="Language switch activated" display="No">0</switch_activated>
+         </lang_options>
+         <gs_colors_and_styles name="Colors and styles">
+            <!-- ....................................................................... -->
+            <gs_cs_group_and_object name="Region of interest group numbers">
+               <color name="Text color" display="Yellow" html_color="#ffff00">4278255615</color>
+               <back_color name="Background color" display="Black" html_color="#000000">4278190080</back_color>
+               <font name="Font">
+                  <name name="Name">Microsoft Sans Serif</name>
+                  <size name="Size">8.25</size>
+                  <unit name="Unit" disabled="1" display="Point">3</unit>
+                  <bold name="Bold" display="No">0</bold>
+                  <italic name="Italic" display="No">0</italic>
+                  <strikeout name="Strikeout" display="No">0</strikeout>
+                  <underline name="Underline" display="No">0</underline>
+                  <gdi_char name="Gdi char set" disabled="1">1</gdi_char>
+                  <gdi_vertical name="Gdi vertical font" disabled="1" display="No">0</gdi_vertical>
+               </font>
+            </gs_cs_group_and_object>
+            <!-- ....................................................................... -->
+            <gs_cs_image_background name="Image background">
+               <gs_color_image_back_color name="Color image back color" display="ARGB=(255, 32, 64, 128)" html_color="#204080">4286595104</gs_color_image_back_color>
+               <gs_gray_image_back_color name="Gray level image back color" display="ARGB=(255, 32, 64, 128)" html_color="#204080">4286595104</gs_gray_image_back_color>
+            </gs_cs_image_background>
+            <!-- ....................................................................... -->
+            <gs_cs_measure_help_objects name="Measure help objects">
+               <gs_meas_cross_pt_color name="Cross" display="Blue" html_color="#0000ff">4294901760</gs_meas_cross_pt_color>
+               <gs_meas_cross_pt_back_color name="Cross background" display="Transparent" html_color="#ffffff">16777215</gs_meas_cross_pt_back_color>
+               <gs_meas_cross_angle name="Cross angle">0</gs_meas_cross_angle>
+               <gs_meas_cross_length name="Cross length">5</gs_meas_cross_length>
+               <gs_meas_pt_color name="Measure point" display="Turquoise" html_color="#40e0d0">4291878976</gs_meas_pt_color>
+               <gs_meas_help_line_color name="Helper line color" display="Blue" html_color="#0000ff">4294901760</gs_meas_help_line_color>
+               <gs_meas_help_line_visible name="Helper line visible" display="No">0</gs_meas_help_line_visible>
+               <gs_meas_help_line_width name="Helper line width">1</gs_meas_help_line_width>
+               <gs_meas_help_line_style name="Helper line style" disabled="1" display="Custom">5</gs_meas_help_line_style>
+               <gs_meas_help_line_dash_pattern name="Helper line dash pattern" size="4">5;3;5;3</gs_meas_help_line_dash_pattern>
+            </gs_cs_measure_help_objects>
+            <!-- ....................................................................... -->
+            <gs_cs_measure_line name="Measure line">
+               <gs_meas_line_std_color name="Standard color" display="DimGray" html_color="#696969">4285098345</gs_meas_line_std_color>
+               <gs_meas_line_valid_color name="Measure valid" display="LightGreen" html_color="#90ee90">4287688336</gs_meas_line_valid_color>
+               <gs_meas_line_invalid_color name="Measure invalid" display="Red" html_color="#ff0000">4278190335</gs_meas_line_invalid_color>
+               <gs_meas_line_ignored_color name="Measure ignored" display="Blue" html_color="#0000ff">4294901760</gs_meas_line_ignored_color>
+               <gs_meas_line_width name="Line width">1</gs_meas_line_width>
+               <gs_meas_line_draw_arrows name="Display arrows" display="Yes">1</gs_meas_line_draw_arrows>
+               <gs_meas_line_style name="Measure line style" disabled="1" display="Solid">0</gs_meas_line_style>
+            </gs_cs_measure_line>
+            <!-- ....................................................................... -->
+            <gs_cs_measure_text name="Measure text">
+               <color name="Text color" display="White" html_color="#ffffff">4294967295</color>
+               <back_color name="Background color" display="DarkGreen" html_color="#006400">4278215680</back_color>
+               <font name="Font">
+                  <name name="Name">Arial</name>
+                  <size name="Size">10</size>
+                  <unit name="Unit" disabled="1" display="Point">3</unit>
+                  <bold name="Bold" display="No">0</bold>
+                  <italic name="Italic" display="No">0</italic>
+                  <strikeout name="Strikeout" display="No">0</strikeout>
+                  <underline name="Underline" display="No">0</underline>
+                  <gdi_char name="Gdi char set" disabled="1">1</gdi_char>
+                  <gdi_vertical name="Gdi vertical font" disabled="1" display="No">0</gdi_vertical>
+               </font>
+               <gs_meas_text_visible name="Draw measure text" display="Yes">1</gs_meas_text_visible>
+               <gs_meas_note_length name="Measure note length">15</gs_meas_note_length>
+            </gs_cs_measure_text>
+            <!-- ....................................................................... -->
+            <gs_cs_region_of_interest name="Region of interest geometry">
+               <gs_roi_contour_color name="Contour" display="Orange" html_color="#ffa500">4278232575</gs_roi_contour_color>
+               <gs_roi_area_color name="Area" display="LightSteelBlue" html_color="#b0c4de">4292789424</gs_roi_area_color>
+               <gs_roi_selected_color name="Selected" display="Yellow" html_color="#ffff00">4278255615</gs_roi_selected_color>
+               <gs_roi_model_geom_color name="Computed geometry" display="DarkBlue" html_color="#00008b">4287299584</gs_roi_model_geom_color>
+               <gs_roi_region_color name="Region" display="Blue" html_color="#0000ff">4294901760</gs_roi_region_color>
+               <gs_roi_surround_color name="Surrounding" display="Blue" html_color="#0000ff">4294901760</gs_roi_surround_color>
+            </gs_cs_region_of_interest>
+            <!-- ....................................................................... -->
+            <gs_cs_result_colors name="Result colors">
+               <gs_result_ok_color name="Result O.K." display="LimeGreen" html_color="#32cd32">4281519410</gs_result_ok_color>
+               <gs_result_nok_color name="Result not O.K." display="Red" html_color="#ff0000">4278190335</gs_result_nok_color>
+               <gs_result_tv_failure_color name="Target value violation" display="Red" html_color="#ff0000">4278190335</gs_result_tv_failure_color>
+            </gs_cs_result_colors>
+            <!-- ....................................................................... -->
+            <gs_cs_result_text name="Result text">
+               <gs_result_text_color name="Text color" display="Black" html_color="#000000">4278190080</gs_result_text_color>
+               <gs_result_back_color name="Background color" display="Transparent" html_color="#ffffff">16777215</gs_result_back_color>
+               <font name="Font">
+                  <name name="Name">Arial</name>
+                  <size name="Size">10</size>
+                  <unit name="Unit" disabled="1" display="Point">3</unit>
+                  <bold name="Bold" display="No">0</bold>
+                  <italic name="Italic" display="No">0</italic>
+                  <strikeout name="Strikeout" display="No">0</strikeout>
+                  <underline name="Underline" display="No">0</underline>
+                  <gdi_char name="Gdi char set" disabled="1">1</gdi_char>
+                  <gdi_vertical name="Gdi vertical font" disabled="1" display="No">0</gdi_vertical>
+               </font>
+            </gs_cs_result_text>
+         </gs_colors_and_styles>
+         <check_type name="Check Type">
+            <selection_mode name="Automatic type selection mode" display="Check routine from directory">0</selection_mode>
+            <directory name="Directory" display="C:\Users\mario.fischer\dev\00_git\examples\neurocheck\h8SurfaceSimple\Check Routines\">$PROJECTDIR\Check Routines\</directory>
+            <file_list name="User-defined list" disabled="1" type="list" size="0" />
+            <load_crs_cache name="Load all check routines at automatic start" display="No">0</load_crs_cache>
+         </check_type>
+         <comfort name="Comfort">
+            <save_chr_and_chrx_concurrently name="Save chr and chrx concurrently" display="No">0</save_chr_and_chrx_concurrently>
+         </comfort>
+         <stat_and_persist name="Statistic and persistence">
+            <record_history name="Record history of results and measurements" display="Yes">1</record_history>
+            <num_of_records name="Number of records in history">300</num_of_records>
+            <cache_in_mem name="Cache statistical data in RAM across type change" display="Yes">1</cache_in_mem>
+            <store_in_file name="Store statistical data in check routine file" display="No">0</store_in_file>
+         </stat_and_persist>
+         <data_register name="Data Register">
+            <reset_input_registers name="Reset input registers" display="No">0</reset_input_registers>
+            <reset_output_registers name="Reset output registers" display="Yes">1</reset_output_registers>
+            <perform_data_input name="Perform data input before check routine execution" display="Yes">1</perform_data_input>
+            <perform_data_output name="Perform data output after check routine execution" display="Yes">1</perform_data_output>
+         </data_register>
+         <gs_debug name="Diagnostics">
+            <gs_logfile name="Logging">
+               <gs_logfile_activated name="Logging activated" display="No">0</gs_logfile_activated>
+               <gs_high_detail_level name="High detail level" disabled="1" display="No">0</gs_high_detail_level>
+               <gs_logfile_options name="Options for log file">
+                  <gs_lf_protocol_mode name="Protocol mode" disabled="1" display="Ring buffer">2</gs_lf_protocol_mode>
+                  <gs_logfile_max_files_ring_buffer name="Max files in ring buffer" disabled="1">99</gs_logfile_max_files_ring_buffer>
+                  <gs_logfile_max_file_size name="Max. file size (MB)" disabled="1">1</gs_logfile_max_file_size>
+               </gs_logfile_options>
+            </gs_logfile>
+         </gs_debug>
+         <gs_event_log name="EventLog">
+            <file_name_mode name="File name" display="Ring buffer with maximum number of files">2</file_name_mode>
+            <max_files_ring_buffer name="Maximum number of files">10</max_files_ring_buffer>
+            <max_file_size name="Maximum file size [in MB]">1.048576E+07</max_file_size>
+            <save_on_error name="Save on error" display="Yes">1</save_on_error>
+            <save_on_warning name="Save on warning" display="No">0</save_on_warning>
+            <save_on_audit name="Save on audit information" display="Yes">1</save_on_audit>
+            <save_on_info name="Save on information" display="No">0</save_on_info>
+         </gs_event_log>
+         <gs_image_output name="Image output">
+            <gs_img_out_all name="All images">
+               <gs_img_out_each_info_in_new_line name="Each info in separate line" display="Yes">1</gs_img_out_each_info_in_new_line>
+               <gs_img_out_desc_loc name="Position" display="Bottom left">3</gs_img_out_desc_loc>
+               <gs_img_out_color_back_color name="Color image back color" display="White" html_color="#ffffff">4294967295</gs_img_out_color_back_color>
+               <gs_img_out_color_back_color_trans name="Color image back color transparency">0</gs_img_out_color_back_color_trans>
+               <gs_img_out_color_text_color name="Color image text color" display="Black" html_color="#000000">4278190080</gs_img_out_color_text_color>
+               <gs_img_out_gray_back_color name="Gray image back color" display="White" html_color="#ffffff">4294967295</gs_img_out_gray_back_color>
+               <gs_img_out_gray_back_color_trans name="Gray image back color transparency">0</gs_img_out_gray_back_color_trans>
+               <gs_img_out_gray_text_color name="Gray image text color" display="Black" html_color="#000000">4278190080</gs_img_out_gray_text_color>
+               <font name="Font">
+                  <name name="Name">Arial</name>
+                  <size name="Size">10</size>
+                  <unit name="Unit" disabled="1" display="Point">3</unit>
+                  <bold name="Bold" display="No">0</bold>
+                  <italic name="Italic" display="No">0</italic>
+                  <strikeout name="Strikeout" display="No">0</strikeout>
+                  <underline name="Underline" display="No">0</underline>
+                  <gdi_char name="Gdi char set" disabled="1">1</gdi_char>
+                  <gdi_vertical name="Gdi vertical font" disabled="1" display="No">0</gdi_vertical>
+               </font>
+               <gs_img_out_copyright name="Copyright" disabled="1">
+               </gs_img_out_copyright>
+               <gs_img_out_conv_gray_to_rgb name="Convert gray image to RGB image" disabled="1" display="No">0</gs_img_out_conv_gray_to_rgb>
+            </gs_img_out_all>
+         </gs_image_output>
+         <gs_extensions name="Software extensions">
+            <gs_use_sta name="Use Single Threaded Apartments (STA)" display="No">0</gs_use_sta>
+            <gs_plug_in name="Plug-In" type="vector">
+               <gs_list_of_plug_ins name="List of plug-in assemblies" type="list" size="2">
+                  <gs_single_plug_in name="Plug-In dll" type="vector" index="0">
+                     <gs_pi_path name="File name" version="6.2.3.0" display="C:\Users\mario.fischer\dev\00_git\examples\neurocheck\h8SurfaceSimple\Software Extensions\PlugIns\PI_3DTools.NET.dll">$PROJECTDIR\Software Extensions\PlugIns\PI_3DTools.NET.dll</gs_pi_path>
+                     <gs_pi_state name="Is activated" display="Yes">1</gs_pi_state>
+                  </gs_single_plug_in>
+                  <gs_single_plug_in name="Plug-In dll" type="vector" index="1">
+                     <gs_pi_path name="File name" version="6.2.3.0" display="C:\Users\mario.fischer\dev\00_git\examples\neurocheck\h8SurfaceSimple\Software Extensions\PlugIns\PI_3DTransformationTools.NET.dll">$PROJECTDIR\Software Extensions\PlugIns\PI_3DTransformationTools.NET.dll</gs_pi_path>
+                     <gs_pi_state name="Is activated" display="Yes">1</gs_pi_state>
+                  </gs_single_plug_in>
+               </gs_list_of_plug_ins>
+            </gs_plug_in>
+         </gs_extensions>
+         <gs_cache_mgr name="Cache Manager">
+            <enabled name="Cache enabled" display="Yes">1</enabled>
+            <max_size name="Maximal size [MB]">500</max_size>
+         </gs_cache_mgr>
+         <remote_control name="Remote control">
+            <allow_cont_check_mode name="Allow continuous check mode" display="No">0</allow_cont_check_mode>
+            <buff_exe_cmd_sig name="Buffer 'Execute command' signal during check mode" display="No">0</buff_exe_cmd_sig>
+            <shutdown_mode name="Options for shut down command" display="Close NeuroCheck">0</shutdown_mode>
+         </remote_control>
+         <time_response name="Time response in automatic mode">
+            <prio_start_signal name="Priority on waiting for signal">9</prio_start_signal>
+            <prio_check_runs name="Priority on check runs">5</prio_check_runs>
+            <prio_auto_stopped name="Priority on automatic stopped">2</prio_auto_stopped>
+            <disc_img_out name="Discard image output jobs on high system load" display="Yes">1</disc_img_out>
+            <prio_img_output name="Performance of check">7</prio_img_output>
+         </time_response>
+         <memory_management name="Memory Management">
+            <gc_execution_mode name="Activation of Garbage Collector" display="On check routine start in automatic mode">1</gc_execution_mode>
+            <defens_mem_usage name="Defensive memory usage" display="No">0</defens_mem_usage>
+            <run_gc_after_rel_img name="Run Garbage Collector explicitly after releasing big images" display="Yes">1</run_gc_after_rel_img>
+         </memory_management>
+      </general_settings>
+   </body>
+</neurocheck_dp_configuration>

@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introducing the heliCamTM C4 Lock-In Camera &mdash; heliCam C4 - User Manual v1.0.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=38fd80f2" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=411a527d"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="A) Set Up" href="../chapter2/chapter2.html" />
+    <link rel="prev" title="heliCamTM C4 - Lock-In Camera - User Manual" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            heliCam C4 - User Manual
+              <img src="../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v1.0.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Chapter 1</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introducing the heliCam<sup>TM</sup> C4 Lock-In Camera</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#outline">Outline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#specifications">Specifications</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 2</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter2/chapter2.html">A) Set Up</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 3</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter3/chapter3.html">B) Get Started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 4</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter4/chapter4.html">C) Basics of Application Software Development</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 5</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter5/chapter5.html">D) Advanced Concepts and Control</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 6</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter6/chapter6.html">Graphical Summary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 7</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter7/chapter7.html">Worldwide Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 8</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter8/chapter8.html">Document History</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 9</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter9/chapter9.html">Annex</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">heliCam C4 - User Manual</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Introducing the heliCam<sup>TM</sup> C4 Lock-In Camera</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="introducing-the-helicamtm-c4-lock-in-camera">
+<h1>Introducing the heliCam<sup>TM</sup> C4 Lock-In Camera<a class="headerlink" href="#introducing-the-helicamtm-c4-lock-in-camera" title="Link to this heading"></a></h1>
+<p>The heliCam<sup>TM</sup> C4 lock-in camera enables rapid and massively
+parallel dual-phase demodulation of optical signals. The centerpiece of
+the camera is a custom-designed CMOS image sensor, the
+heliSens<sup>TM</sup> S4. It has analogue signal processing circuitry
+integrated into each pixel sensor unit cell; an approach known as <em>smart
+pixel</em> technology. This way, the sensor addresses the two major
+constraints of conventional image sensors when used for lock-in applications:
+frame rate limitations and insufficient dynamic range. The former curbs
+the maximum demodulation frequency and the latter hampers the
+acquisition of signals with large offset but small modulation amplitude.</p>
+<figure class="align-center" id="helicamc4-lockincamera">
+<a class="reference internal image-reference" href="../_images/heliCamC4_LockInCamera.png"><img alt="../_images/heliCamC4_LockInCamera.png" src="../_images/heliCamC4_LockInCamera.png" style="width: 47.5%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">heliCam<sup>TM</sup> C4 Lock-In Camera</span><a class="headerlink" href="#helicamc4-lockincamera" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<section id="outline">
+<h2>Outline<a class="headerlink" href="#outline" title="Link to this heading"></a></h2>
+<p>This user manual has four main parts:</p>
+<blockquote>
+<div><ul>
+<li><p><a class="reference internal" href="../chapter2/chapter2.html#a"><span class="std std-ref">A) Set Up</span></a></p>
+<blockquote>
+<div><p>Hardware and Software Commissioning Guide</p>
+</div></blockquote>
+</li>
+<li><p><a class="reference internal" href="../chapter3/chapter3.html#b"><span class="std std-ref">B) Get Started</span></a></p>
+<blockquote>
+<div><p>Tutorial for a First Lock-In Measurement</p>
+</div></blockquote>
+</li>
+<li><p><a class="reference internal" href="../chapter4/chapter4.html#c"><span class="std std-ref">C) Basics of Application Software Development</span></a></p>
+<blockquote>
+<div><p>Lock-In Camera Operation from a Programming Environment</p>
+</div></blockquote>
+</li>
+<li><p><a class="reference internal" href="../chapter5/chapter5.html#d"><span class="std std-ref">D) Advanced Concepts and Control</span></a></p>
+<blockquote>
+<div><p>Detailed Discussion of Available Settings and the Measurement Signal</p>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</section>
+<section id="specifications">
+<h2>Specifications<a class="headerlink" href="#specifications" title="Link to this heading"></a></h2>
+<span id="helisens"></span><table class="docutils align-default" id="id1">
+<caption><span class="caption-number">Table 1 </span><span class="caption-text">heliSens<sup>TM</sup> S4 - Lock-In Pixel Image Sensor</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Feature</p></th>
+<th class="head" colspan="10"><p>C4.0-S40</p></th>
+<th class="head" colspan="10"><p>C4.0-S40U</p></th>
+<th class="head" colspan="10"><p>C4.0-S41U</p></th>
+<th class="head" colspan="10"><p>C4M.0-S4M0</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">Number of</div>
+<div class="line">Pixels</div>
+</div>
+</td>
+<td colspan="30"><div class="line-block">
+<div class="line">512 x 542</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">1024 x 1102</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">Pixel
+Size</div>
+</div>
+</td>
+<td colspan="30"><div class="line-block">
+<div class="line">24 μm <span class="math notranslate nohighlight">\(\times\)</span> 24 μm</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">12 μm <span class="math notranslate nohighlight">\(\times\)</span> 12 μm</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">Fill
+factor</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">21%</div>
+</div>
+</td>
+<td colspan="20"><div class="line-block">
+<div class="line">55% with micro-lens array</div>
+<div class="line">(angular aperture ± 12°)</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">23%</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">Full
+Well</div>
+<div class="line">Capacity</div>
+</div>
+</td>
+<td colspan="20"><div class="line-block">
+<div class="line">500 <span class="math notranslate nohighlight">\(ke^{-}\)</span></div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">125 <span class="math notranslate nohighlight">\(ke^{-}\)</span></div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">70 <span class="math notranslate nohighlight">\(ke^{-}\)</span></div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td rowspan="2"><div class="line-block">
+<div class="line"><br /></div>
+<div class="line">Quantum</div>
+<div class="line">Efficiency</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line"><strong>nm</strong></div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">400</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">450</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">500</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">550</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">600</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">650</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">700</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">750</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">800</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td colspan="4"><div class="line-block">
+<div class="line"><strong>%</strong></div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">61.7</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">73.1</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">78.7</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">78.6</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">74.9</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">72.9</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">69.4</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">58.4</div>
+</div>
+</td>
+<td colspan="4"><div class="line-block">
+<div class="line">45.5</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">Detection</div>
+<div class="line">Threshold</div>
+<div class="line"><br /></div>
+<div class="line"><span class="math notranslate nohighlight">\(f_{ref}\)</span>
+, <span class="math notranslate nohighlight">\(T\)</span></div>
+</div>
+</td>
+<td colspan="40"><div class="line-block">
+<div class="line"><span class="math notranslate nohighlight">\(P_{\min} \ \textrm{in} \ \frac{\textrm{mW}}{\textrm{m}^{\textrm{2}}}\)</span></div>
+</div>
+<div class="line-block">
+<div class="line">, at a given reference frequency, <span class="math notranslate nohighlight">\(f_{ref}\)</span>, and filter time constant, <span class="math notranslate nohighlight">\(T\)</span></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line"><em>1kHz, 10ms</em></div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">1.03</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">0.34</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">0.14</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">1.2</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line"><em>10kHz, 1ms</em></div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">10.3</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">3.4</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">1.4</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">12</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line"><em>100kHz, 1ms</em></div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">33.3</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">10.9</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">4.2</div>
+</div>
+</td>
+<td colspan="10"><div class="line-block">
+<div class="line">NA</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<span id="lock-in-features"></span><table class="docutils align-default" id="id2">
+<caption><span class="caption-number">Table 2 </span><span class="caption-text">heliCam<sup>TM</sup> C4 - Lock-In Features</span><a class="headerlink" href="#id2" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Feature</p></th>
+<th class="head"><p>Internal Reference</p></th>
+<th class="head"><p>External Reference</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td rowspan="2"><div class="line-block">
+<div class="line">Number of</div>
+<div class="line">parallel,</div>
+<div class="line">dual-phase</div>
+<div class="line">Demodulators</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">C4</div>
+</div>
+</td>
+<td colspan="2"><div class="line-block">
+<div class="line">277 504</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">C4M</div>
+</div>
+</td>
+<td colspan="2"><div class="line-block">
+<div class="line">1 110 016</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td colspan="2"><div class="line-block">
+<div class="line">Reference
+Signal</div>
+</div>
+</td>
+<td colspan="2"><div class="line-block">
+<div class="line"><br /></div>
+<div class="line">reference <strong>pulse</strong> wave with adjustable duty cyle</div>
+<div class="line"><br /></div>
+<div class="line">(causing residual sensitivity to odd</div>
+<div class="line">harmonics of the reference frequency)</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td rowspan="2"><div class="line-block">
+<div class="line">Reference</div>
+<div class="line">Frequency,
+<span class="math notranslate nohighlight">\(f_{ref}\)</span></div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">C4</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">305 Hz - 135 kHz</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">≤ 135 kHz</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">C4M</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">305 Hz - 50  kHz</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">≤ 50 kHz</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td colspan="2"><div class="line-block">
+<div class="line">Frequency</div>
+<div class="line">Resolution</div>
+</div>
+</td>
+<td><div class="math notranslate nohighlight">
+\[\Delta f_{ref}\approx
+5 \cdot 10^{-8}\cdot
+f_{ref}^2\]</div>
+</td>
+<td><div class="line-block">
+<div class="line">quarter period trigger</div>
+<div class="line">registered with</div>
+<div class="line">80 MHz clock rate</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td colspan="2"><div class="line-block">
+<div class="line">Phase
+Resolution</div>
+</div>
+</td>
+<td colspan="2"><div class="line-block">
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">0.1 deg</div>
+</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td rowspan="2"><div class="line-block">
+<div class="line">Filter</div>
+<div class="line">Time</div>
+<div class="line">Constant</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">C4</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">0.25 ms - 325 ms</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">≥ 0.25 ms</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">C4M</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">0.8 ms - 100 ms</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">≥ 0.8 ms</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td rowspan="2"><div class="line-block">
+<div class="line">Number of</div>
+<div class="line">Frames</div>
+<div class="line">per Acquisition</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">C4</div>
+</div>
+</td>
+<td colspan="2"><div class="line-block">
+<div class="line">4 - 900</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">C4M</div>
+</div>
+</td>
+<td colspan="2"><div class="line-block">
+<div class="line">4 - 225</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td colspan="2"><div class="line-block">
+<div class="line">Output Data</div>
+</div>
+</td>
+<td colspan="2"><div class="line-block">
+<div class="line"><br /></div>
+<div class="line">amplitude &amp; phase /</div>
+<div class="line">in-phase &amp; quadrature</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td colspan="2"><div class="line-block">
+<div class="line">Dynamic Range</div>
+</div>
+</td>
+<td colspan="2"><div class="line-block">
+<div class="line"><br /></div>
+<div class="line">2 <span class="math notranslate nohighlight">\(\times\)</span> 10 bit (X, Y)</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td rowspan="2"><div class="line-block">
+<div class="line">Background
+Suppression /</div>
+<div class="line">AC Coupling</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">C4</div>
+</div>
+</td>
+<td colspan="2"><div class="line-block">
+<div class="line">21 bit equivalent</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">C4M</div>
+</div>
+</td>
+<td colspan="2"><div class="line-block">
+<div class="line">18 bit equivalent</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<span id="interfaces"></span><table class="docutils align-default" id="id3">
+<caption><span class="caption-number">Table 3 </span><span class="caption-text">heliCam<sup>TM</sup> C4 - Interfaces</span><a class="headerlink" href="#id3" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td rowspan="3"><div class="line-block">
+<div class="line">Software</div>
+</div>
+</td>
+<td rowspan="2"><div class="line-block">
+<div class="line"><br /></div>
+<div class="line">Software</div>
+<div class="line">Development</div>
+<div class="line">Kit</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">GenICam producer DLL</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">GenICam producer DLL</div>
+<div class="line">with examples for</div>
+<div class="line">Python, MATLAB<sup>TM</sup></div>
+<div class="line">LabVIEW<sup>TM</sup>, C++
+and .NET</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">heliViewer<sup>TM</sup></div>
+<div class="line">Application Software</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">GUI based application</div>
+<div class="line">for camera control,</div>
+<div class="line">data acquisition,</div>
+<div class="line">visualization,
+and storage</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td rowspan="10"><div class="line-block">
+<div class="line">Electrical</div>
+<div class="line"><br /></div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">Control Signal and</div>
+<div class="line">Data Transfer</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">Gigabit Ethernet</div>
+<div class="line"><br /></div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td rowspan="3"><div class="line-block">
+<div class="line">LIA Module</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">reference input and</div>
+<div class="line">acquisition trigger with</div>
+<div class="line">adjustable phase delay</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">internal reference
+output</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">other in- and output
+signals</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td rowspan="5"><div class="line-block">
+<div class="line">Configurable</div>
+<div class="line">Modulated</div>
+<div class="line">Test Signal</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">sine wave</div>
+<div class="line">(continuous/bursts)</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">50 kHz
+maximum frequency</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">adjustable DC</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">electrical output
+via SFIO</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">optical output
+via LED module</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">Peak Power</div>
+<div class="line">Consumption</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">24 VDC, 30 W</div>
+<div class="line"><br /></div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td rowspan="2"><div class="line-block">
+<div class="line">Mechanical</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">Objective</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">detachable C-mount</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">Mounting</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">M6 holes (front, left,
+right, top)</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default" id="id4">
+<caption><span class="caption-number">Table 4 </span><span class="caption-text">heliCam<sup>TM</sup> C4 - Temperature Control</span><a class="headerlink" href="#id4" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Feature</p></th>
+<th class="head"><p>C4x.0-S4x</p></th>
+<th class="head"><p>C4x.0-Sx + HSFC4.1</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">Cooling
+Option</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">user provided cooling,</div>
+<div class="line">e.g., mounting on</div>
+<div class="line">heat sink</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">forced convection</div>
+<div class="line">with on- and off switch</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">Dimensions</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">46 <span class="math notranslate nohighlight">\(\times\)</span> 65
+<span class="math notranslate nohighlight">\(\times\)</span> 180
+mm <span class="math notranslate nohighlight">\(^3\)</span></div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">67 <span class="math notranslate nohighlight">\(\times\)</span> 65
+<span class="math notranslate nohighlight">\(\times\)</span> 180
+mm <span class="math notranslate nohighlight">\(^3\)</span></div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">Mass</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">850 g</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">1150 g</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">Permissible
+Ambient</div>
+<div class="line">Temperature</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">depends on the</div>
+<div class="line">cooling setup</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">0 -  40 ° C</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These values reflect currently available settings. Possible
+discrepancies with respect to the heliCam<sup>TM</sup>
+<a class="reference external" href="https://www.heliotis.com/download/datasheet-helicam-c4/">C4 data sheet</a>
+are due to software limitations. Freely installable updates
+will overcome these in the future. Get in touch with
+<a class="reference external" href="mailto:support&#37;&#52;&#48;heliotis&#46;com">Heliotis support</a> for more information.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="heliCamTM C4 - Lock-In Camera - User Manual" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../chapter2/chapter2.html" class="btn btn-neutral float-right" title="A) Set Up" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

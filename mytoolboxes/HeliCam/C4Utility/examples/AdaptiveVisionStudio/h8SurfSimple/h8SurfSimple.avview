@@ -1,0 +1,64 @@
+﻿<ViewSets Current="Custom2">
+  <ViewSet Name="Custom1">
+    <VSplit>
+      <Views Width="0.498" Height="0.998">
+        <View />
+      </Views>
+      <Views Width="0.498" Height="0.998">
+        <View />
+      </Views>
+    </VSplit>
+  </ViewSet>
+  <ViewSet Name="HMI">
+    <HSplit>
+      <Views Width="0.998" Height="0.998">
+        <HmiView />
+      </Views>
+    </HSplit>
+  </ViewSet>
+  <ViewSet Name="Custom2">
+    <HSplit>
+      <VSplit>
+        <Views Width="0.998" Height="0.496">
+          <View Type="View3D">
+            <Output Name="con_603fb5a6_54b7_4e32_81ae_643e0faa0252" Macro="Main" Start="Main" Instance="0" />
+            <ViewState>
+              <View Yaw="6.2675" Pitch="1.2858" Dist="9795.6720" CenterX="2446.7120" CenterY="3524.6240" CenterZ="78.7730" />
+              <Config ShowInfo="True" ShowIndices="False" ShowBBox="False" Probe="False" GridMode="XY" Orientation="RHZUp" ProjectionMode="OrthoTop" ColoringMode="ZAxis" PointSize="0.8303" />
+            </ViewState>
+          </View>
+        </Views>
+      </VSplit>
+      <VSplit>
+        <Views Width="0.998" Height="0.496">
+          <View Type="ImageView">
+            <Output Name="con_df10140c_b0d2_4555_a76b_f3cf8314cc75" Macro="Main" Start="Main" Instance="0" />
+          </View>
+        </Views>
+      </VSplit>
+    </HSplit>
+  </ViewSet>
+  <ViewSet Name="Custom3">
+    <HSplit>
+      <VSplit>
+        <Views Width="0.998" Height="0.498">
+          <View />
+        </Views>
+      </VSplit>
+      <VSplit>
+        <Views Width="0.998" Height="0.498">
+          <View Type="ImageView">
+            <Output Name="con_df10140c_b0d2_4555_a76b_f3cf8314cc75" Macro="Main" Start="Main" Instance="0" />
+          </View>
+          <View Type="View3D">
+            <Output Name="con_603fb5a6_54b7_4e32_81ae_643e0faa0252" Macro="Main" Start="Main" Instance="0" />
+            <ViewState>
+              <View Yaw="6.0500" Pitch="0.9736" Dist="11754.8000" CenterX="3066.0000" CenterY="3246.0000" CenterZ="86.2144" />
+              <Config ShowInfo="True" ShowIndices="False" ShowBBox="False" Probe="False" GridMode="XY" Orientation="RHZUp" ProjectionMode="Perspective" ColoringMode="ZAxis" PointSize="0.8303" />
+            </ViewState>
+          </View>
+        </Views>
+      </VSplit>
+    </HSplit>
+  </ViewSet>
+</ViewSets>

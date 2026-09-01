@@ -1,0 +1,84 @@
+﻿<ViewSets Current="Custom2">
+  <ViewSet Name="Custom1">
+    <VSplit>
+      <Views Width="0.498" Height="0.998">
+        <View Type="ImageView">
+          <Output Name="con_4177a8b8_760e_4128_8bfd_027c3821910c" Macro="Main" Start="Main" Instance="0" />
+          <ViewState>
+            <PostProcessing Method="Normalize" />
+          </ViewState>
+        </View>
+      </Views>
+      <Views Width="0.498" Height="0.998">
+        <View Type="ImageView">
+          <Output Name="con_42515a8c_b86a_4784_9f30_1c148a60579e" Macro="Main" Start="Main" Instance="0" />
+          <ViewState>
+            <PostProcessing Method="Normalize" />
+          </ViewState>
+        </View>
+      </Views>
+    </VSplit>
+  </ViewSet>
+  <ViewSet Name="HMI">
+    <HSplit>
+      <Views Width="0.998" Height="0.998">
+        <HmiView />
+      </Views>
+    </HSplit>
+  </ViewSet>
+  <ViewSet Name="Custom2">
+    <HSplit>
+      <VSplit>
+        <Views Width="0.998" Height="0.496">
+          <View Type="View3D">
+            <Output Name="con_603fb5a6_54b7_4e32_81ae_643e0faa0252" Macro="Main" Start="Main" Instance="0" />
+            <ViewState>
+              <View Yaw="6.2675" Pitch="1.2858" Dist="9795.6720" CenterX="2446.7120" CenterY="3549.1130" CenterZ="78.7730" />
+              <Config ShowInfo="True" ShowIndices="False" ShowBBox="False" Probe="False" GridMode="XY" Orientation="RHZUp" ProjectionMode="OrthoTop" ColoringMode="ZAxis" PointSize="0.8303" />
+            </ViewState>
+          </View>
+        </Views>
+      </VSplit>
+      <VSplit>
+        <Views Width="0.998" Height="0.496">
+          <View Type="View3D">
+            <Output Name="con_f0608704_4358_46b9_bcd3_1f2a85ebc3f6" Macro="Main" Start="Main" Instance="0" />
+            <ViewState>
+              <View Yaw="0.0818" Pitch="0.0458" Dist="8163.0580" CenterX="1330.3240" CenterY="4209.8110" CenterZ="-196.9189" />
+              <Config ShowInfo="True" ShowIndices="False" ShowBBox="False" Probe="False" GridMode="XZ" Orientation="LHZUp" ProjectionMode="OrthoBack" ColoringMode="ZAxis" PointSize="0.8303" />
+            </ViewState>
+          </View>
+        </Views>
+      </VSplit>
+    </HSplit>
+  </ViewSet>
+  <ViewSet Name="Custom3">
+    <HSplit>
+      <VSplit>
+        <Views Width="0.998" Height="0.498">
+          <View Type="View3D">
+            <Output Name="con_f0608704_4358_46b9_bcd3_1f2a85ebc3f6" Macro="Main" Start="Main" Instance="0" />
+            <ViewState>
+              <View Yaw="5.8850" Pitch="0.8386" Dist="14105.7700" CenterX="3160.2170" CenterY="3206.3650" CenterZ="-144.0557" />
+              <Config ShowInfo="True" ShowIndices="False" ShowBBox="False" Probe="False" GridMode="XY" Orientation="RHZUp" ProjectionMode="Perspective" ColoringMode="ZAxis" PointSize="0.8303" />
+            </ViewState>
+          </View>
+        </Views>
+      </VSplit>
+      <VSplit>
+        <Views Width="0.998" Height="0.498">
+          <View Type="ImageView">
+            <Output Name="con_df10140c_b0d2_4555_a76b_f3cf8314cc75" Macro="Main" Start="Main" Instance="0" />
+          </View>
+          <View Type="View3D">
+            <Output Name="con_603fb5a6_54b7_4e32_81ae_643e0faa0252" Macro="Main" Start="Main" Instance="0" />
+            <ViewState>
+              <View Yaw="6.0500" Pitch="0.9736" Dist="11754.8000" CenterX="3066.0000" CenterY="3246.0000" CenterZ="86.2144" />
+              <Config ShowInfo="True" ShowIndices="False" ShowBBox="False" Probe="False" GridMode="XY" Orientation="RHZUp" ProjectionMode="Perspective" ColoringMode="ZAxis" PointSize="0.8303" />
+            </ViewState>
+          </View>
+        </Views>
+      </VSplit>
+    </HSplit>
+  </ViewSet>
+</ViewSets>

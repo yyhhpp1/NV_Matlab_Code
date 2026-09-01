@@ -1,0 +1,479 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TN_51.1.0.0: Heliotis Gen4 Device Fieldbus Reference for D3 &mdash; Technical Notes for heliotis gen4 Devices 2025.09 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=0ac42c78" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=200dd705"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="TN_19.9.0.0: First/Last Surface Extraction" href="../tn_19.9.x.y/tn_19.9.x.y.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Technical Notes for heliotis gen4 Devices
+              <img src="../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.1.x.y/tn_15.1.x.y.html">TN_15.1.0.1: heliBrd B4 SD Card Re-Writing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.2.x.y/tn_15.2.x.y.html">TN_15.2.0.0: Adjust 3D Data Scaling and Offset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.3.x.y/tn_15.3.x.y.html">TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.1.x.y/tn_19.1.x.y.html">TN_19.1.0.1: UserSet - A short Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.10.x.y/tn_19.10.x.y.html">TN_19.10.0.1: Configuring Offset (FPN) Correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.2.x.y/tn_19.2.x.y.html">TN_19.2.0.1: Configuring the Optic Type</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.3.x.y/tn_19.3.x.y.html">TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.4.x.y/tn_19.4.x.y.html">TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.9.x.y/tn_19.9.x.y.html">TN_19.9.0.0:  First/Last Surface Extraction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TN_51.1.0.0: Heliotis Gen4 Device Fieldbus Reference for D3</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-use-cases">Example Use Cases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hello-world">“Hello World”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#camera-status">Camera Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#acquisition-control">Acquisition Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#camera-control-light-on-off">Camera Control, Light ON/OFF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#camera-control-sequencer-sets">Camera Control, Sequencer Sets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#camera-control-counters">Camera Control, Counters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vision-application-parameterisation">Vision Application, Parameterisation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vision-application-result-transmission">Vision Application, Result Transmission</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#further-reading">Further Reading</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#heliotis">Heliotis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beckhoff">Beckhoff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#siemens">Siemens</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#document-history">Document History</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Technical Notes for heliotis gen4 Devices</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">TN_51.1.0.0: Heliotis Gen4 Device Fieldbus Reference for D3</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <a href="../_pdf/tn_51.1.x.y.pdf" target="_blank">PDF version</a><section id="tn-51-1-0-0-heliotis-gen4-device-fieldbus-reference-for-d3">
+<h1>TN_51.1.0.0: Heliotis Gen4 Device Fieldbus Reference for D3<a class="headerlink" href="#tn-51-1-0-0-heliotis-gen4-device-fieldbus-reference-for-d3" title="Link to this heading"></a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h2>
+<p>The Heliotis gen4 device family (heliCam<sup>TM</sup> C4, heliInspect<sup>TM</sup> H8/H9) offers optional fieldbus capability in combination with a fieldbus
+module build into the heliDriver<sup>TM</sup> D3A. Heliotis currently offers modules supporting either PROFINET RT or EtherCAT®. This capability enables the gen4 device
+to be integrated into industrial networks for data exchange and control. The heliDriver poses as a fieldbus device or slave and can be controlled by a programmable logic
+controller (PLC). To integrate the device into the fieldbus, both the device and the PLC that controls it need to be configured correctly. This document serves as a reference
+for the <a class="reference internal" href="#use-cases"><span class="std std-ref">configuration of both sides</span></a> with the use of features on the camera and the description file (ESI/GSD) inclusion and demo projects for the PLC. The
+document also points to further <a class="reference internal" href="#reading"><span class="std std-ref">information on Heliotis gen4 devices and fieldbuses</span></a>.</p>
+<figure class="align-center" id="id1">
+<span id="dataflow"></span><a class="reference internal image-reference" href="../_images/Dataflow.PNG"><img alt="../_images/Dataflow.PNG" src="../_images/Dataflow.PNG" style="width: 700.0px; height: 188.0px;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 11 </span><span class="caption-text">System interconnection</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This document only covers gen4 device control via fieldbus but control and status features can also be used with physical I/Os or a combination of both</p>
+</div>
+<p>The following process data objects (PDOs) are available on the network:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fieldbus names</p></th>
+<th class="head"><p>Camera feature names</p></th>
+<th class="head"><p>Direction</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Bool0..7</p></td>
+<td><p>FieldbusBool0..7</p></td>
+<td><p>device in / PLC out</p></td>
+</tr>
+<tr class="row-odd"><td><p>Bool8..15</p></td>
+<td><p>FieldbusBool8..15</p></td>
+<td><p>device out / PLC in</p></td>
+</tr>
+<tr class="row-even"><td><p>ApplDataInt0..15</p></td>
+<td><p>FieldbusIntData0..15</p></td>
+<td><p>device in / PLC out</p></td>
+</tr>
+<tr class="row-odd"><td><p>ApplDataInt16..31</p></td>
+<td><p>FieldbusIntData16..31</p></td>
+<td><p>device out / PLC in</p></td>
+</tr>
+<tr class="row-even"><td><p>ApplDataFloat0..15</p></td>
+<td><p>FieldbusFloatData0..15</p></td>
+<td><p>device in / PLC out</p></td>
+</tr>
+<tr class="row-odd"><td><p>ApplDataFloat16..31</p></td>
+<td><p>FieldbusFloatData16..31</p></td>
+<td><p>device out / PLC in</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="example-use-cases">
+<span id="use-cases"></span><h2>Example Use Cases<a class="headerlink" href="#example-use-cases" title="Link to this heading"></a></h2>
+<p>The following chapters describe some common use cases and how to implement them on both the device and the PLC controlling it.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The link to the device description files that need to be imported to the PLC development environment can be found in the <a class="reference internal" href="#reading"><span class="std std-ref">Further Reading</span></a> section of this document</p>
+</div>
+<section id="hello-world">
+<h3>“Hello World”<a class="headerlink" href="#hello-world" title="Link to this heading"></a></h3>
+<p>It is recommended to begin with a very basic application to verify that the data exchange between the device and the PLC works in both directions. The following
+pseudo-code snippets configure a camera output via GenICam features and verify the value of the input PDO on the PLC.</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-number">Listing 17 </span><span class="caption-text">Setting an output PDO via camera features</span><a class="headerlink" href="#id2" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FieldbusBoolSelector</span> <span class="o">=</span> <span class="mi">8</span>        <span class="c1">#Or any value 8..15</span>
+<span class="n">FieldbusBoolSource</span><span class="p">[</span><span class="n">FieldbusBoolSelector</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;UserOutput0&quot;</span>  <span class="c1">#Or any of UserOutput0..UserOutput7</span>
+<span class="n">UserOutputSelector</span> <span class="o">=</span> <span class="s2">&quot;UserOutput0&quot;</span> <span class="c1">#Must match with the configuration above</span>
+<span class="n">UserOutputValue</span><span class="p">[</span><span class="n">UserOutputSelector</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1">#True enables (high) the output, False disables (low) the output</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-number">Listing 18 </span><span class="caption-text">Reading an input PDO on the PLC</span><a class="headerlink" href="#id3" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">input_value</span> <span class="o">=</span> <span class="n">Bool8</span>             <span class="c1">#According to FieldbusBool from above Listing (Bool8..Bool15)</span>
+</pre></div>
+</div>
+</div>
+<p>To check the other direction, an output PDO value is set by the PLC and read via the FieldbusBoolStatus feature on the device.</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-number">Listing 19 </span><span class="caption-text">Setting an output PDO on the PLC</span><a class="headerlink" href="#id4" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Bool0</span> <span class="o">=</span> <span class="mi">1</span>                       <span class="c1">#Or any bool PDO Bool0..Bool7</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-number">Listing 20 </span><span class="caption-text">Reading an input PDO via camera features</span><a class="headerlink" href="#id5" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FieldbusBoolSelector</span> <span class="o">=</span> <span class="mi">0</span>        <span class="c1">#Or any value according to the listing above (0..7)</span>
+<span class="n">input_value</span> <span class="o">=</span> <span class="n">FieldbusBoolStatus</span><span class="p">[</span><span class="n">FieldbusBoolSelector</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="camera-status">
+<span id="cam-status"></span><h3>Camera Status<a class="headerlink" href="#camera-status" title="Link to this heading"></a></h3>
+<p>Heliotis gen4 devices offer a range of status flags (e.g. RecordingActive) that can be mapped to output PDOs to relay status information to the PLC.</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-number">Listing 21 </span><span class="caption-text">Mapping the RecordingActive status flag to a PDO via camera features</span><a class="headerlink" href="#id6" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FieldbusBoolSelector</span> <span class="o">=</span> <span class="mi">8</span>        <span class="c1">#Or any value 8..15</span>
+<span class="n">FieldbusBoolSource</span><span class="p">[</span><span class="n">FieldbusBoolSelector</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;RecordingActive&quot;</span>  <span class="c1">#Maps the &quot;RecordingActive&quot; information to the selected PDO (e.g. 8)</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-number">Listing 22 </span><span class="caption-text">Reading an input PDO on the PLC</span><a class="headerlink" href="#id7" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">recording_active</span> <span class="o">=</span> <span class="n">Bool8</span>        <span class="c1">#According to the selected FieldbusBool from above listing (Bool8..Bool15)</span>
+</pre></div>
+</div>
+</div>
+<p>The diagram below shows the different status flags and how they fit into the acquisition cycle.</p>
+<figure class="align-center" id="id8">
+<span id="status"></span><a class="reference internal image-reference" href="../_images/Event-And-Status_Diagram.PNG"><img alt="../_images/Event-And-Status_Diagram.PNG" src="../_images/Event-And-Status_Diagram.PNG" style="width: 873.0px; height: 422.5px;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 12 </span><span class="caption-text">Event and status diagram</span><a class="headerlink" href="#id8" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The current version of the Event and Status Diagram can be found in the Feature Description appendix (see <a class="reference internal" href="#reading"><span class="std std-ref">Further Reading</span></a>) and may differ depending on the camera firmware version.</p>
+</div>
+</section>
+<section id="acquisition-control">
+<h3>Acquisition Control<a class="headerlink" href="#acquisition-control" title="Link to this heading"></a></h3>
+<p>To start a measurement on a Heliotis gen4 device, the TriggerSource feature can be used to map a PDO to a triggersource.</p>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-number">Listing 23 </span><span class="caption-text">Mapping the FrameStart trigger to a PDO via camera features</span><a class="headerlink" href="#id9" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TriggerSelector</span> <span class="o">=</span> <span class="s2">&quot;FrameStart&quot;</span>
+<span class="n">TriggerSource</span><span class="p">[</span><span class="n">TriggerSelector</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;FieldbusBool0&quot;</span>  <span class="c1">#Maps the &quot;FrameStart&quot; trigger to the FieldbusBool0 PDO (or any of FieldbusBool0..FieldbusBool7)</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-number">Listing 24 </span><span class="caption-text">Setting an output PDO on the PLC to trigger the frame start</span><a class="headerlink" href="#id10" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Bool0</span> <span class="o">=</span> <span class="mi">1</span>       <span class="c1">#Select the PDO according to the camera configuration (Bool0..Bool7)</span>
+
+<span class="n">Bool0</span> <span class="o">=</span> <span class="mi">0</span>       <span class="c1">#By default, the camera is triggered on the &quot;RisingEdge&quot; of the signal</span>
+<span class="c1">#(See TriggerActivation in feature description for more information)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="camera-control-light-on-off">
+<h3>Camera Control, Light ON/OFF<a class="headerlink" href="#camera-control-light-on-off" title="Link to this heading"></a></h3>
+<p>The light can be controlled from the PLC via the LightControllerSource feature.</p>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-number">Listing 25 </span><span class="caption-text">Mapping the light controller source to a PDO via camera features</span><a class="headerlink" href="#id11" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">LightControllerSelector</span> <span class="o">=</span> <span class="s2">&quot;LightController0&quot;</span>
+
+<span class="n">LightControllerSource</span><span class="p">[</span><span class="n">LightControllerSelector</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;FieldbusBool0&quot;</span>  <span class="c1">#Maps the light control to a PDO (any of FieldbusBool0..FieldbusBool7)</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-number">Listing 26 </span><span class="caption-text">Setting an output PDO on the PLC to turn on the light</span><a class="headerlink" href="#id12" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Bool0</span> <span class="o">=</span> <span class="mi">1</span>               <span class="c1">#Enables the light</span>
+
+<span class="n">Bool0</span> <span class="o">=</span> <span class="mi">0</span>               <span class="c1">#Disables the light</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="camera-control-sequencer-sets">
+<h3>Camera Control, Sequencer Sets<a class="headerlink" href="#camera-control-sequencer-sets" title="Link to this heading"></a></h3>
+<p>Sequencer sets can be used on Heliotis gen4 devices to switch between multiple camera configuration states triggered by events (see <a class="reference internal" href="#status"><span class="std std-ref">Event and Status Diagram</span></a>).
+The event source can be mapped onto an edge of a PDO signal.</p>
+<div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-number">Listing 27 </span><span class="caption-text">Mapping the sequencer set trigger source to a PDO via camera features</span><a class="headerlink" href="#id13" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SequencerSetSelector</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">SequencerPathSelector</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">SequencerTriggerSource</span><span class="p">[</span><span class="n">SequencerSetSelector</span><span class="p">][</span><span class="n">SequencerPathSelector</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;FieldbusBool0&quot;</span> <span class="c1">#Maps the sequencer trigger to FieldbusBool0 (or any of FieldbusBool0..FieldbusBool7)</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-number">Listing 28 </span><span class="caption-text">Setting an output PDO on the PLC to trigger the sequencer set execution</span><a class="headerlink" href="#id14" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Bool0</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">Bool0</span> <span class="o">=</span> <span class="mi">0</span>               <span class="c1">#By default the sequencer set transition is triggered by the &quot;RisingEdge&quot; of the signal. (see SequencerTriggerActivation)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="camera-control-counters">
+<h3>Camera Control, Counters<a class="headerlink" href="#camera-control-counters" title="Link to this heading"></a></h3>
+<p>The counter feature set provides the option to count the occurences of specific events on the device. This can be helpful for testing and debugging
+of an application. It can for example be used to count transitions on a PDO.</p>
+<div class="literal-block-wrapper docutils container" id="id15">
+<div class="code-block-caption"><span class="caption-number">Listing 29 </span><span class="caption-text">Mapping the counter event source to a PDO via camera features and reading the counter value</span><a class="headerlink" href="#id15" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CounterSelector</span> <span class="o">=</span> <span class="s2">&quot;Counter0&quot;</span>    <span class="c1">#Or Counter1</span>
+<span class="n">CounterEventSource</span><span class="p">[</span><span class="n">CounterSelector</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;FieldbusBool0&quot;</span>  <span class="c1">#Or any of FieldbusBool0..FieldbusBool7</span>
+<span class="n">CounterEventActivation</span><span class="p">[</span><span class="n">CounterSelector</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;RisingEdge&quot;</span> <span class="c1">#Can also be &quot;FallingEdge&quot; or &quot;AnyEdge&quot;</span>
+
+<span class="n">cnt_value</span> <span class="o">=</span> <span class="n">CounterValue</span><span class="p">[</span><span class="n">CounterSelector</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id16">
+<div class="code-block-caption"><span class="caption-number">Listing 30 </span><span class="caption-text">Toggling an output PDO on the PLC to increment the counter</span><a class="headerlink" href="#id16" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Bool0</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">Bool0</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="vision-application-parameterisation">
+<h3>Vision Application, Parameterisation<a class="headerlink" href="#vision-application-parameterisation" title="Link to this heading"></a></h3>
+<p>The use of integer or float PDOs also enables the option to transfer data either to or from the vision application on the gen4 device. For example,
+the PLC could transfer a target value for a stepheight measurement as a float value. The vision application on the camera uses this value to compare
+it to the measurement result and set or reset a bool PDO depending on whether the measured value is higher or lower than the target value. The PLC
+can then use this return value to execute further actions.</p>
+<div class="literal-block-wrapper docutils container" id="id17">
+<div class="code-block-caption"><span class="caption-number">Listing 31 </span><span class="caption-text">Using camera features to realize a basic vision application</span><a class="headerlink" href="#id17" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FieldbusBoolSelector</span> <span class="o">=</span> <span class="mi">8</span>        <span class="c1">#Or any value 8..15</span>
+<span class="n">FieldbusBoolSource</span><span class="p">[</span><span class="n">FieldbusBoolSelector</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;UserOutput0&quot;</span> <span class="c1">#Or any value UserOutput0..UserOutput7</span>
+<span class="n">UserOutputSelector</span> <span class="o">=</span> <span class="s2">&quot;UserOutput0&quot;</span>  <span class="c1">#Must match with the configuration above</span>
+<span class="n">UserOutputValue</span><span class="p">[</span><span class="n">UserOutputSelector</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1">#True enables (high) the output, False disables (low) the output</span>
+<span class="n">FieldbusFloatDataSelector</span> <span class="o">=</span> <span class="mi">0</span>   <span class="c1">#Select the PDO which is used by the PLC to write the step height information (any float PDO between 0..15)</span>
+
+<span class="n">acquisition</span> <span class="n">loop</span><span class="p">:</span>
+        <span class="n">target_step_height</span> <span class="o">=</span> <span class="n">FieldbusFloatDataValue</span><span class="p">[</span><span class="n">FieldbusFloatDataSelector</span><span class="p">]</span>
+        <span class="n">measured_step_height</span> <span class="o">=</span> <span class="n">acquire_and_process</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">measured_step_height</span> <span class="o">&gt;</span> <span class="n">target_step_height</span><span class="p">):</span>
+                <span class="n">UserOutputValue</span><span class="p">[</span><span class="n">UserOutputSelector</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+                <span class="n">UserOutputValue</span><span class="p">[</span><span class="n">UserOutputSelector</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id18">
+<div class="code-block-caption"><span class="caption-number">Listing 32 </span><span class="caption-text">Transferring measurement parameters and receiving results on the PLC</span><a class="headerlink" href="#id18" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acquisition</span> <span class="n">loop</span><span class="p">:</span>
+        <span class="n">ApplDataFloat0</span> <span class="o">=</span> <span class="n">TargetStepHeight</span>       <span class="c1">#Can be ApplDataFloat0..ApplDataFloat15</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">Bool8</span>          <span class="c1">#Can be Bool8..Bool15</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">result</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">execute</span> <span class="n">action</span> <span class="n">A</span>
+        <span class="k">else</span><span class="p">:</span>
+                <span class="n">execute</span> <span class="n">action</span> <span class="n">B</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This simplified example has no synchronisation for when the PLC should read the result. This can be achieved by using status features as shown in the <a class="reference internal" href="#cam-status"><span class="std std-ref">“Camera Status” example</span></a></p>
+</div>
+</section>
+<section id="vision-application-result-transmission">
+<h3>Vision Application, Result Transmission<a class="headerlink" href="#vision-application-result-transmission" title="Link to this heading"></a></h3>
+<p>Instead of parameterisation and evaluation on the gen4 device, measurement results can also be transmitted directly using integer or float output PDOs.</p>
+<div class="literal-block-wrapper docutils container" id="id19">
+<div class="code-block-caption"><span class="caption-number">Listing 33 </span><span class="caption-text">Using camera features to return measurement results</span><a class="headerlink" href="#id19" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FieldbusFloatDataSelector</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1">#Select the PDO the results will be written to (any float PDO between 16..31)</span>
+
+<span class="n">acquisition</span> <span class="n">loop</span><span class="p">:</span>
+        <span class="n">measured_step_height</span> <span class="o">=</span> <span class="n">acquire_and_process</span><span class="p">()</span>
+        <span class="n">FieldbusFloatDataValue</span><span class="p">[</span><span class="n">FieldbusFloatDataSelector</span><span class="p">]</span> <span class="o">=</span> <span class="n">measured_step_height</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id20">
+<div class="code-block-caption"><span class="caption-number">Listing 34 </span><span class="caption-text">Transferring measurement parameters and receiving results on the PLC</span><a class="headerlink" href="#id20" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acquisition</span> <span class="n">loop</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">ApplDataFloat16</span>        <span class="c1">#Can be ApplDataFloat16..ApplDataFloat31</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="further-reading">
+<span id="reading"></span><h2>Further Reading<a class="headerlink" href="#further-reading" title="Link to this heading"></a></h2>
+<p>The following chapter contains links to other documents and hardware ordering information.</p>
+<p>With the Heliotis SDK (C4Utility) available on <a class="reference external" href="https://www.heliotis.com/support/updates/">https://www.heliotis.com/support/updates/</a> (needs a login) further examples and documentation are installed.
+The installation directory is stored in the environment variable $C4UTILITY_ROOT and is by default C:\Program Files\C4Utility</p>
+<section id="heliotis">
+<h3>Heliotis<a class="headerlink" href="#heliotis" title="Link to this heading"></a></h3>
+<p><strong>ftrDesc:</strong> The documentation for the camera features can be found in $C4UTILITY_ROOT\doc\ftrDesc.pdf</p>
+<p><strong>ProgrammersGuide:</strong> Go to <a class="reference external" href="https://www.heliotis.com/support/updates/">https://www.heliotis.com/support/updates/</a> (needs a login) and download the zip archive labeled “heliInspect H8 Programmer’s Guide”</p>
+<p><strong>Examples:</strong> $C4UTILITY_ROOT\examples offers examples for a variety of programming languages</p>
+<p><strong>Hardware ordering information:</strong> Independent of the chosen fieldbus, a heliDriver D3A is always required. Additionally only one of the available fieldbus modules needs to be added to
+the D3A. The choice of heliInspect (H8/H9) or heliCam (C4) devices has no influence on the fieldbus connectivity and is made independently.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>device</p></th>
+<th class="head"><p>type number TN</p></th>
+<th class="head"><p>article number AN</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>heliDriver D3A</p></td>
+<td><p>D3A.0</p></td>
+<td><p>40 81 10</p></td>
+</tr>
+<tr class="row-odd"><td><p>EtherCAT Module</p></td>
+<td><p>D3MRTETH.0.0-ETHERCAT</p></td>
+<td><p>40 81 90</p></td>
+</tr>
+<tr class="row-even"><td><p>PROFINET Module</p></td>
+<td><p>D3MRTETH.0.0-PROFINET</p></td>
+<td><p>40 81 95</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="beckhoff">
+<h3>Beckhoff<a class="headerlink" href="#beckhoff" title="Link to this heading"></a></h3>
+<p><strong>Documentation:</strong> The user manual for TwinCAT can be found on <a class="reference external" href="https://infosys.beckhoff.com/english.php?content=../content">https://infosys.beckhoff.com/english.php?content=../content</a></p>
+<p><strong>Examples:</strong>   An EtherCAT example project can be found in $C4UTILITY_ROOT\fieldbus\examples\Beckhoff</p>
+<p><strong>Device description file:</strong> The EtherCAT Slave Information file (ESI) is located in $C4UTILITY_ROOT\fieldbus\deviceDescription\Beckhoff\heliotisGen4Device_230926.xml</p>
+</section>
+<section id="siemens">
+<h3>Siemens<a class="headerlink" href="#siemens" title="Link to this heading"></a></h3>
+<p><strong>Documentation:</strong> The TIA Portal user manual can be found on <a class="reference external" href="https://cache.industry.siemens.com/dl/files/542/40263542/att_829827/v1/GS_STEP7Bas105enUS.pdf">https://cache.industry.siemens.com/dl/files/542/40263542/att_829827/v1/GS_STEP7Bas105enUS.pdf</a></p>
+<p><strong>Examples:</strong> An example project for PROFINET is located in $C4UTILITY_ROOT\fieldbus\examples\Siemens</p>
+<p><strong>Device description file:</strong> The General Station Description file (GSD) is located in $C4UTILITY_ROOT\fieldbus\deviceDescription\Siemens\GSDML-V2.41-Heliotis AG-heliotis gen4 device-20231023.xml</p>
+</section>
+</section>
+<section id="document-history">
+<h2>Document History<a class="headerlink" href="#document-history" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Version</p></th>
+<th class="head"><p>Date</p></th>
+<th class="head"><p>Changes</p></th>
+<th class="head"><p>Responsible</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>51.1.0.0</p></td>
+<td><p>27-02-2024</p></td>
+<td><p>Initial version</p></td>
+<td><p>sb</p></td>
+</tr>
+</tbody>
+</table>
+<p>EtherCAT® is a registered trademark and patented technology, licensed by Beckhoff Automation GmbH, Germany.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../tn_19.9.x.y/tn_19.9.x.y.html" class="btn btn-neutral float-left" title="TN_19.9.0.0: First/Last Surface Extraction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

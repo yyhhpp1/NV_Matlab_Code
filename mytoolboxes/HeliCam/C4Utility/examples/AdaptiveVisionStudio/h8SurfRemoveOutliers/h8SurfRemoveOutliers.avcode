@@ -1,0 +1,101 @@
+extern public String IPAddress = "192.168.2.71"
+
+//:SECTIONSVISIBILITY Visible
+//:USETYPE WORKERTASK
+public Main()
+{
+
+section INITIALIZE:
+	//:HIDDENPORT[inExposureRatio] TRUE
+	InitHeliCam
+	(
+		inIPAddress: IPAddress
+		inScanSpeed: 5.000000
+		inScanRange: 1.000000
+		inGeneralSpeed: 10.000000
+		inExposureRatio: 1.000000
+		inLightBrightness: 100.000000
+		inHeliDriverType: "D3"
+	)
+
+section ACQUIRE:
+	AcquireHeliCam
+	(
+		inIPAddress: IPAddress
+		outSurface: con_7d7d5702_bf82_48c8_bd09_c285a9656a45
+		outAmplitude: con_df10140c_b0d2_4555_a76b_f3cf8314cc75
+	)
+
+section PROCESS:
+	//:HIDDENPORT[inHysteresis] TRUE
+	ThresholdToRegion
+	(
+		inImage: con_df10140c_b0d2_4555_a76b_f3cf8314cc75
+		inRoi: Nil
+		inMinValue: 150.000000
+		inMaxValue: Nil
+		inHysteresis: 0.000000
+		outRegion: con_bd610dd2_5a5f_4555_91d2_7ff794daf0eb
+	)
+
+	//:HIDDENPORT[inXOffset] TRUE
+	//:HIDDENPORT[inXScale] TRUE
+	//:HIDDENPORT[inYOffset] TRUE
+	//:HIDDENPORT[inYScale] TRUE
+	//:HIDDENPORT[inZOffset] TRUE
+	//:HIDDENPORT[inZScale] TRUE
+	MakeSurfaceFromImage
+	(
+		inImage: con_7d7d5702_bf82_48c8_bd09_c285a9656a45
+		inRoi: con_bd610dd2_5a5f_4555_91d2_7ff794daf0eb
+		inXOffset: 0.000000D
+		inXScale: 12.000000D
+		inYOffset: 0.000000D
+		inYScale: 12.000000D
+		inZOffset: 11800.000000D
+		inZScale: 1.000000D
+		outSurface: con_603fb5a6_54b7_4e32_81ae_643e0faa0252
+	)
+
+	RemoveOutliers
+	(
+		inImage: con_603fb5a6_54b7_4e32_81ae_643e0faa0252
+		inRadius: 4
+		inThreshold: 100.000000
+		outImage: con_4177a8b8_760e_4128_8bfd_027c3821910c
+	)
+
+	RemoveOutliers
+	(
+		inImage: con_4177a8b8_760e_4128_8bfd_027c3821910c
+		inRadius: 1
+		inThreshold: 2.000000
+		outImage: con_42515a8c_b86a_4784_9f30_1c148a60579e
+	)
+
+	//:HIDDENPORT[inXOffset] TRUE
+	//:HIDDENPORT[inXScale] TRUE
+	//:HIDDENPORT[inYOffset] TRUE
+	//:HIDDENPORT[inYScale] TRUE
+	//:HIDDENPORT[inZOffset] TRUE
+	//:HIDDENPORT[inZScale] TRUE
+	MakeSurfaceFromImage
+	(
+		inImage: con_42515a8c_b86a_4784_9f30_1c148a60579e
+		inRoi: Nil
+		inXOffset: 0.000000D
+		inXScale: 12.000000D
+		inYOffset: 0.000000D
+		inYScale: 12.000000D
+		inZOffset: 11800.000000D
+		inZScale: 1.000000D
+		outSurface: con_f0608704_4358_46b9_bcd3_1f2a85ebc3f6
+	)
+
+section FINALIZE:
+	ReleaseHeliCam
+	(
+		inIPAddress: IPAddress
+	)
+}
+

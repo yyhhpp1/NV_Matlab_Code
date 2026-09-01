@@ -1,0 +1,342 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<operatorView id="376b687a-e2f0-43b6-9871-b082cd3386d3" name="OperatorView" version="8.0.291.0" type="normal">
+  <htmlAnnotators>
+    <HTMLAnnotator name="PassFail" type="Matrox.DesignAssistant.Core.OperatorViews.PassFail, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="0d8067e7-b62a-48f6-8711-8370aed91c81" Version="8.0.291.0">
+      <inputs>
+        <input name="PassTextColor">
+          <expression>
+            <expression-string>-1</expression-string>
+          </expression>
+        </input>
+        <input name="PassBackgroundColor">
+          <expression>
+            <expression-string>-16744448</expression-string>
+          </expression>
+        </input>
+        <input name="WarnTextColor">
+          <expression>
+            <expression-string>-1</expression-string>
+          </expression>
+        </input>
+        <input name="WarnBackgroundColor">
+          <expression>
+            <expression-string>-23296</expression-string>
+          </expression>
+        </input>
+        <input name="FailTextColor">
+          <expression>
+            <expression-string>-1</expression-string>
+          </expression>
+        </input>
+        <input name="FailBackgroundColor">
+          <expression>
+            <expression-string>-65536</expression-string>
+          </expression>
+        </input>
+        <input name="NoResultTextColor">
+          <expression>
+            <expression-string>-1</expression-string>
+          </expression>
+        </input>
+        <input name="NoResultBackgroundColor">
+          <expression>
+            <expression-string>-8355712</expression-string>
+          </expression>
+        </input>
+        <input name="FontSize">
+          <expression>
+            <expression-string>16</expression-string>
+          </expression>
+        </input>
+        <input name="Condition">
+          <expression>
+            <expression-string need-link-container="True">Status.Result</expression-string>
+          </expression>
+        </input>
+        <input name="PassText">
+          <expression>
+            <expression-string>Pass</expression-string>
+          </expression>
+        </input>
+        <input name="WarnText">
+          <expression>
+            <expression-string>Warning</expression-string>
+          </expression>
+        </input>
+        <input name="FailText">
+          <expression>
+            <expression-string>Fail</expression-string>
+          </expression>
+        </input>
+        <input name="NoResultText">
+          <expression>
+            <expression-string>No Result</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </HTMLAnnotator>
+    <HTMLAnnotator name="TotalFailValue" type="Matrox.DesignAssistant.Core.OperatorViews.Value, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="039b6270-e5af-4ac9-b427-3419caeacccd" Version="8.0.291.0">
+      <inputs>
+        <input name="BackgroundColor">
+          <expression>
+            <expression-string>Default</expression-string>
+          </expression>
+        </input>
+        <input name="TextColor">
+          <expression>
+            <expression-string>Default</expression-string>
+          </expression>
+        </input>
+        <input name="Text">
+          <expression>
+            <expression-string need-link-container="True">{Status.FailCount}</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </HTMLAnnotator>
+    <HTMLAnnotator name="Display" type="Matrox.DesignAssistant.Core.OperatorViews.Display, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="29e48e0d-022f-4cb1-897d-e91ccb2688d0" Version="8.0.291.0">
+      <inputs>
+        <objectCollection name="AnnotationGroups" type="Matrox.DesignAssistant.Core.Annotations.Groups.AnnotationGroupCollection, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="769c0eec-c772-4a7a-afe3-655dab55d342" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <collectionItems />
+          <userXML />
+        </objectCollection>
+        <input name="Image">
+          <expression>
+            <expression-string need-link-container="True">Camera.DepthMap</expression-string>
+          </expression>
+        </input>
+        <input name="Width">
+          <expression>
+            <expression-string>640</expression-string>
+          </expression>
+        </input>
+        <input name="Height">
+          <expression>
+            <expression-string>480</expression-string>
+          </expression>
+        </input>
+        <input name="Region">
+          <expression>
+            <expression-string>WholeImage</expression-string>
+          </expression>
+        </input>
+        <input name="SelectionRadius">
+          <expression>
+            <expression-string>5</expression-string>
+          </expression>
+        </input>
+        <input name="ColorMode">
+          <expression>
+            <expression-string>Default</expression-string>
+          </expression>
+        </input>
+        <input name="ColorMap">
+          <expression>
+            <expression-string>Default</expression-string>
+          </expression>
+        </input>
+        <input name="ScaleImage">
+          <expression>
+            <expression-string>Enabled</expression-string>
+          </expression>
+        </input>
+        <input name="ImageAlignment">
+          <expression>
+            <expression-string>Center</expression-string>
+          </expression>
+        </input>
+        <input name="Zoom">
+          <expression>
+            <expression-string>1</expression-string>
+          </expression>
+        </input>
+        <input name="MouseZoomAndPan">
+          <expression>
+            <expression-string>Enabled</expression-string>
+          </expression>
+        </input>
+        <input name="KeyboardZoomAndPan">
+          <expression>
+            <expression-string>Enabled</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </HTMLAnnotator>
+    <HTMLAnnotator name="Button" type="Matrox.DesignAssistant.Core.OperatorViews.Button, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="f1c67310-47e3-475e-a779-0480bf9ad7de" Version="8.0.291.0">
+      <inputs>
+        <input name="Enabled">
+          <expression>
+            <expression-string>Always</expression-string>
+          </expression>
+        </input>
+        <input name="Label">
+          <expression>
+            <expression-string>Reset Counters</expression-string>
+          </expression>
+        </input>
+        <input name="CameraSettings">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+        <input name="ChangeCommunicationSettingsAction">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+        <input name="ExecuteFlowchartAction">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+        <input name="ExecutionControl">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+        <input name="ImageSetSettings">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+        <input name="Navigate">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+        <objectCollection name="ResetCountersCollection" type="Matrox.DesignAssistant.Core.OperatorViews.ResetCountersCommandCollection, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="9b269ab9-6044-4839-aa1a-c4c44a170199" Version="8.0.291.0">
+          <expression>
+            <expression-string>Enabled</expression-string>
+          </expression>
+          <collectionItems>
+            <subObject name="ResetCounters" type="Matrox.DesignAssistant.Core.OperatorViews.ResetCounters, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="65116a52-56ae-4856-aec9-ab580d7a740a" Version="8.0.291.0">
+              <inputs>
+                <input name="Step">
+                  <expression>
+                    <expression-string>Flowcharts("MainFlowchart").Status</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+          </collectionItems>
+          <userXML />
+        </objectCollection>
+        <input name="ResetFilmstrip">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+        <input name="SetCameraSource">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+        <input name="SetVariableCollection">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+        <input name="SoftwareTrigger">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+        <input name="ZoomPan">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+        <input name="DecrementTextBox">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+        <input name="IncrementTextBox">
+          <expression>
+            <expression-string>Disabled</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </HTMLAnnotator>
+    <HTMLAnnotator name="FrameRateValue" type="Matrox.DesignAssistant.Core.OperatorViews.Value, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="3f743c31-36c6-489e-9bb7-38da2ef5a9bd" Version="8.0.291.0">
+      <inputs>
+        <input name="BackgroundColor">
+          <expression>
+            <expression-string>Default</expression-string>
+          </expression>
+        </input>
+        <input name="TextColor">
+          <expression>
+            <expression-string>Default</expression-string>
+          </expression>
+        </input>
+        <input name="Text">
+          <expression>
+            <expression-string need-link-container="True">{Camera.FrameRate:F1}</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </HTMLAnnotator>
+    <HTMLAnnotator name="TotalPassValue" type="Matrox.DesignAssistant.Core.OperatorViews.Value, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="099ed91e-087d-4827-bdf2-242ea5a5f647" Version="8.0.291.0">
+      <inputs>
+        <input name="BackgroundColor">
+          <expression>
+            <expression-string>Default</expression-string>
+          </expression>
+        </input>
+        <input name="TextColor">
+          <expression>
+            <expression-string>Default</expression-string>
+          </expression>
+        </input>
+        <input name="Text">
+          <expression>
+            <expression-string need-link-container="True">{Status.PassCount}</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </HTMLAnnotator>
+    <HTMLAnnotator name="AnalysisTimeValue" type="Matrox.DesignAssistant.Core.OperatorViews.Value, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="ab56af6f-6dca-47e9-9244-912d1b7afc97" Version="8.0.291.0">
+      <inputs>
+        <input name="BackgroundColor">
+          <expression>
+            <expression-string>Default</expression-string>
+          </expression>
+        </input>
+        <input name="TextColor">
+          <expression>
+            <expression-string>Default</expression-string>
+          </expression>
+        </input>
+        <input name="Text">
+          <expression>
+            <expression-string need-link-container="True">{(Status.Time - Camera.Time)*1000:F0}</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </HTMLAnnotator>
+    <synchronized-publishing-groups use-publishing-optimization="False">
+      <group name="PublishingGroup" framerate="20" default="True">
+        <annotators>
+          <annotator name="AnalysisTimeValue" type="Value" />
+          <annotator name="TotalPassValue" type="Value" />
+          <annotator name="TotalFailValue" type="Value" />
+          <annotator name="FrameRateValue" type="Value" />
+          <annotator name="PassFail" type="PassFail" />
+          <annotator name="Display" type="Display" />
+        </annotators>
+      </group>
+    </synchronized-publishing-groups>
+  </htmlAnnotators>
+</operatorView>

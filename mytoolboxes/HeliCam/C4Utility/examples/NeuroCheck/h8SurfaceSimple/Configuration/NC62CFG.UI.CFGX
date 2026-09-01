@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="C:\Program Files\NeuroCheck 6.2\XSL\CFGX_UI_Detailed.XSL" type="text/xsl"?>
+<neurocheck_ui_configuration name="User Interface Configuration" xml:lang="en" xmlns="http://www.neurocheck.com/xml">
+   <!-- ################################  Header information. Do not change!  ################################# -->
+   <header name="Header information">
+      <meaning_of_contents name="File contains data of type">Configuration of NeuroCheck user interface</meaning_of_contents>
+      <created_by_name name="Name of creating program">C:\Program Files\NeuroCheck 6.2\NeuroCheck.DataProcessing.dll</created_by_name>
+      <created_by_dir name="NeuroCheck installation directory">C:\Program Files\NeuroCheck 6.2\</created_by_dir>
+      <created_by_version name="NeuroCheck version">6.2.19.0</created_by_version>
+      <created_date_time name="Date/time of creation of this file">2022-12-15 - 10:44:01</created_date_time>
+      <file_version name="Version identification of this file">6.2.18.0</file_version>
+      <copyright name="Copyright">NeuroCheck GmbH, 71686 Remseck, Germany</copyright>
+      <license_level name="License level">Premium</license_level>
+      <license_number name="NeuroCheck license number">220176</license_number>
+      <dongle_number name="Serial number dongle">12008355</dongle_number>
+   </header>
+   <!-- ############################  Configuration of NeuroCheck user interface  ############################# -->
+   <body name="Configuration data">
+      <!-- =============================================  Software Settings  ============================================= -->
+      <general_settings name="Software Settings">
+         <!-- ++++++++++++++++++++++++++++++++++++  Start behavior  +++++++++++++++++++++++++++++++++++++ -->
+         <start_behavior name="Start behavior">
+            <start_type name="Start type" display="Intro">0</start_type>
+            <reload_last_chr name="Reload last check routine" disabled="1" display="No">0</reload_last_chr>
+            <start_immediately name="Start immediately" disabled="1" display="Yes">1</start_immediately>
+            <load_cr_from_file name="Load check routine from file" disabled="1" display="No">0</load_cr_from_file>
+            <default_chr name="Default check routine" disabled="1">
+            </default_chr>
+            <perform_self_test name="Perform automatic self-test" disabled="1" display="No">0</perform_self_test>
+         </start_behavior>
+         <!-- +++++++++++++++++++++++++++++++++++++  Control panel  +++++++++++++++++++++++++++++++++++++ -->
+         <control_panel name="Control panel">
+            <!-- ..............................  Design  ............................... -->
+            <cp_design name="Design">
+               <selected_name name="Name" index="2">Cool Black Buttons Top</selected_name>
+               <custom_is_selected name="Custom design" disabled="1" display="No">0</custom_is_selected>
+               <custom_xml_file name="File" disabled="1">
+               </custom_xml_file>
+            </cp_design>
+            <!-- ...............................  Menu  ................................ -->
+            <cp_menu name="Menu">
+               <selected_name name="Name" index="4">Standard</selected_name>
+               <custom_is_selected name="Custom menu" disabled="1" display="No">0</custom_is_selected>
+               <custom_xml_file name="File" disabled="1">
+               </custom_xml_file>
+            </cp_menu>
+            <!-- ............................  Interaction  ............................ -->
+            <cp_interaction name="Interaction">
+               <allow_opening_dlgs name="Allow opening of interactive dialogs" display="No">0</allow_opening_dlgs>
+               <allow_parallel_exec name="Allow parallel execution" display="No">0</allow_parallel_exec>
+               <listen_to_sys_fct_keys name="Listen to system function keys" display="No">0</listen_to_sys_fct_keys>
+               <allow_termination name="Allow termination of running automatic mode" disabled="1" display="Yes">1</allow_termination>
+            </cp_interaction>
+            <!-- ..........................  Window Position  .......................... -->
+            <cp_wnd_pos name="Window Position">
+               <start_pos_mode name="Mode" display="Restore last position">0</start_pos_mode>
+               <upper_left_x name="Upper left X" disabled="1">0</upper_left_x>
+               <upper_left_Y name="Upper left Y" disabled="1">0</upper_left_Y>
+            </cp_wnd_pos>
+            <!-- .........................  Window Management  ......................... -->
+            <cp_wnd_man name="Window Management">
+               <pos_and_focus name="Z-Position and Fokus" display="Windows® default">0</pos_and_focus>
+               <activate_onmousehover name="Activate window when the mouse cursor is over it" display="No">0</activate_onmousehover>
+               <auto_minimize name="Minimize window on 'Automatic start' command" display="No">0</auto_minimize>
+               <close_button_action name="Close button action" display="Switch to manual mode">0</close_button_action>
+            </cp_wnd_man>
+         </control_panel>
+         <!-- +++++++++++++++++++++++++++++++++++++  Process view  ++++++++++++++++++++++++++++++++++++++ -->
+         <process_view name="Process view">
+            <!-- ..............................  Design  ............................... -->
+            <pv_design name="Design">
+               <selected_name name="Name" index="1">Cool Black Tower</selected_name>
+               <custom_is_selected name="Custom layout" disabled="1" display="No">0</custom_is_selected>
+               <custom_xml_file name="File" disabled="1">
+               </custom_xml_file>
+            </pv_design>
+            <!-- ...............................  Reset  ............................... -->
+            <pv_reset name="Reset">
+               <reset_windows name="Reset output windows at start of inspection run" display="Yes">1</reset_windows>
+               <reset_text name="Text display">Check running...</reset_text>
+               <reset_display_mode name="Image display" display="Display empty window">0</reset_display_mode>
+               <reset_img_file name="File name" disabled="1">
+               </reset_img_file>
+               <reset_display_info name="Display overlay info text in image" display="Yes">1</reset_display_info>
+               <update_windows name="Update output windows on 'not OK' execution" display="Yes">1</update_windows>
+               <update_display_mode name="Image display" display="Display empty window">0</update_display_mode>
+               <update_img_file name="File name" disabled="1">
+               </update_img_file>
+               <update_display_error name="Display overlay error text in image" display="Yes">1</update_display_error>
+            </pv_reset>
+            <!-- ..........................  Display Update  ........................... -->
+            <pv_display_update name="Display Update">
+               <update_mode name="Update mode" display="No">1</update_mode>
+               <update_cf_vis name="Update check function visualization" display="Yes">1</update_cf_vis>
+               <update_exec_result name="Update execution result" display="Yes">1</update_exec_result>
+               <update_statistics name="Update statistics" display="Yes">1</update_statistics>
+               <update_meas_history name="Update measurement history" display="Yes">1</update_meas_history>
+               <update_system_data name="Update file viewer" display="Yes">1</update_system_data>
+               <update_protocol name="Update system log and trace" display="Yes">1</update_protocol>
+            </pv_display_update>
+            <!-- ..........................  Window Position  .......................... -->
+            <pv_wnd_pos name="Window Position">
+               <start_pos_mode name="Mode" display="Restore last position">0</start_pos_mode>
+               <upper_left_x name="Upper left X" disabled="1">0</upper_left_x>
+               <upper_left_Y name="Upper left Y" disabled="1">0</upper_left_Y>
+            </pv_wnd_pos>
+            <!-- .........................  Window Management  ......................... -->
+            <pv_wnd_man name="Window Management">
+               <pos_and_focus name="Z-Position and Focus" display="Windows® default">0</pos_and_focus>
+               <start_behavior name="Start behavior" display="Open process view">1</start_behavior>
+            </pv_wnd_man>
+         </process_view>
+         <!-- ++++++++++++++++++++++++++++++  Offline Mode Runtime Dialog  ++++++++++++++++++++++++++++++ -->
+         <offline_mode_runtime_dialog name="Offline Mode Runtime Dialog">
+            <!-- ..........................  Window Position  .......................... -->
+            <omrd_wnd_pos name="Window Position">
+               <start_pos_mode name="Mode" display="Restore last position">0</start_pos_mode>
+               <upper_left_x name="Upper left X" disabled="1">0</upper_left_x>
+               <upper_left_Y name="Upper left Y" disabled="1">0</upper_left_Y>
+            </omrd_wnd_pos>
+         </offline_mode_runtime_dialog>
+         <!-- ++++++++++++++++++++++++++++++++++++  Windows® Access  ++++++++++++++++++++++++++++++++++++ -->
+         <windows_access name="Windows® Access">
+            <hide_taskbar name="Hide taskbar" display="No">0</hide_taskbar>
+            <hide_desktop name="Hide desktop" display="No">0</hide_desktop>
+            <desktop_design name="Desktop design" disabled="1" display="NeuroCheck Wallpaper">0</desktop_design>
+            <color_style name="Color style" disabled="1" display="Solid">0</color_style>
+            <color_one name="Color 1" disabled="1" display="LightGray" html_color="#d3d3d3">4292072403</color_one>
+            <color_two name="Color 2" disabled="1" display="LightGray" html_color="#d3d3d3">4292072403</color_two>
+            <image name="Image" disabled="1">
+            </image>
+            <image_layout name="Image layout" disabled="1" display="Tile">1</image_layout>
+         </windows_access>
+         <!-- +++++++++++++++++++++++++++++++++  User interface safety  +++++++++++++++++++++++++++++++++ -->
+         <gs_ui_safety name="User interface safety">
+            <options name="Options" type="list" size="3">
+               <option name="Option" type="vector" index="0">
+                  <id name="ID" disabled="1">0</id>
+                  <name name="Name" disabled="1">Warning on image transfer from file</name>
+                  <checked name="Warning on image transfer from file" display="Yes">1</checked>
+               </option>
+               <option name="Option" type="vector" index="1">
+                  <id name="ID" disabled="1">1</id>
+                  <name name="Name" disabled="1">Warning on Ignore I/O</name>
+                  <checked name="Warning on Ignore I/O" display="Yes">1</checked>
+               </option>
+               <option name="Option" type="vector" index="2">
+                  <id name="ID" disabled="1">2</id>
+                  <name name="Name" disabled="1">Warning on multiple check routine IDs in type change directory</name>
+                  <checked name="Warning on multiple check routine IDs in type change directory" display="Yes">1</checked>
+               </option>
+            </options>
+         </gs_ui_safety>
+         <!-- +++++++++++++++++++++++++++++++++++++++  Self test  +++++++++++++++++++++++++++++++++++++++ -->
+         <self_test name="Self test">
+            <confirm_dialog_req name="Confirmation of self-test dialog required" display="Yes">1</confirm_dialog_req>
+         </self_test>
+         <!-- +++++++++++++++++++++++++++++++++++++++  Hardware  ++++++++++++++++++++++++++++++++++++++++ -->
+         <ui_hardware name="Hardware">
+            <options name="Options" type="list" size="2">
+               <option name="Option" type="vector" index="0">
+                  <id name="ID" disabled="1">0</id>
+                  <name name="Name" disabled="1">Automatic detection of NeuroCheck digital cameras at program start</name>
+                  <checked name="Automatic detection of NeuroCheck digital cameras at program start" display="No">0</checked>
+               </option>
+               <option name="Option" type="vector" index="1">
+                  <id name="ID" disabled="1">2</id>
+                  <name name="Name" disabled="1">Reset output bits for opening or closing Test dialog</name>
+                  <checked name="Reset output bits for opening or closing Test dialog" display="No">0</checked>
+               </option>
+            </options>
+         </ui_hardware>
+         <!-- ++++++++++++++++++++++++++  Parameter/Target values spreadsheet  ++++++++++++++++++++++++++ -->
+         <sp_spreadsheet name="Spreadsheet">
+            <sp_ss_reg_sel name="Register selection" display="Only show registers connected to current check routine">0</sp_ss_reg_sel>
+            <sp_ss_categorized_view name="Categorized view" display="Yes [Tab pages]">1</sp_ss_categorized_view>
+            <sp_ss_combobox name="Show combo box" disabled="1" display="No">0</sp_ss_combobox>
+            <sp_ss_show_regid name="Show register ID" display="Yes">1</sp_ss_show_regid>
+            <sp_ss_show_datatype name="Show data type" display="No">0</sp_ss_show_datatype>
+            <sp_ss_show_range name="Show range" display="Yes">1</sp_ss_show_range>
+            <sp_ss_font_size name="Font size">8</sp_ss_font_size>
+            <sp_ss_show_image name="Show image" display="No">0</sp_ss_show_image>
+            <sp_ss_show_desc name="Show instruction / comment" display="Yes">1</sp_ss_show_desc>
+            <sp_ss_interpret_html_code name="Interpret as HTML code" display="No">0</sp_ss_interpret_html_code>
+            <sp_ss_undo_avail_time name="Undo-Availability [minutes]" disabled="1">10</sp_ss_undo_avail_time>
+            <sp_ss_width_col_curr_val name="Width column current value" disabled="1">90</sp_ss_width_col_curr_val>
+            <sp_ss_width_col_datatype name="Width column data type" disabled="1">60</sp_ss_width_col_datatype>
+            <sp_ss_width_col_id name="Width column register ID" disabled="1">35</sp_ss_width_col_id>
+            <sp_ss_width_col_max_val name="Width column maximum" disabled="1">58</sp_ss_width_col_max_val>
+            <sp_ss_width_col_min_val name="Width column minimum" disabled="1">58</sp_ss_width_col_min_val>
+            <sp_ss_width_col_name name="Width column name" disabled="1">105</sp_ss_width_col_name>
+            <sp_ss_width_col_new_val name="Width column new value" disabled="1">90</sp_ss_width_col_new_val>
+            <sp_ss_color_curr_val_apply name="Color current value apply" disabled="1">
+               <back_color name="Background color" disabled="1" display="Chartreuse" html_color="#7fff00">65407</back_color>
+               <fore_color name="Foreground color" disabled="1" display="Black" html_color="#000000">0</fore_color>
+               <back_color_selected name="Background color selected" disabled="1" display="Chartreuse" html_color="#7fff00">65407</back_color_selected>
+               <fore_color_selected name="Foreground color selected" disabled="1" display="Black" html_color="#000000">0</fore_color_selected>
+            </sp_ss_color_curr_val_apply>
+            <sp_ss_color_default name="Color default" disabled="1">
+               <back_color name="Background color" disabled="1" display="Gainsboro" html_color="#dcdcdc">14474460</back_color>
+               <fore_color name="Foreground color" disabled="1" display="Black" html_color="#000000">0</fore_color>
+               <back_color_selected name="Background color selected" disabled="1" display="ARGB=(255, 0, 120, 215)" html_color="#0078d7">14120960</back_color_selected>
+               <fore_color_selected name="Foreground color selected" disabled="1" display="White" html_color="#ffffff">16777215</fore_color_selected>
+            </sp_ss_color_default>
+            <sp_ss_color_new_val_default name="Color new value default" disabled="1">
+               <back_color name="Background color" disabled="1" display="White" html_color="#ffffff">16777215</back_color>
+               <fore_color name="Foreground color" disabled="1" display="Black" html_color="#000000">0</fore_color>
+               <back_color_selected name="Background color selected" disabled="1" display="White" html_color="#ffffff">16777215</back_color_selected>
+               <fore_color_selected name="Foreground color selected" disabled="1" display="Black" html_color="#000000">0</fore_color_selected>
+            </sp_ss_color_new_val_default>
+            <sp_ss_color_new_val_error name="Color new value error" disabled="1">
+               <back_color name="Background color" disabled="1" display="Red" html_color="#ff0000">255</back_color>
+               <fore_color name="Foreground color" disabled="1" display="Black" html_color="#000000">0</fore_color>
+               <back_color_selected name="Background color selected" disabled="1" display="Red" html_color="#ff0000">255</back_color_selected>
+               <fore_color_selected name="Foreground color selected" disabled="1" display="Black" html_color="#000000">0</fore_color_selected>
+            </sp_ss_color_new_val_error>
+            <sp_ss_color_new_val_modified name="Color new value modified" disabled="1">
+               <back_color name="Background color" disabled="1" display="Yellow" html_color="#ffff00">65535</back_color>
+               <fore_color name="Foreground color" disabled="1" display="Black" html_color="#000000">0</fore_color>
+               <back_color_selected name="Background color selected" disabled="1" display="Yellow" html_color="#ffff00">65535</back_color_selected>
+               <fore_color_selected name="Foreground color selected" disabled="1" display="Black" html_color="#000000">0</fore_color_selected>
+            </sp_ss_color_new_val_modified>
+         </sp_spreadsheet>
+      </general_settings>
+   </body>
+</neurocheck_ui_configuration>

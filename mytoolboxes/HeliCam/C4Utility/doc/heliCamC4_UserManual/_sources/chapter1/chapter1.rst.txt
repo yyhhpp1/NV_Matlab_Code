@@ -1,0 +1,253 @@
+Introducing the heliCam\ :sup:`TM` C4 Lock-In Camera
+====================================================
+
+The heliCam\ :sup:`TM` C4 lock-in camera enables rapid and massively
+parallel dual-phase demodulation of optical signals. The centerpiece of
+the camera is a custom-designed CMOS image sensor, the
+heliSens\ :sup:`TM` S4. It has analogue signal processing circuitry
+integrated into each pixel sensor unit cell; an approach known as *smart
+pixel* technology. This way, the sensor addresses the two major
+constraints of conventional image sensors when used for lock-in applications:
+frame rate limitations and insufficient dynamic range. The former curbs
+the maximum demodulation frequency and the latter hampers the
+acquisition of signals with large offset but small modulation amplitude.
+
+.. figure:: ./img/heliCamC4_LockInCamera.png
+    :name: heliCamC4_LockInCamera
+    :align: center
+    :width: 47.5%
+
+    heliCam\ :sup:`TM` C4 Lock-In Camera
+
+Outline
+-------
+
+This user manual has four main parts:
+
+   - :ref:`A`
+
+      Hardware and Software Commissioning Guide
+
+   - :ref:`B`
+
+      Tutorial for a First Lock-In Measurement
+
+   - :ref:`C`
+
+      Lock-In Camera Operation from a Programming Environment
+
+   - :ref:`D`
+
+      Detailed Discussion of Available Settings and the Measurement Signal
+
+.. raw:: latex
+
+    \newpage
+
+Specifications
+--------------
+
+
+.. tabularcolumns:: | m{2cm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|p{1.4mm}|
+
+.. _heliSens:
+.. table:: heliSens\ :sup:`TM` S4 - Lock-In Pixel Image Sensor
+
+   +-----------------+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+   | Feature         |   C4.0-S40                  |   C4.0-S40U                 |   C4.0-S41U                 |   C4M.0-S4M0                |
+   |                 |                             |                             |                             |                             |
+   +=================+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+==+
+   || Number of      |                                                                                         |                             |
+   || Pixels         |                   | 512 x 542                                                           |  | 1024 x 1102              |
+   |                 |                                                                                         |                             |
+   +-----------------+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+   || Pixel          |                                                                                         |                             |
+   |  Size           |   | 24 μm :math:`\times` 24 μm                                                          | | 12 μm :math:`\times` 12 μm|
+   |                 |                                                                                         |                             |
+   +-----------------+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+   || Fill           |                             |                                                           |                             |
+   | factor          |   |  21%                    |   | 55% with micro-lens array                             |  |  23%                     |
+   |                 |                             |   | (angular aperture ± 12°)                              |                             |
+   |                 |                             |                                                           |                             |
+   +-----------------+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+   || Full           | | 500 :math:`ke^{-}`                                      || 125 :math:`ke^{-}`         | | 70 :math:`ke^{-}`         |
+   | Well            |                                                           |                             |                             |
+   || Capacity       |                                                           |                             |                             |
+   |                 |                                                           |                             |                             |
+   +-----------------+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+   ||                || **nm**   | | 400     | | 450     | | 500     | | 550     | | 600     | | 650     | | 700     | | 750     | | 800     |
+   || Quantum        |           |           |           |           |           |           |           |           |           |           |
+   || Efficiency     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+   |                 || **%**    | | 61.7    | | 73.1    | | 78.7    | | 78.6    | | 74.9    | | 72.9    | | 69.4    | | 58.4    | | 45.5    |
+   +-----------------+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+   || Detection      || :math:`P_{\min} \ \textrm{in} \ \frac{\textrm{mW}}{\textrm{m}^{\textrm{2}}}`                                         |
+   || Threshold      |                                                                                                                       |
+   ||                || , at a given reference frequency, :math:`f_{ref}`, and filter time constant, :math:`T`                               |
+   || :math:`f_{ref}`||                                                                                                                      |
+   | , :math:`T`     ||                                                                                                                      |
+   +-----------------+-----------------------------+-----------------------------+-----------------------------+--+--+--+--+--+--+--+--+--+--+
+   || *1kHz, 10ms*   | | 1.03                      | | 0.34                      | | 0.14                      | | 1.2                       |
+   +-----------------+-----------------------------+-----------------------------+-----------------------------+--+--+--+--+--+--+--+--+--+--+
+   || *10kHz, 1ms*   | | 10.3                      | | 3.4                       | | 1.4                       | | 12                        |
+   +-----------------+-----------------------------+-----------------------------+-----------------------------+--+--+--+--+--+--+--+--+--+--+
+   || *100kHz, 1ms*  | | 33.3                      | | 10.9                      | | 4.2                       | | NA                        |
+   +-----------------+-----------------------------+-----------------------------+-----------------------------+--+--+--+--+--+--+--+--+--+--+
+
+        
+.. tabularcolumns:: | m{2.75cm}| m{0.75cm} |m{4.5cm}|m{4.5cm}|
+
+.. _lock_in_features:
+.. table:: heliCam\ :sup:`TM` C4 - Lock-In Features
+
+   +------------------+-----------------+-----------------------------+-----------------------------+
+   | Feature                            | Internal Reference          | External Reference          |
+   |                                    |                             |                             |
+   +==================+=================+=============================+=============================+
+   | | Number of      |                 |                                                           |
+   | | parallel,      | | C4            |      | 277 504                                            |
+   | | dual-phase     |                 |                                                           |
+   + | Demodulators   +-----------------+-----------------------------------------------------------+
+   |                  |                 |                                                           |
+   |                  | | C4M           |      | 1 110 016                                          |
+   |                  |                 |                                                           |
+   +------------------+-----------------+-----------------------------------------------------------+
+   || Reference                         | |                                                         |
+   |  Signal                            | | reference **pulse** wave with adjustable duty cyle      |
+   |                                    | |                                                         |
+   |                                    | | (causing residual sensitivity to odd                    |
+   |                                    | | harmonics of the reference frequency)                   |
+   |                                    |                                                           |
+   +------------------+-----------------+-----------------------------+-----------------------------+
+   || Reference       | | C4            | | 305 Hz - 135 kHz          | | ≤ 135 kHz                 |
+   || Frequency,      |                 |                             |                             |
+   +  :math:`f_{ref}` +-----------------+-----------------------------+-----------------------------+
+   |                  | | C4M           | | 305 Hz - 50  kHz          | | ≤ 50 kHz                  |
+   |                  |                 |                             |                             |
+   +------------------+-----------------+-----------------------------+-----------------------------+
+   || Frequency                         | .. math::                   | | quarter period trigger    |
+   || Resolution                        |  \Delta f_{ref}\approx      | | registered with           |
+   |                                    |  5 \cdot 10^{-8}\cdot       | | 80 MHz clock rate         |
+   |                                    |  f_{ref}^2                  |                             |
+   +------------------+-----------------+-----------------------------+-----------------------------+
+   || Phase                             | |                                                         |
+   |  Resolution                        | |  0.1 deg                                                |
+   +------------------+-----------------+-----------------------------+-----------------------------+
+   | | Filter         | | C4            | | 0.25 ms - 325 ms          || ≥ 0.25 ms                  |
+   | | Time           |                 |                             |                             |
+   + | Constant       +-----------------+-----------------------------+-----------------------------+
+   |                  | | C4M           | | 0.8 ms - 100 ms           || ≥ 0.8 ms                   |
+   |                  |                 |                             |                             |
+   +------------------+-----------------+-----------------------------+-----------------------------+
+   || Number of       |                 |                                                           |
+   || Frames          | | C4            |      | 4 - 900                                            |
+   || per Acquisition |                 |                                                           |
+   +                  +-----------------+-----------------------------------------------------------+
+   |                  |                 |                                                           |
+   |                  | | C4M           |      | 4 - 225                                            |
+   |                  |                 |                                                           |
+   +------------------+-----------------+-----------------------------------------------------------+
+   |                                    |      |                                                    |
+   || Output Data                       |      | amplitude & phase /                                |
+   |                                    |      | in-phase & quadrature                              |
+   +------------------+-----------------+-----------------------------------------------------------+
+   |                                    |      |                                                    |
+   || Dynamic Range                     |      | 2 :math:`\times` 10 bit (X, Y)                     |
+   +------------------+-----------------+-----------------------------------------------------------+
+   || Background      |                 |                                                           |
+   |  Suppression /   | | C4            |      | 21 bit equivalent                                  |
+   || AC Coupling     |                 |                                                           |
+   +                  +-----------------+-----------------------------------------------------------+
+   |                  |                 |                                                           |
+   |                  | | C4M           |      | 18 bit equivalent                                  |
+   |                  |                 |                                                           |
+   +------------------+-----------------+-----------------------------------------------------------+
+
+.. tabularcolumns:: | m{3.5cm}|m{4.5cm}|m{4.5cm}|
+
+.. _interfaces:         
+.. table:: heliCam\ :sup:`TM` C4 - Interfaces
+
+   +-----------------+-----------------------------+-----------------------------+
+   || Software       | |                           || GenICam producer DLL       |
+   |                 | | Software                  +-----------------------------+
+   |                 | | Development               || GenICam producer DLL       |
+   |                 | | Kit                       || with examples for          |
+   |                 |                             || Python, MATLAB\ :sup:`TM`  |
+   |                 |                             || LabVIEW\ :sup:`TM`, C++    |
+   |                 |                             |  and .NET                   |
+   |                 +-----------------------------+-----------------------------+
+   |                 | | heliViewer\ :sup:`TM`     || GUI based application      |
+   |                 | | Application Software      || for camera control,        |
+   |                 | |                           || data acquisition,          |
+   |                 | |                           || visualization,             |
+   |                 |                             |  and storage                |
+   +-----------------+-----------------------------+-----------------------------+
+   || Electrical     | | Control Signal and        || Gigabit Ethernet           |
+   ||                | | Data Transfer             ||                            |
+   |                 +-----------------------------+-----------------------------+
+   |                 | | LIA Module                || reference input and        |
+   |                 | |                           || acquisition trigger with   |
+   |                 | |                           || adjustable phase delay     |
+   |                 |                             +-----------------------------+
+   |                 |                             || internal reference         |
+   |                 |                             |  output                     |
+   |                 |                             +-----------------------------+
+   |                 |                             || other in- and output       |
+   |                 |                             |  signals                    |
+   |                 +-----------------------------+-----------------------------+
+   |                 | | Configurable              || sine wave                  |
+   |                 | | Modulated                 || (continuous/bursts)        |
+   |                 | | Test Signal               |                             |
+   |                 |                             +-----------------------------+
+   |                 |                             || 50 kHz                     |
+   |                 |                             |  maximum frequency          |
+   |                 |                             +-----------------------------+
+   |                 |                             || adjustable DC              |
+   |                 |                             +-----------------------------+
+   |                 |                             || electrical output          |
+   |                 |                             | via SFIO                    |
+   |                 |                             +-----------------------------+
+   |                 |                             || optical output             |
+   |                 |                             |  via LED module             |
+   |                 +-----------------------------+-----------------------------+
+   |                 | | Peak Power                || 24 VDC, 30 W               |
+   |                 | | Consumption               ||                            |
+   +-----------------+-----------------------------+-----------------------------+
+   || Mechanical     | | Objective                 || detachable C-mount         |
+   |                 +-----------------------------+-----------------------------+
+   |                 | | Mounting                  || M6 holes (front, left,     |
+   |                 |                             |  right, top)                |
+   +-----------------+-----------------------------+-----------------------------+
+
+        
+.. tabularcolumns:: | p{3.5cm}|p{4.5cm}|p{4.5cm}|
+         
+.. table:: heliCam\ :sup:`TM` C4 - Temperature Control
+
+   +-----------------+-----------------------------+-----------------------------+
+   | Feature         | C4x.0-S4x                   | C4x.0-Sx + HSFC4.1          |
+   |                 |                             |                             |
+   +=================+=============================+=============================+
+   || Cooling        | | user provided cooling,    | | forced convection         |
+   |  Option         | | e.g., mounting on         | | with on- and off switch   |
+   |                 | | heat sink                 |                             |
+   +-----------------+-----------------------------+-----------------------------+
+   || Dimensions     | | 46 :math:`\times` 65      | | 67 :math:`\times` 65      |
+   |                 |   :math:`\times` 180        |   :math:`\times` 180        |
+   |                 |   mm :math:`^3`             |   mm :math:`^3`             |
+   +-----------------+-----------------------------+-----------------------------+
+   || Mass           | | 850 g                     | | 1150 g                    |
+   +-----------------+-----------------------------+-----------------------------+
+   || Permissible    | | depends on the            | | 0 -  40 ° C               |
+   |  Ambient        | | cooling setup             |                             |
+   || Temperature    |                             |                             |
+   +-----------------+-----------------------------+-----------------------------+       
+
+.. note::
+
+   These values reflect currently available settings. Possible 
+   discrepancies with respect to the heliCam\ :sup:`TM` 
+   `C4 data sheet <https://www.heliotis.com/download/datasheet-helicam-c4/>`__ 
+   are due to software limitations. Freely installable updates 
+   will overcome these in the future. Get in touch with 
+   `Heliotis support <mailto:support@heliotis.com>`__ for more information.

@@ -1,0 +1,510 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="C:\Program Files\NeuroCheck 6.2\XSL\CSUX_Detailed.xsl" type="text/xsl"?>
+<neurocheck_3dcamera_setup name="3D Camera Setup File" xml:lang="en" xmlns="http://www.neurocheck.com/xml">
+   <!-- ################################  Header information. Do not change !  ################################ -->
+   <header name="Header information">
+      <meaning_of_contents name="File contains data of type">Configuration of 3D camera</meaning_of_contents>
+      <created_by_name name="Name of creating program">Nc3D.NeuroCheck.Generic</created_by_name>
+      <created_by_dir name="NeuroCheck installation directory">C:\Program Files\NeuroCheck 6.2\</created_by_dir>
+      <created_by_version name="Created by driver version">6.2.9.0</created_by_version>
+      <created_date_time name="Date/time of creation of this file">2022-12-15 - 10:41:29</created_date_time>
+      <file_version name="Version identification of this file">6.2.8.0</file_version>
+      <copyright name="Copyright">NeuroCheck GmbH, 71686 Remseck, Germany</copyright>
+      <model_name name="Model Name">c4brd</model_name>
+   </header>
+   <!-- ########################################  Parameter Settings  ######################################### -->
+   <body name="Configuration data">
+      <parameter id="22100" name="GCSettings" producer="diaphus.cti">
+         <parameter id="22101" name="System" />
+         <parameter id="22102" name="Interface" />
+         <parameter id="22103" name="Device" />
+         <parameter id="22104" name="DeviceRemote">
+            <parameter name="AcquisitionMode" value="SingleFrame" />
+            <parameter name="ChunkModeActive" value="True" />
+            <parameter name="UserOutputValueAll" value="1" />
+            <parameter name="ExtractionMinConfidence" value="0.5" />
+            <parameter name="ExtractionTimeout" value="1" />
+            <parameter name="ExtractionExpectedSurfaceFlatness" value="1" />
+            <parameter name="ExtractionConfidenceEpsilon" value="0.00100000004749745" />
+            <parameter name="ExtractionMismatchEpsilon" value="0.00100000004749745" />
+            <parameter name="ExtractionAssumedRMSImageNoise" value="0" />
+            <parameter name="ExtractionEnvelopeUncertaintyFactor" value="1" />
+            <parameter name="ExtractionPhaseUncertaintyFactor" value="1" />
+            <parameter name="ExtractionEnvelopeUncertaintyAtLowSignalFactor" value="1" />
+            <parameter name="ExtractionExpectedEnvelopePhaseMismatch" value="0.100000001490116" />
+            <parameter name="ExtSimpMaxHWin" value="7" />
+            <parameter name="FPNCorrection" value="AverageLastFrames" />
+            <parameter name="FPNCorrectionNFrames" value="8" />
+            <parameter name="PeakDetectionMode" value="GlobalMax" />
+            <parameter name="PeakDetectionThreshold" value="100" />
+            <parameter name="PeakDetectionFilterWidth" value="4" />
+            <parameter name="ReverseX" value="False" />
+            <parameter name="ReverseY" value="False" />
+            <parameter name="Rotation" value="0" />
+            <parameter name="LogLevel" value="warning" />
+            <parameter name="DeviceOperationMode" value="Topography" />
+            <parameter name="LowLevelMode" value="Off" />
+            <parameter name="ScanMode" value="Down" />
+            <parameter name="Position" value="-17.0499992370605" />
+            <parameter name="TargetPosition" value="0" />
+            <parameter name="MotionMode" value="Immediate" />
+            <parameter name="GeneralSpeed" value="5" />
+            <parameter name="AccelerationRamp" value="0.200000002980232" />
+            <parameter name="AutomatedStageInit" value="False" />
+            <parameter name="MC5004ProxyIndex" value="0" />
+            <parameter name="MC5004ProxySize" value="4" />
+            <parameter name="MC5004ProxySubindex" value="0" />
+            <parameter name="MC5004ProxyValue" value="0" />
+            <parameter name="StageInitMode" value="Force" />
+            <parameter name="iCtw8ProxyAddress" value="0" />
+            <parameter name="iCtw8ProxySize" value="2" />
+            <parameter name="iCtw8ProxyValue" value="0" />
+            <parameter name="Scan3dExtractionMethod" value="AcceleratedCenterOfMassIQCorrection" />
+            <parameter name="Scan3dScalingMethod" value="zTags" />
+            <parameter name="Scan3dDistanceUnit" value="um" />
+            <parameter name="Scan3dOutputMode" value="CalibratedC" />
+            <parameter name="BackgroundSuppression" value="On" />
+            <parameter name="WavelengthCorrection" value="1" />
+            <parameter name="ScanSpeed" value="5" />
+            <parameter name="TargetVerticalSpacing" value="2" />
+            <parameter name="ExposureRatio" value="1" />
+            <parameter name="NCTimeout" value="5000" />
+            <parameter name="NCComputeXYZImage" value="False" />
+            <parameter name="TriggerMode" value="Off">
+               <selector name="TriggerSelector" value="AcquisitionStart" />
+            </parameter>
+            <parameter name="TriggerMode" value="On">
+               <selector name="TriggerSelector" value="FrameStart" />
+            </parameter>
+            <parameter name="TriggerMode" value="Off">
+               <selector name="TriggerSelector" value="FrameBurstStart" />
+            </parameter>
+            <parameter name="TriggerMode" value="On">
+               <selector name="TriggerSelector" value="RecordingStart" />
+            </parameter>
+            <parameter name="TriggerMode" value="Off">
+               <selector name="TriggerSelector" value="Reference" />
+            </parameter>
+            <parameter name="ChunkEnable" value="True">
+               <selector name="ChunkSelector" value="PartCount" />
+            </parameter>
+            <parameter name="ChunkEnable" value="False">
+               <selector name="ChunkSelector" value="PartFixpointScaling" />
+            </parameter>
+            <parameter name="ChunkEnable" value="False">
+               <selector name="ChunkSelector" value="PartFrameNo" />
+            </parameter>
+            <parameter name="ChunkEnable" value="True">
+               <selector name="ChunkSelector" value="PartType" />
+            </parameter>
+            <parameter name="ChunkEnable" value="False">
+               <selector name="ChunkSelector" value="ZTagCount" />
+            </parameter>
+            <parameter name="ChunkEnable" value="False">
+               <selector name="ChunkSelector" value="ZTagValue" />
+            </parameter>
+            <parameter name="ChunkEnable" value="False">
+               <selector name="ChunkSelector" value="Scan3dDistanceUnit" />
+            </parameter>
+            <parameter name="ChunkEnable" value="False">
+               <selector name="ChunkSelector" value="Scan3dOutputMode" />
+            </parameter>
+            <parameter name="ChunkEnable" value="False">
+               <selector name="ChunkSelector" value="Scan3dCoordinateScale" />
+            </parameter>
+            <parameter name="ChunkEnable" value="False">
+               <selector name="ChunkSelector" value="Scan3dCoordinateOffset" />
+            </parameter>
+            <parameter name="ChunkEnable" value="False">
+               <selector name="ChunkSelector" value="ProcessingString" />
+            </parameter>
+            <parameter name="ChunkEnable" value="False">
+               <selector name="ChunkSelector" value="ConfigString" />
+            </parameter>
+            <parameter name="ChunkEnable" value="False">
+               <selector name="ChunkSelector" value="Timestamp" />
+            </parameter>
+            <parameter name="ChunkEnable" value="False">
+               <selector name="ChunkSelector" value="FrameID" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="Line0" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="Line1" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="Line2" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="Line3" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="RTIO2" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="RTIO3" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="RTIO4" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO1" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO2" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO3" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO4" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO5" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO6" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO7" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO8" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO10" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO11" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO12" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO13" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO14" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO15" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO16" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="DIO17" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="RTIO6" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="RTIO7" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="FI2" />
+            </parameter>
+            <parameter name="LineInverter" value="False">
+               <selector name="LineSelector" value="FI3" />
+            </parameter>
+            <parameter name="LineSource" value="Off">
+               <selector name="LineSelector" value="Line2" />
+            </parameter>
+            <parameter name="LineSource" value="Off">
+               <selector name="LineSelector" value="Line3" />
+            </parameter>
+            <parameter name="LineSource" value="Off">
+               <selector name="LineSelector" value="RTIO2" />
+            </parameter>
+            <parameter name="LineSource" value="Off">
+               <selector name="LineSelector" value="RTIO3" />
+            </parameter>
+            <parameter name="LineSource" value="Off">
+               <selector name="LineSelector" value="DIO10" />
+            </parameter>
+            <parameter name="LineSource" value="Off">
+               <selector name="LineSelector" value="DIO11" />
+            </parameter>
+            <parameter name="LineSource" value="Off">
+               <selector name="LineSelector" value="DIO12" />
+            </parameter>
+            <parameter name="LineSource" value="Off">
+               <selector name="LineSelector" value="DIO13" />
+            </parameter>
+            <parameter name="LineSource" value="Off">
+               <selector name="LineSelector" value="DIO14" />
+            </parameter>
+            <parameter name="LineSource" value="Off">
+               <selector name="LineSelector" value="DIO15" />
+            </parameter>
+            <parameter name="LineSource" value="Off">
+               <selector name="LineSelector" value="DIO16" />
+            </parameter>
+            <parameter name="LineSource" value="Off">
+               <selector name="LineSelector" value="DIO17" />
+            </parameter>
+            <parameter name="LineFormat" value="HighSide">
+               <selector name="LineSelector" value="RTIO2" />
+            </parameter>
+            <parameter name="LineFormat" value="HighSide">
+               <selector name="LineSelector" value="RTIO3" />
+            </parameter>
+            <parameter name="LineFormat" value="HighSide">
+               <selector name="LineSelector" value="DIO10" />
+            </parameter>
+            <parameter name="LineFormat" value="HighSide">
+               <selector name="LineSelector" value="DIO11" />
+            </parameter>
+            <parameter name="LineFormat" value="HighSide">
+               <selector name="LineSelector" value="DIO12" />
+            </parameter>
+            <parameter name="LineFormat" value="HighSide">
+               <selector name="LineSelector" value="DIO13" />
+            </parameter>
+            <parameter name="LineFormat" value="HighSide">
+               <selector name="LineSelector" value="DIO14" />
+            </parameter>
+            <parameter name="LineFormat" value="HighSide">
+               <selector name="LineSelector" value="DIO15" />
+            </parameter>
+            <parameter name="LineFormat" value="HighSide">
+               <selector name="LineSelector" value="DIO16" />
+            </parameter>
+            <parameter name="LineFormat" value="HighSide">
+               <selector name="LineSelector" value="DIO17" />
+            </parameter>
+            <parameter name="UserOutputValue" value="True">
+               <selector name="UserOutputSelector" value="UserOutput0" />
+            </parameter>
+            <parameter name="UserOutputValue" value="False">
+               <selector name="UserOutputSelector" value="UserOutput1" />
+            </parameter>
+            <parameter name="UserOutputValue" value="False">
+               <selector name="UserOutputSelector" value="UserOutput2" />
+            </parameter>
+            <parameter name="UserOutputValue" value="False">
+               <selector name="UserOutputSelector" value="UserOutput3" />
+            </parameter>
+            <parameter name="UserOutputValue" value="False">
+               <selector name="UserOutputSelector" value="UserOutput4" />
+            </parameter>
+            <parameter name="UserOutputValue" value="False">
+               <selector name="UserOutputSelector" value="UserOutput5" />
+            </parameter>
+            <parameter name="UserOutputValue" value="False">
+               <selector name="UserOutputSelector" value="UserOutput6" />
+            </parameter>
+            <parameter name="UserOutputValue" value="False">
+               <selector name="UserOutputSelector" value="UserOutput7" />
+            </parameter>
+            <parameter name="ComponentEnable" value="True">
+               <selector name="ComponentSelector" value="Intensity" />
+            </parameter>
+            <parameter name="ComponentEnable" value="False">
+               <selector name="ComponentSelector" value="Range" />
+            </parameter>
+            <parameter name="ComponentEnable" value="False">
+               <selector name="ComponentSelector" value="Phase" />
+            </parameter>
+            <parameter name="ComponentEnable" value="True">
+               <selector name="ComponentSelector" value="Reflectance" />
+            </parameter>
+            <parameter name="ComponentEnable" value="False">
+               <selector name="ComponentSelector" value="Confidence" />
+            </parameter>
+            <parameter name="ComponentEnable" value="False">
+               <selector name="ComponentSelector" value="Precision" />
+            </parameter>
+            <parameter name="ComponentEnable" value="False">
+               <selector name="ComponentSelector" value="UnwrappingGroup" />
+            </parameter>
+            <parameter name="ComponentEnable" value="False">
+               <selector name="ComponentSelector" value="AdditionalRangeInfo" />
+            </parameter>
+            <parameter name="LightControllerSource" value="UserOutput0">
+               <selector name="LightControllerSelector" value="LightController0" />
+            </parameter>
+            <parameter name="LightBrightness" value="100">
+               <selector name="LightControllerSelector" value="LightController0" />
+            </parameter>
+            <parameter name="SoftlimitEnable" value="True">
+               <selector name="SoftlimitSelector" value="HardwareLower" />
+            </parameter>
+            <parameter name="SoftlimitEnable" value="True">
+               <selector name="SoftlimitSelector" value="HardwareUpper" />
+            </parameter>
+            <parameter name="SoftlimitEnable" value="True">
+               <selector name="SoftlimitSelector" value="UserLower" />
+            </parameter>
+            <parameter name="SoftlimitEnable" value="True">
+               <selector name="SoftlimitSelector" value="UserUpper" />
+            </parameter>
+            <parameter name="SoftlimitPosition" value="-2147483.75">
+               <selector name="SoftlimitSelector" value="UserLower" />
+            </parameter>
+            <parameter name="SoftlimitPosition" value="2147483.75">
+               <selector name="SoftlimitSelector" value="UserUpper" />
+            </parameter>
+            <parameter name="NumericalAperture" value="1">
+               <selector name="OpticControllerSelector" value="Fixed" />
+            </parameter>
+            <parameter name="Magnification" value="1">
+               <selector name="OpticControllerSelector" value="Fixed" />
+            </parameter>
+            <parameter name="Scan3dCoordinateScale" value="1">
+               <selector name="Scan3dCoordinateSelector" value="CoordinateC" />
+            </parameter>
+            <parameter name="Scan3dCoordinateOffset" value="0">
+               <selector name="Scan3dCoordinateSelector" value="CoordinateA" />
+            </parameter>
+            <parameter name="Scan3dCoordinateOffset" value="0">
+               <selector name="Scan3dCoordinateSelector" value="CoordinateB" />
+            </parameter>
+            <parameter name="Scan3dCoordinateOffset" value="0">
+               <selector name="Scan3dCoordinateSelector" value="CoordinateC" />
+            </parameter>
+            <parameter name="ScanRange" value="0.501143991947174">
+               <selector name="VerticalSegmentSelector" value="Segment0" />
+            </parameter>
+            <parameter name="ScanRange" value="0">
+               <selector name="VerticalSegmentSelector" value="Segment1" />
+            </parameter>
+            <parameter name="ScanRange" value="0">
+               <selector name="VerticalSegmentSelector" value="Segment2" />
+            </parameter>
+            <parameter name="ScanRange" value="0">
+               <selector name="VerticalSegmentSelector" value="Segment3" />
+            </parameter>
+            <parameter name="TargetScanRange" value="0.5">
+               <selector name="VerticalSegmentSelector" value="Segment0" />
+            </parameter>
+            <parameter name="TargetScanRange" value="0.00999999977648258">
+               <selector name="VerticalSegmentSelector" value="Segment1" />
+            </parameter>
+            <parameter name="TargetScanRange" value="0.00999999977648258">
+               <selector name="VerticalSegmentSelector" value="Segment2" />
+            </parameter>
+            <parameter name="TargetScanRange" value="0.00999999977648258">
+               <selector name="VerticalSegmentSelector" value="Segment3" />
+            </parameter>
+            <parameter name="VerticalSegmentEnable" value="True">
+               <selector name="VerticalSegmentSelector" value="Segment0" />
+            </parameter>
+            <parameter name="VerticalSegmentEnable" value="False">
+               <selector name="VerticalSegmentSelector" value="Segment1" />
+            </parameter>
+            <parameter name="VerticalSegmentEnable" value="False">
+               <selector name="VerticalSegmentSelector" value="Segment2" />
+            </parameter>
+            <parameter name="VerticalSegmentEnable" value="False">
+               <selector name="VerticalSegmentSelector" value="Segment3" />
+            </parameter>
+            <parameter name="ScanPosition" value="-16.6000003814697">
+               <selector name="VerticalSegmentSelector" value="Segment0" />
+            </parameter>
+            <parameter name="ScanPosition" value="-1">
+               <selector name="VerticalSegmentSelector" value="Segment1" />
+            </parameter>
+            <parameter name="ScanPosition" value="-2">
+               <selector name="VerticalSegmentSelector" value="Segment2" />
+            </parameter>
+            <parameter name="ScanPosition" value="-3">
+               <selector name="VerticalSegmentSelector" value="Segment3" />
+            </parameter>
+            <parameter name="TriggerSource" value="Software">
+               <selector name="TriggerSelector" value="AcquisitionStart" />
+            </parameter>
+            <parameter name="TriggerSource" value="Software">
+               <selector name="TriggerSelector" value="FrameStart" />
+            </parameter>
+            <parameter name="TriggerSource" value="Software">
+               <selector name="TriggerSelector" value="FrameBurstStart" />
+            </parameter>
+            <parameter name="TriggerSource" value="Stage">
+               <selector name="TriggerSelector" value="RecordingStart" />
+            </parameter>
+            <parameter name="TriggerSource" value="FI2">
+               <selector name="TriggerSelector" value="Reference" />
+            </parameter>
+            <parameter name="TriggerActivation" value="RisingEdge">
+               <selector name="TriggerSelector" value="AcquisitionStart" />
+            </parameter>
+            <parameter name="TriggerActivation" value="RisingEdge">
+               <selector name="TriggerSelector" value="FrameStart" />
+            </parameter>
+            <parameter name="TriggerActivation" value="RisingEdge">
+               <selector name="TriggerSelector" value="FrameBurstStart" />
+            </parameter>
+            <parameter name="TriggerActivation" value="RisingEdge">
+               <selector name="TriggerSelector" value="RecordingStart" />
+            </parameter>
+            <parameter name="TriggerActivation" value="RisingEdge">
+               <selector name="TriggerSelector" value="Reference" />
+            </parameter>
+            <parameter name="TriggerOverlap" value="PreviousFrame">
+               <selector name="TriggerSelector" value="AcquisitionStart" />
+            </parameter>
+            <parameter name="TriggerOverlap" value="Off">
+               <selector name="TriggerSelector" value="FrameStart" />
+            </parameter>
+            <parameter name="TriggerOverlap" value="Off">
+               <selector name="TriggerSelector" value="FrameBurstStart" />
+            </parameter>
+            <parameter name="TriggerOverlap" value="Off">
+               <selector name="TriggerSelector" value="RecordingStart" />
+            </parameter>
+            <parameter name="TriggerOverlap" value="Off">
+               <selector name="TriggerSelector" value="Reference" />
+            </parameter>
+            <parameter name="TriggerDelay" value="0">
+               <selector name="TriggerSelector" value="AcquisitionStart" />
+            </parameter>
+            <parameter name="TriggerDelay" value="0">
+               <selector name="TriggerSelector" value="FrameStart" />
+            </parameter>
+            <parameter name="TriggerDelay" value="0">
+               <selector name="TriggerSelector" value="FrameBurstStart" />
+            </parameter>
+            <parameter name="TriggerDelay" value="0">
+               <selector name="TriggerSelector" value="RecordingStart" />
+            </parameter>
+            <parameter name="TriggerDelay" value="0">
+               <selector name="TriggerSelector" value="Reference" />
+            </parameter>
+            <parameter name="TriggerDivider" value="1">
+               <selector name="TriggerSelector" value="AcquisitionStart" />
+            </parameter>
+            <parameter name="TriggerDivider" value="1">
+               <selector name="TriggerSelector" value="FrameStart" />
+            </parameter>
+            <parameter name="TriggerDivider" value="1">
+               <selector name="TriggerSelector" value="FrameBurstStart" />
+            </parameter>
+            <parameter name="TriggerDivider" value="1">
+               <selector name="TriggerSelector" value="RecordingStart" />
+            </parameter>
+            <parameter name="TriggerDivider" value="1">
+               <selector name="TriggerSelector" value="Reference" />
+            </parameter>
+            <parameter name="TriggerMultiplier" value="1">
+               <selector name="TriggerSelector" value="AcquisitionStart" />
+            </parameter>
+            <parameter name="TriggerMultiplier" value="1">
+               <selector name="TriggerSelector" value="FrameStart" />
+            </parameter>
+            <parameter name="TriggerMultiplier" value="1">
+               <selector name="TriggerSelector" value="FrameBurstStart" />
+            </parameter>
+            <parameter name="TriggerMultiplier" value="1">
+               <selector name="TriggerSelector" value="RecordingStart" />
+            </parameter>
+            <parameter name="TriggerMultiplier" value="1">
+               <selector name="TriggerSelector" value="Reference" />
+            </parameter>
+         </parameter>
+         <parameter id="22105" name="DataStream" />
+      </parameter>
+      <parameter id="22200" name="Custom Settings" />
+   </body>
+</neurocheck_3dcamera_setup>

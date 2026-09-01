@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="C:\Program Files\NeuroCheck 6.2\XSL\CFGX_DRV_Detailed.xsl" type="text/xsl"?>
+<neurocheck_drv_configuration name="NeuroCheck Driver Configuration" xml:lang="en" xmlns="http://www.neurocheck.com/xml">
+   <!-- ################################  Header information. Do not change!  ################################# -->
+   <header name="Header information">
+      <created_by_name name="Name of creating assembly">Nc3D.NeuroCheck.Generic</created_by_name>
+      <created_by_version name="Driver version">6.2.9.0-preview</created_by_version>
+      <created_date_time name="Date/time of creation of this file">2022-12-14 - 12:02:25</created_date_time>
+      <created_by_dir name="NeuroCheck installation directory">C:\Program Files\NeuroCheck 6.2\</created_by_dir>
+   </header>
+   <body name="Configuration data">
+      <driver name="Driver" assembly="Nc3D.NeuroCheck.Generic.dll" version="6.2.9.0-preview" date_time="2022-12-14 - 12:02:25">
+         <logging name="Logging enabled" display="Yes">1</logging>
+         <trace name="Driver trace enabled" display="No">0</trace>
+         <timeout name="Timeout">2000</timeout>
+         <cti_excluded name="Excluded GenTL producers">bgapi2_gige.cti;bgapi2_usb.cti</cti_excluded>
+         <features_excluded name="Excluded features">[System]*;[Interface]*;[Device]*;[DataStream]*;DeviceControl;LUTControl;CounterAndTimerControl;EncoderControl;LogicBlockControl;ActionControl;EventControl;UserSetControl;SequencerControl;FileAccessControl;SourceControl;TransferControl;TestControl;TransportLayerControl</features_excluded>
+         <initialize_devices name="Initialize devices on start-up" display="Yes">1</initialize_devices>
+         <cache_features name="Use feature value caching" display="Yes">1</cache_features>
+         <extensions name="Driver extension settings" />
+      </driver>
+   </body>
+</neurocheck_drv_configuration>

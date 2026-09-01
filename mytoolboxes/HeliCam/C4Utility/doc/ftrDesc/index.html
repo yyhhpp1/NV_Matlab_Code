@@ -1,0 +1,601 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feature Description &mdash; gen4 Devices Feature Description v1.11.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=38fd80f2" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=46dc9575"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="AcquisitionControl" href="index/AcquisitionControl.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            gen4 Devices Feature Description
+              <img src="_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Content</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index/AcquisitionControl.html">AcquisitionControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/ChunkDataControl.html">ChunkDataControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/CounterAndTimerControl.html">CounterAndTimerControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/DACDevice.html">DACDevice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/DeviceControl.html">DeviceControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/DigitalIOControl.html">DigitalIOControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/EncoderControl.html">EncoderControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/EventControl.html">EventControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/ExtractionControl.html">ExtractionControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/FPGAControl.html">FPGAControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/FieldbusControl.html">FieldbusControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/FileAccessControl.html">FileAccessControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/HardwareControl.html">HardwareControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/HeliDriverControl.html">HeliDriverControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/ImageFormatControl.html">ImageFormatControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/LightControl.html">LightControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/LockInControl.html">LockInControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/MiscControl.html">MiscControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/MotionControl.html">MotionControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/MotionFeatures.html">MotionFeatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/OpticControl.html">OpticControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/S4Device.html">S4Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/Scan3dControl.html">Scan3dControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/SensorControl.html">SensorControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/SequencerControl.html">SequencerControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/TransferControl.html">TransferControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/TransportLayerControl.html">TransportLayerControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/UserSetControl.html">UserSetControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/WLIControl.html">WLIControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appendix/Appendix.html">Appendix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">gen4 Devices Feature Description</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Feature Description</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="feature-description">
+<span id="featuredescription"></span><h1>Feature Description<a class="headerlink" href="#feature-description" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Content</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index/AcquisitionControl.html">AcquisitionControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/AcquisitionMode.html">AcquisitionMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/AcquisitionStart.html">AcquisitionStart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/AcquisitionStop.html">AcquisitionStop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/AcquisitionStatusSelector.html">AcquisitionStatusSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/AcquisitionStatus.html">AcquisitionStatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/AcquisitionBurstFrameCount.html">AcquisitionBurstFrameCount</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/TriggerSelector.html">TriggerSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/TriggerMode.html">TriggerMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/TriggerSoftware.html">TriggerSoftware</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/TriggerSource.html">TriggerSource</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/TriggerActivation.html">TriggerActivation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/TriggerOverlap.html">TriggerOverlap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/TriggerDelay.html">TriggerDelay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/TriggerDivider.html">TriggerDivider</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/AcquisitionControl/TriggerMultiplier.html">TriggerMultiplier</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/ChunkDataControl.html">ChunkDataControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkModeActive.html">ChunkModeActive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkSelector.html">ChunkSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkEnable.html">ChunkEnable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkPartCount.html">ChunkPartCount</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkPartSelector.html">ChunkPartSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkPartFixpointScaling.html">ChunkPartFixpointScaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkPartFrameNo.html">ChunkPartFrameNo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkPartType.html">ChunkPartType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkZTagCount.html">ChunkZTagCount</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkZTagSelector.html">ChunkZTagSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkZTagValue.html">ChunkZTagValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkScan3dDistanceUnit.html">ChunkScan3dDistanceUnit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkScan3dOutputMode.html">ChunkScan3dOutputMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkScan3dCoordinateSelector.html">ChunkScan3dCoordinateSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkScan3dCoordinateScale.html">ChunkScan3dCoordinateScale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkScan3dCoordinateOffset.html">ChunkScan3dCoordinateOffset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkProcessingString.html">ChunkProcessingString</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkConfigString.html">ChunkConfigString</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkPixelFormat.html">ChunkPixelFormat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkFrameID.html">ChunkFrameID</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ChunkDataControl/ChunkTimestamp.html">ChunkTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/CounterAndTimerControl.html">CounterAndTimerControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/CounterAndTimerControl/CounterSelector.html">CounterSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/CounterAndTimerControl/CounterEventSource.html">CounterEventSource</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/CounterAndTimerControl/CounterEventActivation.html">CounterEventActivation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/CounterAndTimerControl/CounterReset.html">CounterReset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/CounterAndTimerControl/CounterValue.html">CounterValue</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/DACDevice.html">DACDevice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/DeviceControl.html">DeviceControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceVendorName.html">DeviceVendorName</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceModelName.html">DeviceModelName</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceFamilyName.html">DeviceFamilyName</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceFirmwareVersion.html">DeviceFirmwareVersion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceKernelVersion.html">DeviceKernelVersion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceDriverVersion.html">DeviceDriverVersion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceFPGAFwVersion.html">DeviceFPGAFwVersion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceSerialNumber.html">DeviceSerialNumber</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceTemperatureSelector.html">DeviceTemperatureSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceTemperature.html">DeviceTemperature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceMonitorSelector.html">DeviceMonitorSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceMonitorActualValue.html">DeviceMonitorActualValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceMonitorMinimumValue.html">DeviceMonitorMinimumValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceMonitorMaximumValue.html">DeviceMonitorMaximumValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/Timestamp.html">Timestamp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/DeviceReset.html">DeviceReset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DeviceControl/TimestampReset.html">TimestampReset</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/DigitalIOControl.html">DigitalIOControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/DigitalIOControl/LineSelector.html">LineSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DigitalIOControl/LineMode.html">LineMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DigitalIOControl/LineType.html">LineType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DigitalIOControl/LineInverter.html">LineInverter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DigitalIOControl/LineStatus.html">LineStatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DigitalIOControl/LineStatusAll.html">LineStatusAll</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DigitalIOControl/LineSource.html">LineSource</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DigitalIOControl/LineFormat.html">LineFormat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DigitalIOControl/UserOutputSelector.html">UserOutputSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DigitalIOControl/UserOutputValue.html">UserOutputValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/DigitalIOControl/UserOutputValueAll.html">UserOutputValueAll</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/EncoderControl.html">EncoderControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/EncoderControl/EncoderSelector.html">EncoderSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/EncoderControl/EncoderInverter.html">EncoderInverter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/EncoderControl/EncoderReset.html">EncoderReset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/EncoderControl/EncoderValue.html">EncoderValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/EncoderControl/EncoderResolution.html">EncoderResolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/EncoderControl/zTagInverter.html">zTagInverter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/EncoderControl/zTagReset.html">zTagReset</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/EventControl.html">EventControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventSelector.html">EventSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventNotification.html">EventNotification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventFrameTriggerWaitData.html">EventFrameTriggerWaitData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameTriggerWaitData/EventFrameTriggerWait.html">EventFrameTriggerWait</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameTriggerWaitData/EventFrameTriggerWaitTimestamp.html">EventFrameTriggerWaitTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventFrameTriggerData.html">EventFrameTriggerData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameTriggerData/EventFrameTrigger.html">EventFrameTrigger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameTriggerData/EventFrameTriggerTimestamp.html">EventFrameTriggerTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventFrameTriggerMissedData.html">EventFrameTriggerMissedData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameTriggerMissedData/EventFrameTriggerMissed.html">EventFrameTriggerMissed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameTriggerMissedData/EventFrameTriggerMissedTimestamp.html">EventFrameTriggerMissedTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventFrameStartData.html">EventFrameStartData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameStartData/EventFrameStart.html">EventFrameStart</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameStartData/EventFrameStartTimestamp.html">EventFrameStartTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventFrameEndData.html">EventFrameEndData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameEndData/EventFrameEnd.html">EventFrameEnd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameEndData/EventFrameEndTimestamp.html">EventFrameEndTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventFrameTransferStartData.html">EventFrameTransferStartData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameTransferStartData/EventFrameTransferStart.html">EventFrameTransferStart</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameTransferStartData/EventFrameTransferStartTimestamp.html">EventFrameTransferStartTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventFrameTransferEndData.html">EventFrameTransferEndData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameTransferEndData/EventFrameTransferEnd.html">EventFrameTransferEnd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventFrameTransferEndData/EventFrameTransferEndTimestamp.html">EventFrameTransferEndTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventRecordingTriggerWaitData.html">EventRecordingTriggerWaitData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventRecordingTriggerWaitData/EventRecordingTriggerWait.html">EventRecordingTriggerWait</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventRecordingTriggerWaitData/EventRecordingTriggerWaitTimestamp.html">EventRecordingTriggerWaitTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventRecordingTriggerData.html">EventRecordingTriggerData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventRecordingTriggerData/EventRecordingTrigger.html">EventRecordingTrigger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventRecordingTriggerData/EventRecordingTriggerTimestamp.html">EventRecordingTriggerTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventRecordingTriggerMissedData.html">EventRecordingTriggerMissedData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventRecordingTriggerMissedData/EventRecordingTriggerMissed.html">EventRecordingTriggerMissed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventRecordingTriggerMissedData/EventRecordingTriggerMissedTimestamp.html">EventRecordingTriggerMissedTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventRecordingStartData.html">EventRecordingStartData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventRecordingStartData/EventRecordingStart.html">EventRecordingStart</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventRecordingStartData/EventRecordingStartTimestamp.html">EventRecordingStartTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventRecordingEndData.html">EventRecordingEndData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventRecordingEndData/EventRecordingEnd.html">EventRecordingEnd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventRecordingEndData/EventRecordingEndTimestamp.html">EventRecordingEndTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventStageMotionStartData.html">EventStageMotionStartData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventStageMotionStartData/EventStageMotionStart.html">EventStageMotionStart</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventStageMotionStartData/EventStageMotionStartTimestamp.html">EventStageMotionStartTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/EventControl/EventStageMotionEndData.html">EventStageMotionEndData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventStageMotionEndData/EventStageMotionEnd.html">EventStageMotionEnd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/EventControl/EventStageMotionEndData/EventStageMotionEndTimestamp.html">EventStageMotionEndTimestamp</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/ExtractionControl.html">ExtractionControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionMinConfidence.html">ExtractionMinConfidence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionTimeout.html">ExtractionTimeout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionExpectedSurfaceFlatness.html">ExtractionExpectedSurfaceFlatness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionConfidenceEpsilon.html">ExtractionConfidenceEpsilon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionMismatchEpsilon.html">ExtractionMismatchEpsilon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionAssumedRMSImageNoise.html">ExtractionAssumedRMSImageNoise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionEnvelopeUncertaintyFactor.html">ExtractionEnvelopeUncertaintyFactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionPhaseUncertaintyFactor.html">ExtractionPhaseUncertaintyFactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionEnvelopeUncertaintyAtLowSignalFactor.html">ExtractionEnvelopeUncertaintyAtLowSignalFactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionExpectedEnvelopePhaseMismatch.html">ExtractionExpectedEnvelopePhaseMismatch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionPreprocessingFilterType.html">ExtractionPreprocessingFilterType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionPreprocessingKernelSize.html">ExtractionPreprocessingKernelSize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionPreprocessingSigma.html">ExtractionPreprocessingSigma</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionPreprocessingOrder.html">ExtractionPreprocessingOrder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ExtractionControl/ExtractionCorrectionSigma.html">ExtractionCorrectionSigma</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/FPGAControl.html">FPGAControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/FPGAControl/ExtSimpMaxHWin.html">ExtSimpMaxHWin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FPGAControl/FPNCorrection.html">FPNCorrection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FPGAControl/FPNCorrectionNFrames.html">FPNCorrectionNFrames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FPGAControl/PeakDetectionMode.html">PeakDetectionMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FPGAControl/PeakDetectionThreshold.html">PeakDetectionThreshold</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FPGAControl/PeakDetectionFilterWidth.html">PeakDetectionFilterWidth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FPGAControl/RecordingActive.html">RecordingActive</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/FieldbusControl.html">FieldbusControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/FieldbusControl/FieldbusType.html">FieldbusType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FieldbusControl/FieldbusIntDataSelector.html">FieldbusIntDataSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FieldbusControl/FieldbusIntDataValue.html">FieldbusIntDataValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FieldbusControl/FieldbusIntDataMode.html">FieldbusIntDataMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FieldbusControl/FieldbusFloatDataSelector.html">FieldbusFloatDataSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FieldbusControl/FieldbusFloatDataValue.html">FieldbusFloatDataValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FieldbusControl/FieldbusFloatDataMode.html">FieldbusFloatDataMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FieldbusControl/FieldbusBoolSelector.html">FieldbusBoolSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FieldbusControl/FieldbusBoolMode.html">FieldbusBoolMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FieldbusControl/FieldbusBoolSource.html">FieldbusBoolSource</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FieldbusControl/FieldbusBoolStatus.html">FieldbusBoolStatus</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/FileAccessControl.html">FileAccessControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/FileAccessControl/FileSelector.html">FileSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FileAccessControl/FileOperationSelector.html">FileOperationSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FileAccessControl/FileOperationExecute.html">FileOperationExecute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FileAccessControl/FileOpenMode.html">FileOpenMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FileAccessControl/FileAccessOffset.html">FileAccessOffset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FileAccessControl/FileAccessLength.html">FileAccessLength</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FileAccessControl/FileOperationStatus.html">FileOperationStatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FileAccessControl/FileOperationResult.html">FileOperationResult</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/FileAccessControl/FileSize.html">FileSize</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/HardwareControl.html">HardwareControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/HardwareControl/HardwareProcessingBoardType.html">HardwareProcessingBoardType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/HardwareControl/HardwarePIBoardType.html">HardwarePIBoardType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/HardwareControl/HardwareStageType.html">HardwareStageType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/HardwareControl/HardwareIlluminationType.html">HardwareIlluminationType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/HardwareControl/HardwareSensorType.html">HardwareSensorType</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/HeliDriverControl.html">HeliDriverControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/HeliDriverControl/HeliDriverFamily.html">HeliDriverFamily</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/HeliDriverControl/HeliDriverStatus.html">HeliDriverStatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/HeliDriverControl/HeliDriverSerialNumber.html">HeliDriverSerialNumber</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/HeliDriverControl/HeliDriverFirmwareVersion.html">HeliDriverFirmwareVersion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/HeliDriverControl/HeliDriverModuleSelector.html">HeliDriverModuleSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/HeliDriverControl/HeliDriverModuleType.html">HeliDriverModuleType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/HeliDriverControl/HeliDriverModuleFirmwareVersion.html">HeliDriverModuleFirmwareVersion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/ImageFormatControl.html">ImageFormatControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/ComponentSelector.html">ComponentSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/ComponentEnable.html">ComponentEnable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/ComponentIDValue.html">ComponentIDValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/Width.html">Width</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/Height.html">Height</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/ReverseX.html">ReverseX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/ReverseY.html">ReverseY</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/Rotation.html">Rotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/PixelFormat.html">PixelFormat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/TestPixelMode.html">TestPixelMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/SensorWidth.html">SensorWidth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/SensorHeight.html">SensorHeight</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/SensorPixelWidth.html">SensorPixelWidth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/SensorPixelHeight.html">SensorPixelHeight</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/ImageFormatControl/SensorName.html">SensorName</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/LightControl.html">LightControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/LightControllerSelector.html">LightControllerSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/LightControllerSource.html">LightControllerSource</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/LightCurrentRating.html">LightCurrentRating</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/LightBrightness.html">LightBrightness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/LightCurrentMeasured.html">LightCurrentMeasured</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/SignalGeneratorFrequency.html">SignalGeneratorFrequency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/SignalGeneratorAmplitude.html">SignalGeneratorAmplitude</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/SignalGeneratorOffset.html">SignalGeneratorOffset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/SignalGeneratorModulationMode.html">SignalGeneratorModulationMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/SignalGeneratorMode.html">SignalGeneratorMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/SignalGeneratorPulseDuration.html">SignalGeneratorPulseDuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/SignalGeneratorTriggerSource.html">SignalGeneratorTriggerSource</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/SignalGeneratorTriggerActivation.html">SignalGeneratorTriggerActivation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/SignalGeneratorTriggerDelay.html">SignalGeneratorTriggerDelay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LightControl/SignalGeneratorPhaseShift.html">SignalGeneratorPhaseShift</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/LockInControl.html">LockInControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInTargetReferenceFrequency.html">LockInTargetReferenceFrequency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInActualReferenceFrequency.html">LockInActualReferenceFrequency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInExpectedFrequencyDeviation.html">LockInExpectedFrequencyDeviation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInTargetTimeConstantNPeriods.html">LockInTargetTimeConstantNPeriods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInActualTimeConstantNPeriods.html">LockInActualTimeConstantNPeriods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInTargetBlankDurationNPeriods.html">LockInTargetBlankDurationNPeriods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInActualBlankDurationNPeriods.html">LockInActualBlankDurationNPeriods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInReferenceSourceType.html">LockInReferenceSourceType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInReferenceSourceSignal.html">LockInReferenceSourceSignal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInReferenceTimeShift.html">LockInReferenceTimeShift</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInReferenceFrequencyScaler.html">LockInReferenceFrequencyScaler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInCoupling.html">LockInCoupling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/LockInControl/LockInSensitivity.html">LockInSensitivity</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/MiscControl.html">MiscControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/MiscControl/LogSelector.html">LogSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MiscControl/LogLevel.html">LogLevel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MiscControl/LastErrorMessage.html">LastErrorMessage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MiscControl/DeviceOperationMode.html">DeviceOperationMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MiscControl/LowLevelMode.html">LowLevelMode</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/MotionControl.html">MotionControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/StageType.html">StageType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/zTagResolution.html">zTagResolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/ScanMode.html">ScanMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/Position.html">Position</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/TargetPosition.html">TargetPosition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/MotionMode.html">MotionMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/StartPosition.html">StartPosition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/EndPosition.html">EndPosition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/TriggerPosition.html">TriggerPosition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/GeneralSpeed.html">GeneralSpeed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/AccelerationRamp.html">AccelerationRamp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/AutomatedStageInit.html">AutomatedStageInit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/StageInit.html">StageInit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/StageMove.html">StageMove</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/StageCategory.html">StageCategory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/MoLibName.html">MoLibName</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/MoLibVersion.html">MoLibVersion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/SoftlimitSelector.html">SoftlimitSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/SoftlimitEnable.html">SoftlimitEnable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/SoftlimitPosition.html">SoftlimitPosition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/SoftlimitSave.html">SoftlimitSave</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/StageInitialized.html">StageInitialized</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/StageInMotion.html">StageInMotion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/StageStatusSelector.html">StageStatusSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionControl/StageStatus.html">StageStatus</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/MotionFeatures.html">MotionFeatures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionFeatures/MoDummy.html">MoDummy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoDummy/UserZTagResolution.html">UserZTagResolution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionFeatures/MoH8.html">MoH8</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoH8/StageInitMode.html">StageInitMode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoH8/MC5004ProxyIndex.html">MC5004ProxyIndex</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoH8/MC5004ProxySubindex.html">MC5004ProxySubindex</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoH8/MC5004ProxySize.html">MC5004ProxySize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoH8/MC5004ProxyValue.html">MC5004ProxyValue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoH8/MC5004Read.html">MC5004Read</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoH8/MC5004Write.html">MC5004Write</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoH8/iCtw8ProxyAddress.html">iCtw8ProxyAddress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoH8/iCtw8ProxySize.html">iCtw8ProxySize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoH8/iCtw8ProxyValue.html">iCtw8ProxyValue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoH8/iCtw8Read.html">iCtw8Read</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoH8/iCtw8Write.html">iCtw8Write</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index/MotionFeatures/MoXenax.html">MoXenax</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoXenax/StageInitMode.html">StageInitMode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoXenax/XenaxIP.html">XenaxIP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoXenax/XenaxPort.html">XenaxPort</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoXenax/XenaxCommand.html">XenaxCommand</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoXenax/XenaxReply.html">XenaxReply</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index/MotionFeatures/MoXenax/XenaxSubmit.html">XenaxSubmit</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/OpticControl.html">OpticControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/OpticControl/OpticControllerSelector.html">OpticControllerSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/OpticControl/OpticType.html">OpticType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/OpticControl/OpticControllerSerialNumber.html">OpticControllerSerialNumber</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/OpticControl/OpticControllerFirmwareVersion.html">OpticControllerFirmwareVersion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/OpticControl/NumericalAperture.html">NumericalAperture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/OpticControl/Magnification.html">Magnification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/OpticControl/WorkingDistance.html">WorkingDistance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/OpticControl/OpticTemperatureStatus.html">OpticTemperatureStatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/OpticControl/OpticTemperatureControlMode.html">OpticTemperatureControlMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/OpticControl/OpticTargetTemperature.html">OpticTargetTemperature</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/S4Device.html">S4Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index/Scan3dControl.html">Scan3dControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/Scan3dControl/Scan3dExtractionMethod.html">Scan3dExtractionMethod</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/Scan3dControl/Scan3dScalingMethod.html">Scan3dScalingMethod</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/Scan3dControl/Scan3dDistanceUnit.html">Scan3dDistanceUnit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/Scan3dControl/Scan3dCoordinateSelector.html">Scan3dCoordinateSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/Scan3dControl/Scan3dCoordinateScale.html">Scan3dCoordinateScale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/Scan3dControl/Scan3dCoordinateOffset.html">Scan3dCoordinateOffset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/Scan3dControl/Scan3dOutputMode.html">Scan3dOutputMode</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/SensorControl.html">SensorControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/SensorControl/SeqNo.html">SeqNo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SensorControl/BackgroundSuppression.html">BackgroundSuppression</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/SequencerControl.html">SequencerControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerMode.html">SequencerMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerConfigurationMode.html">SequencerConfigurationMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerFeatureSelector.html">SequencerFeatureSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerFeatureEnable.html">SequencerFeatureEnable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerSetActive.html">SequencerSetActive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerSetStart.html">SequencerSetStart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerSetSelector.html">SequencerSetSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerSetSave.html">SequencerSetSave</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerSetLoad.html">SequencerSetLoad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerPathSelector.html">SequencerPathSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerSetNext.html">SequencerSetNext</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerTriggerSource.html">SequencerTriggerSource</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/SequencerControl/SequencerTriggerActivation.html">SequencerTriggerActivation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/TransferControl.html">TransferControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/TransferControl/TransferStatusSelector.html">TransferStatusSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/TransferControl/TransferStatus.html">TransferStatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/TransferControl/TransferSelector.html">TransferSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/TransferControl/TransferQueueMaxBlockCount.html">TransferQueueMaxBlockCount</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/TransportLayerControl.html">TransportLayerControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/TransportLayerControl/PayloadSize.html">PayloadSize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/TransportLayerControl/GenDCStreamingMode.html">GenDCStreamingMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/TransportLayerControl/GenDCStreamingStatus.html">GenDCStreamingStatus</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/UserSetControl.html">UserSetControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/UserSetControl/UserSetSelector.html">UserSetSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/UserSetControl/UserSetLoad.html">UserSetLoad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/UserSetControl/UserSetSave.html">UserSetSave</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/UserSetControl/UserSetDefault.html">UserSetDefault</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index/WLIControl.html">WLIControl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/NominalWavelength.html">NominalWavelength</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/WavelengthCorrection.html">WavelengthCorrection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/EffectiveWavelength.html">EffectiveWavelength</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/ScanSpeed.html">ScanSpeed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/TargetVerticalSpacing.html">TargetVerticalSpacing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/ActualVerticalSpacing.html">ActualVerticalSpacing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/TargetVerticalSpreading.html">TargetVerticalSpreading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/ActualVerticalSpreading.html">ActualVerticalSpreading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/ScanRange.html">ScanRange</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/TargetScanRange.html">TargetScanRange</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/ScanRangeMax.html">ScanRangeMax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/ActualScanRange.html">ActualScanRange</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/ExposureRatio.html">ExposureRatio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/RecordingNFrames.html">RecordingNFrames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/PixelDimension.html">PixelDimension</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/LateralResolution.html">LateralResolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/FrameRate.html">FrameRate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/VerticalSegmentSelector.html">VerticalSegmentSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/VerticalSegmentEnable.html">VerticalSegmentEnable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/ScanPosition.html">ScanPosition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/ScanPositionMin.html">ScanPositionMin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/ScanPositionMax.html">ScanPositionMax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/OverallScanPosition.html">OverallScanPosition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/OverallScanRange.html">OverallScanRange</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/OverallRecordingNFrames.html">OverallRecordingNFrames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index/WLIControl/SegmentedVolumeActive.html">SegmentedVolumeActive</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="appendix/Appendix.html">Appendix</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="appendix/EventAndStatusDiagram.html">EventAndStatusDiagram</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index/AcquisitionControl.html" class="btn btn-neutral float-right" title="AcquisitionControl" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

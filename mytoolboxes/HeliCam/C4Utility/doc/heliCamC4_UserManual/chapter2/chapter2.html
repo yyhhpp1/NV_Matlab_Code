@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A) Set Up &mdash; heliCam C4 - User Manual v1.0.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=38fd80f2" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=411a527d"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="B) Get Started" href="../chapter3/chapter3.html" />
+    <link rel="prev" title="Introducing the heliCamTM C4 Lock-In Camera" href="../chapter1/chapter1.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            heliCam C4 - User Manual
+              <img src="../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v1.0.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Chapter 1</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter1/chapter1.html">Introducing the heliCam<sup>TM</sup> C4 Lock-In Camera</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 2</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">A) Set Up</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-installation">Hardware Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#package-contents">Package Contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#helicamtm-c4">heliCam<sup>TM</sup> C4</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#helidrivertm-d3">heliDriver<sup>TM</sup> D3</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#led-module">LED Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interconnecting-cables">Interconnecting Cables</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#wiring">Wiring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#checking-the-hardware-setup">Checking the Hardware Setup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#software-installation">Software Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#software-organization-and-integration-options">Software Organization and Integration Options</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#firmware">Firmware</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#software-development-kit">Software Development Kit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#updatetool">updateTool</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#c4utility">C4Utility</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#heliviewertm">heliViewer<sup>TM</sup></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#heliotis-software-download">Heliotis Software Download</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-c4utility-and-heliviewertm">Installing C4Utility and heliViewer<sup>TM</sup></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#establishing-network-connection">Establishing Network Connection</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#configuring-the-host-ethernet-adapters-ip-address">Configuring the Host Ethernet Adapter’s IP-Address</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configuring-host-security-software">Configuring Host Security Software</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#network-interface-controller">Network Interface Controller</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#checking-the-software-setup">Checking the Software Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#updating-firmware">Updating Firmware</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 3</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter3/chapter3.html">B) Get Started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 4</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter4/chapter4.html">C) Basics of Application Software Development</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 5</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter5/chapter5.html">D) Advanced Concepts and Control</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 6</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter6/chapter6.html">Graphical Summary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 7</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter7/chapter7.html">Worldwide Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 8</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter8/chapter8.html">Document History</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 9</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter9/chapter9.html">Annex</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">heliCam C4 - User Manual</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">A) Set Up</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="a-set-up">
+<span id="a"></span><h1>A) Set Up<a class="headerlink" href="#a-set-up" title="Link to this heading"></a></h1>
+<p>This chapter guides you through the process of connecting hardware
+components and installing software to make the heliCam<sup>TM</sup> C4
+ready for use.</p>
+<section id="hardware-installation">
+<h2>Hardware Installation<a class="headerlink" href="#hardware-installation" title="Link to this heading"></a></h2>
+<p>A pre-requisite for its operation is that heliCam<sup>TM</sup> C4 is
+properly powered, temperature-regulated and wired to control elements.
+The following hardware setup guide lays out how the camera is installed,
+and which precautions must be observed to prevent damage.</p>
+<section id="package-contents">
+<h3>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h3>
+<p>The recommended order of the heliCam<sup>TM</sup> C4 package includes
+several hardware accessories:</p>
+<ul class="simple">
+<li><p>1x heliCam<sup>TM</sup> C4 Lock-In Camera</p></li>
+<li><p>1x heliDriver<sup>TM</sup> D3 Power Supply, Interface, and Illumination
+Control Unit (LIA Module)</p></li>
+<li><p>1x AC/DC Switching Adapter with 24V DC, 60W Output for Power Supply
+to the heliDriver<sup>TM</sup> D3</p></li>
+<li><p>1x LED Module with Integrated Cable (beige) and Connector to generate
+Test Inputs</p></li>
+<li><p>Interconnecting Cables:</p>
+<ul>
+<li><p>1x GigE Cable (green)</p></li>
+<li><p>1x Connecting Cable (gray)</p></li>
+<li><p>2x BNC-BNC Cable (black)</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the contents of the package are incorrect, insufficient, or damaged in any way, contact
+<a class="reference external" href="mailto:support&#37;&#52;&#48;heliotis&#46;com">Heliotis</a> or your local distributor.</p>
+</div>
+<section id="helicamtm-c4">
+<h4>heliCam<sup>TM</sup> C4<a class="headerlink" href="#helicamtm-c4" title="Link to this heading"></a></h4>
+<p>In this document, the term <em>heliCam™ C4</em> refers to the physical camera,
+which performs in-pixel lock-in amplification of optical signals.
+Several elements on its surface are important for its installation and
+operation or are prone to damage if handled improperly (see <a class="reference internal" href="#c4-exterior"><span class="std std-numref">Fig. 2</span></a>).
+Hereafter, each of them is elaborated on.</p>
+<figure class="align-center" id="c4-exterior">
+<a class="reference internal image-reference" href="../_images/C4_Exterior.png"><img alt="../_images/C4_Exterior.png" src="../_images/C4_Exterior.png" style="width: 97.5%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 2 </span><span class="caption-text">heliCam<sup>TM</sup> C4 Exterior</span><a class="headerlink" href="#c4-exterior" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<section id="thermal-requirements">
+<h5>Thermal Requirements<a class="headerlink" href="#thermal-requirements" title="Link to this heading"></a></h5>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>At room temperature and under standard operating conditions, the
+heliCam<sup>TM</sup> C4 requires cooling.</p>
+</div>
+<p>The heliCam<sup>TM</sup> C4’s power consumption is 25-30 W. Its surface area is too small for
+passive cooling by the surrounding air to dissipate the generated heat
+fast enough without additional measures. With this cooling effect alone,
+the camera’s core temperature will eventually exceed the scope of valid
+values, which is below 85 °C. Overheating may cause operational
+instabilities and ultimately leads to a safety shutdown.</p>
+<p>An integrated, fan-based cooling accessory is available (see <a class="reference internal" href="#c4-with-cooling-accessory"><span class="std std-numref">Fig. 3</span></a>).
+It suffices at ambient temperatures ≤ 40 °C. When mounting a
+heliCam<sup>TM</sup> C4 equipped with this accessory, make sure that air
+can be aspired and discharged without obstruction. The fans may be
+switched off temporarily, e.g., before taking very vibration-sensitive
+measurements. This prevents any interference that could be caused by the cooling mechanism.</p>
+<figure class="align-center" id="c4-with-cooling-accessory">
+<a class="reference internal image-reference" href="../_images/C4_with_Cooling_Accessory.png"><img alt="../_images/C4_with_Cooling_Accessory.png" src="../_images/C4_with_Cooling_Accessory.png" style="width: 97.5%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 3 </span><span class="caption-text">heliCam<sup>TM</sup> C4 with HSFC4.1 Cooling Accessory</span><a class="headerlink" href="#c4-with-cooling-accessory" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>If the accessory for temperature control is not purchased, it is the
+user who must provide external cooling to the lock-in camera. Although
+the choice of cooling system is ultimately up to him or her, its heat
+dissipating capacity must be at least equivalent to that of either of the
+following measures:</p>
+<ul class="simple">
+<li><p>at ambient temperatures ≤ 40 °C, an airflow ≥ 1.5 m<sup>3</sup>/min ≈
+45 CFM can be provided to the heliCam<sup>TM</sup> C4. This condition is met by
+most fans with at least 40 mm diameter when operated at 12 VDC.</p></li>
+<li><p>the heliCam<sup>TM</sup> C4 may be thermically well-connected to a heat
+sink with a thermal resistance &lt; 0.65 K/W, e.g., an aluminum surface
+&gt; 0.14 m<sup>2</sup> with a recommended length / cross-section ratio &lt;
+50 m<sup>-1</sup>. The areas most suitable for dissipating heat by
+conduction are marked in <a class="reference internal" href="#c4-exterior"><span class="std std-numref">Fig. 2</span></a>.</p></li>
+</ul>
+</section>
+<section id="sensor-opening">
+<h5>Sensor Opening<a class="headerlink" href="#sensor-opening" title="Link to this heading"></a></h5>
+<p>The lock-in camera’s light-sensitive zone - the front of its image
+sensor - is located within a shallow cavity, as shown in <a class="reference internal" href="#c4-exterior"><span class="std std-numref">Fig. 2</span></a>. The
+heliCam<sup>TM</sup> C4 opening has a C mount. By way of these
+standardized screw threads, corresponding objectives may be affixed at a
+normed distance from the sensor.</p>
+<p>During shipment, the cavity containing the image sensor is sealed either
+with a screwed-on cap or, if commissioned, the LED module. Upon arrival,
+the latter is thus already correctly placed for the starter experiment
+described in the next section, <a class="reference internal" href="../chapter3/chapter3.html#b"><span class="std std-ref">B) Get Started</span></a>.
+Eventually, either cover will have to be removed before acquiring images
+of the ultimate object of interest.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>There is no additional protective layer on the sensor.
+<strong>So be careful not to contaminate or damage the
+image sensor once it is exposed.</strong> The cap may be reattached when the
+camera is not used for prolonged periods to protect the sensor from dust
+and damage.</p>
+<p>The sensor’s photoactive area is cleaned before shipping. <strong>If
+the sensor gets dirty during use, contact</strong> <a class="reference external" href="mailto:support&#37;&#52;&#48;heliotis&#46;com?subject=Contamination%20on%20Sensor">Heliotis
+support</a><strong>.
+Do not proceed with cleaning the sensor on your own before you receive
+precise instructions and apply the utmost caution when you clean it
+under the guidance of the support team.</strong></p>
+</div>
+</section>
+<section id="connection-interface">
+<h5>Connection Interface<a class="headerlink" href="#connection-interface" title="Link to this heading"></a></h5>
+<p>The bottom of the heliCam<sup>TM</sup> C4 contains an
+interface with three color-coded connectors
+(see <a class="reference internal" href="#c4-connection-interface"><span class="std std-numref">Fig. 4</span></a>):</p>
+<ol class="arabic simple">
+<li><p>An 8 Pin acquisition control and data transfer connector (grey) for
+linking the camera to a computer by means of a Gigabit Ethernet
+(GigE) cable (green). Its counterpart lies at the grey coated end of
+said cable.</p></li>
+<li><p>A 19 Pin Power Supply and I/O connector (orange), for wiring the
+camera to the heliDriver<sup>TM</sup> D3. The corresponding end of the
+Connecting Cable (grey) has an orange coat.</p></li>
+<li><p>A 2 Pin output connector (green) for relaying a modulated signal
+originating from the heliDriver<sup>TM</sup> D3 to the LED module. The
+LED module can be attached with the green coated end of its cable.</p></li>
+</ol>
+<figure class="align-center" id="c4-connection-interface">
+<a class="reference internal image-reference" href="../_images/C4_Connection_Interface.png"><img alt="../_images/C4_Connection_Interface.png" src="../_images/C4_Connection_Interface.png" style="width: 20%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 4 </span><span class="caption-text">heliCam<sup>TM</sup> C4 Connection Interface</span><a class="headerlink" href="#c4-connection-interface" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="mounting-holes">
+<h5>Mounting Holes<a class="headerlink" href="#mounting-holes" title="Link to this heading"></a></h5>
+<p>In an experimental setup, the camera’s position may be fixed by means of
+dedicated M6x1.0 mm - 6H mounting holes (9 x <span class="math notranslate nohighlight">\(\downarrow\)</span> 4 mm on the front, 6 x <span class="math notranslate nohighlight">\(\downarrow\)</span> 5
+mm on left and right faces each, 2 x <span class="math notranslate nohighlight">\(\downarrow\)</span> 4 mm on top, see <a class="reference internal" href="#c4-exterior"><span class="std std-numref">Fig. 2</span></a> and
+technical drawings in <a class="reference internal" href="../chapter9/chapter9.html#annex"><span class="std std-ref">Annex</span></a>).</p>
+</section>
+<section id="sd-card-opening">
+<h5>SD Card Opening<a class="headerlink" href="#sd-card-opening" title="Link to this heading"></a></h5>
+<p>The heliCam<sup>TM</sup> C4 stores its file system on an SD card, which is
+located underneath a screwed-tight cover (see <a class="reference internal" href="#c4-exterior"><span class="std std-numref">Fig. 2</span></a>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you suspect that the SD card is corrupt, please contact <a class="reference external" href="mailto:support&#37;&#52;&#48;heliotis&#46;com?subject=Corrupt%20SD%20Card">Heliotis
+support</a> to receive guidance on how
+to rewrite its contents. <strong>Do not unseal the SD card opening unless explicitly instructed to do so by the Heliotis
+support team.</strong></p>
+</div>
+</section>
+</section>
+<section id="helidrivertm-d3">
+<h4>heliDriver<sup>TM</sup> D3<a class="headerlink" href="#helidrivertm-d3" title="Link to this heading"></a></h4>
+<p>The heliDriver<sup>TM</sup> D3 is a connection module, which supplies
+power to the lock-in camera. Moreover, it optionally serves as a
+communication interface to feed in and process external control signals,
+as well as to read out camera and sensor status information in real
+time. The illumination of the accessory LED module can be controlled from
+the heliDriver<sup>TM</sup> D3 too.</p>
+<figure class="align-center" id="d3-front">
+<a class="reference internal image-reference" href="../_images/D3_Front.png"><img alt="../_images/D3_Front.png" src="../_images/D3_Front.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 5 </span><span class="caption-text">heliDriver<sup>TM</sup> D3 Front Panel with Mainboard and Communication Interface</span><a class="headerlink" href="#d3-front" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<section id="mainboard">
+<h5>Mainboard<a class="headerlink" href="#mainboard" title="Link to this heading"></a></h5>
+<p>The heliDriver<sup>TM</sup> D3 requires a 24 VDC, 60 W input via its main
+board (see <a class="reference internal" href="#d3-front"><span class="std std-numref">Fig. 5</span></a>). This can be ensured by connecting it to a 115/230
+VAC socket via the AC/DC switching adapter included in the standard
+shipment. A power cable with C13 coupling for the adapter must be
+procured separately by the user.</p>
+<p>The AC/DC switching adapter included in the standard delivery comprises
+a counterpart to the power input connector (see <a class="reference internal" href="#d3-power-supply-connector"><span class="std std-numref">Table 5</span></a>). Located just
+above this input connector are four LED status indicators, providing
+<a class="reference external" href="#checking-the-hardware-setup">useful feedback</a> on the state of
+hardware components once the setup is powered.</p>
+<span id="d3-power-supply-connector"></span><table class="docutils align-default" id="id4">
+<caption><span class="caption-number">Table 5 </span><span class="caption-text">heliDriver<sup>TM</sup> D3 Power Supply Connector Pin Assignment</span><a class="headerlink" href="#id4" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><a class="reference internal image-reference" href="../_images/D3_Power_Supply_Connector.png"><img alt="../_images/D3_Power_Supply_Connector.png" class="align-center" src="../_images/D3_Power_Supply_Connector.png" style="width: 300px;" /></a>
+</td>
+</tr>
+<tr class="row-even"><td><table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 40.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Pin</p></th>
+<th class="head"><p>Terminal
+designation</p></th>
+<th class="head"><p>Details</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">1</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">GND</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">Camera GND</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">2</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">V<sub>DD</sub></div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">Camera supply 24 V</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">3</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">User GND</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">Camera User GND and</div>
+<div class="line">heliDriver<sup>TM</sup> D3 GND</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">4</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">User V<sub>DD</sub></div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">Camera User supply and</div>
+<div class="line">heliDriver<sup>TM</sup> D3 supply 24 V</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The Connecting Cable (grey) fits the D-Sub connector for power supply
+and signal transmission to the lock-in camera on the
+heliDriver<sup>TM</sup> D3’s main board. In addition, the
+heliDriver<sup>TM</sup> D3 offers surge, reverse polarity, and transient
+protection to the camera.</p>
+</section>
+<section id="communication-interface">
+<h5>Communication Interface<a class="headerlink" href="#communication-interface" title="Link to this heading"></a></h5>
+<p>For many lock-in applications it is desirable to synchronize the data
+acquisition and demodulation with external control signals. For this
+purpose, the heliDriver<sup>TM</sup> D3 offers a communication interface
+(see <a class="reference internal" href="#d3-front"><span class="std std-numref">Fig. 5</span></a>).</p>
+<ul class="simple">
+<li><p>Trigger signals to activate the recording or to time the demodulation
+sequence in the image sensor, such as the external reference signal,
+are most conveniently delivered to the camera via the inputs FI2/FI3
+(with BNC connectors) and RTIO6/RTIO7 (with SMA connectors).
+<strong>External triggers should be rectangular signals with 0 V minima 5 V and maxima.</strong></p></li>
+<li><p>Synchronization, debugging or monitoring may require reading back
+status signals from the camera in real time. For this purpose, outputs RTIO2
+and RTIO3 are the preferred connectors. <strong>Note that output signals from the
+camera have a fixed latency of ~ 1 μs.</strong></p></li>
+</ul>
+<p>With the BNC-BNC cables included in the standard delivery, these inputs
+and outputs can be connected to other elements of your experimental
+setup or to electronic test equipment.</p>
+<p>Alternatively, DIO and SFIO pins can be used to input and output signals at the cost of
+a reduced transmission speed. For the (default) DIO and SFIO pin assignment see the
+heliDriver<sup>TM</sup> <a class="reference external" href="https://www.heliotis.com/download/helidriver-d3-product-data-sheet/">D3 data sheet, Section Lock-In Amplifier Module</a>.</p>
+</section>
+<section id="illumination-control">
+<h5>Illumination Control<a class="headerlink" href="#illumination-control" title="Link to this heading"></a></h5>
+<p>The heliDriver<sup>TM</sup> D3 that comes with the heliCam<sup>TM</sup> C4
+comprises an internal, software-controlled signal generator. This unit
+allows you to create an electrical sine wave in a user configurable
+fashion to drive the Heliotis LED module included in the standard
+delivery.</p>
+</section>
+</section>
+<section id="led-module">
+<h4>LED Module<a class="headerlink" href="#led-module" title="Link to this heading"></a></h4>
+<p>The LED module - when fed via the heliCam<sup>TM</sup> C4 with electric
+control signals generated by the heliDriver<sup>TM</sup> D3 - can be used
+to generate simple, well-controlled, amplitude-modulated optical
+signals. Even if you ultimately do not need such input signals in your
+research, the LED module should be useful when getting familiar with the
+lock-in camera and testing your setup.</p>
+</section>
+<section id="interconnecting-cables">
+<h4>Interconnecting Cables<a class="headerlink" href="#interconnecting-cables" title="Link to this heading"></a></h4>
+<p>The three cable types included in the standard shipment are respectively
+used for the following:</p>
+<ul class="simple">
+<li><p>GigE Cable (green): relaying software control commands to the
+heliCam<sup>TM</sup> C4 and fast transmission of measurement data back
+to the lab computer.</p></li>
+<li><p>Connecting Cable (gray): power supply of the heliCam<sup>TM</sup> C4
+and transfer of control signals between heliDriver<sup>TM</sup> D3 and
+heliCam<sup>TM</sup> C4.</p></li>
+<li><p>BNC-BNC Cable (black): communication of time-continuous control
+signals from and to non-Heliotis elements of the experimental set up
+via the heliDriver<sup>TM</sup> D3.</p></li>
+</ul>
+</section>
+</section>
+<section id="wiring">
+<h3>Wiring<a class="headerlink" href="#wiring" title="Link to this heading"></a></h3>
+<p><a class="reference internal" href="#hardware-wiring"><span class="std std-numref">Fig. 6</span></a> summarizes schematically how the heliCam<sup>TM</sup> C4 and its
+accessories are wired together. To get started, join the contents of the
+shipment accordingly.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p><strong>For safety reasons, power the ensemble only after all individual pieces are connected.</strong></p>
+</div>
+<figure class="align-center" id="hardware-wiring">
+<a class="reference internal image-reference" href="../_images/wiring.png"><img alt="../_images/wiring.png" src="../_images/wiring.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 6 </span><span class="caption-text">Wiring of the heliCam<sup>TM</sup> C4 with Components of the Standard Delivery Package</span><a class="headerlink" href="#hardware-wiring" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="checking-the-hardware-setup">
+<h3>Checking the Hardware Setup<a class="headerlink" href="#checking-the-hardware-setup" title="Link to this heading"></a></h3>
+<p>When you are done, the LED status indicators on the
+heliDriver<sup>TM</sup> D3’s mainboard allow you to check if the
+heliDriver<sup>TM</sup> D3 and the heliCam<sup>TM</sup> C4 are properly
+powered and can communicate with one another. After switching on these
+devices, they will boot for a few seconds. In the process, the LED
+designated “Cam PWR” should go from initial yellow to green, indicating
+the camera is powered and ready (see <a class="reference internal" href="#led-status-indicators"><span class="std std-numref">Fig. 7</span></a>).</p>
+<figure class="align-center" id="led-status-indicators">
+<a class="reference internal image-reference" href="../_images/LED_Status_Indicator_Booting.png"><img alt="../_images/LED_Status_Indicator_Booting.png" src="../_images/LED_Status_Indicator_Booting.png" style="width: 90%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 7 </span><span class="caption-text">heliDriver<sup>TM</sup> D3 LED Status Indicators during and after Booting</span><a class="headerlink" href="#led-status-indicators" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If “Cam PWR” does not turn green or the error indicator “ERR” stays on, check the wiring. Should
+the problem be persistent when you switch the power supply off and on again, contact
+<a class="reference external" href="mailto:support&#37;&#52;&#48;heliotis&#46;com?subject=Boot%20Failure">Heliotis support</a>.
+Please report the state of the LED status indicators when you reach out to the support team to ensure
+that you receive focused help right from the start. For the detailed meaning of individual LED status
+indicators, you may consult the heliDriver<sup>TM</sup> <a class="reference external" href="https://www.heliotis.com/download/helidriver-d3-product-data-sheet/">D3 data sheet</a>.</p>
+</div>
+</section>
+</section>
+<section id="software-installation">
+<h2>Software Installation<a class="headerlink" href="#software-installation" title="Link to this heading"></a></h2>
+<p>Here, you are introduced to Heliotis software for the heliCam<sup>TM</sup> C4
+and receive instructions on how to download as well as install it on
+the computer, which you connect to the lock-in camera. With this
+software, the heliCam<sup>TM</sup> C4 can be operated in different ways.</p>
+<ul class="simple">
+<li><p>A software development kit (SDK) with usage examples, allows you to
+control the heliCam<sup>TM</sup> C4 from most common programming
+platforms, such as Python, MATLAB<sup>TM</sup>, or LabVIEW<sup>TM</sup>.</p></li>
+<li><p>To get started and for simple validation tasks, the proprietary
+heliViewer<sup>TM</sup> application is the recommended and
+simple-to-use alternative to more powerful, but rudimentary,
+developing environments. It is a LabVIEW<sup>TM</sup>-based program, built upon
+the SDK, that features a graphical user interface (GUI) to command
+the heliCam<sup>TM</sup> C4.</p></li>
+</ul>
+<section id="software-organization-and-integration-options">
+<span id="id1"></span><h3>Software Organization and Integration Options<a class="headerlink" href="#software-organization-and-integration-options" title="Link to this heading"></a></h3>
+<p>A brief overview follows, outlining the contents and organization of the
+software provided by Heliotis and its interfaces with third party
+software (see <a class="reference internal" href="#software-overview"><span class="std std-numref">Fig. 8</span></a>) in more detail.</p>
+<figure class="align-center" id="software-overview">
+<a class="reference internal image-reference" href="../_images/Heliotis_Software_Overview.png"><img alt="../_images/Heliotis_Software_Overview.png" src="../_images/Heliotis_Software_Overview.png" style="width: 97.5%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 8 </span><span class="caption-text">Overview of Heliotis Software</span><a class="headerlink" href="#software-overview" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<section id="firmware">
+<h4>Firmware<a class="headerlink" href="#firmware" title="Link to this heading"></a></h4>
+<p>A set of programs, preinstalled before shipment and collectively named
+firmware, operate on the Heliotis hardware itself, i.e., the
+heliCam<sup>TM</sup> C4 and the heliDriver<sup>TM</sup> D3. In particular,
+the heliCam<sup>TM</sup> C4 runs a special Linux version, with a
+custom-written service. This service, handling the lock-in camera at a
+low level, is called heliService. No direct user interaction with
+heliService is envisaged.</p>
+</section>
+<section id="software-development-kit">
+<h4>Software Development Kit<a class="headerlink" href="#software-development-kit" title="Link to this heading"></a></h4>
+<p>The communication with heliService is managed by Diaphus, a Heliotis
+driver software for the connected computer. Diaphus provides a normed
+interface for controlling machine vision cameras. It complies with the
+industrial Generic Interface for Cameras (<a class="reference external" href="https://www.emva.org/standards-technology/genicam/">GenICam</a>)
+consortium standard, which is administered by the European Machine
+Vision Association (EMVA). More precisely, Diaphus is what is called
+a GenTL <em>producer</em> within the GenICam framework.</p>
+<p>Two principal options for using the heliCam<sup>TM</sup> C4 through this
+generic camera interface are supported:</p>
+<ol class="arabic simple">
+<li><p>The heliCam<sup>TM</sup> C4 can be operated using the GenICam interface
+directly without intermediary software from Heliotis. You can access
+measurement data and all configurable or readable camera parameters
+from any environment with a so-called GenTL <em>consumer</em>
+implementation.</p>
+<ul class="simple">
+<li><p>For some programming languages, such as C++, Java, and Python,
+third party libraries are freely available, that include such a
+GenTL consumer. Notable are in particular the <a class="reference external" href="https://www.emva.org/standards-technology/genicam/genicam-downloads/">official reference
+implementation</a>
+from GenICam and its user-friendly spin-off for Python,
+<a class="reference external" href="https://pypi.org/project/harvesters/">Harvesters</a>, which is
+available through pip.</p></li>
+<li><p>In addition, commercial machine vision software often supports
+GenICam compliant cameras, e.g., MVTec Halcon, the
+Matrox<sup>TM</sup> Imaging Library (MIL) and Aurora<sup>TM</sup>
+Vision Library (AVL) from Zebra. This list is neither exhaustive,
+nor does it imply a Heliotis recommendation for these programs.</p></li>
+<li><p>If you are already familiar with GenICam, you may even wish to
+implement a GenTL consumer yourself.</p></li>
+</ul>
+</li>
+<li><p>You can also control the heliCam<sup>TM</sup> C4 via the C4 Handler
+Library (C4Hdl) from Heliotis. The C4Hdl provides a simplified and
+reduced Application Programming Interface (API) that is proprietary.
+The core of the C4Hdl is a C++ wrapper around Diaphus. It underlies
+several libraries, each of which enables you to interact with the
+heliCam<sup>TM</sup> C4 in different programming environments.
+Currently, Dynamic-Link Libraries (DLL) are available in C, Common
+Language Runtime (CLR) for .NET programs, Python, and
+LabVIEW<sup>TM</sup>. Wrapped in this form, libraries can be easily
+imported into the targeted user application. With this second option,
+the same camera parameters are accessible as with the first one and the
+overhead is minimal.</p></li>
+</ol>
+<p>Diaphus, the C4 Handler Library and examples of their use in different
+programming languages form the software development kit, which is aiding
+you in the development of application programs for the
+heliCam<sup>TM</sup> C4.</p>
+</section>
+<section id="updatetool">
+<h4>updateTool<a class="headerlink" href="#updatetool" title="Link to this heading"></a></h4>
+<p>Heliotis firmware is subject to active further development. Updates make
+new features available and fix bugs. The GUI-based program updateTool is
+available to manage comfortably firmware versions installed on the
+heliCam<sup>TM</sup> C4 and the heliDriver<sup>TM</sup> D3 from the
+connected computer. The updateTool is also useful to <a class="reference external" href="#checking-the-software-setup">check your software set up</a>.</p>
+</section>
+<section id="c4utility">
+<h4>C4Utility<a class="headerlink" href="#c4utility" title="Link to this heading"></a></h4>
+<p>The SDK applications on the computer side, along with the updateTool,
+are grouped together into a single package named C4Utilitiy.</p>
+</section>
+<section id="heliviewertm">
+<h4>heliViewer<sup>TM</sup><a class="headerlink" href="#heliviewertm" title="Link to this heading"></a></h4>
+<p>The application software heliViewer<sup>TM</sup> is used to control camera
+and illumination parameters through a GUI, as well as to acquire,
+visualize and store data. It is not a tool for software development,
+however. The heliViewer<sup>TM</sup> uses the C4Hdl wrapper library for
+LabVIEW<sup>TM</sup> and must be installed on top of the underlying
+software development kit.</p>
+</section>
+</section>
+<section id="heliotis-software-download">
+<span id="id2"></span><h3>Heliotis Software Download<a class="headerlink" href="#heliotis-software-download" title="Link to this heading"></a></h3>
+<p>On the <a class="reference external" href="https://www.heliotis.com/support/">Heliotis website under
+Support/Downloads</a>, you find the
+most recent firmware, C4Utility package and heliViewer<sup>TM</sup>. To
+gain access, you must register once (see <a class="reference internal" href="#account-registration"><span class="std std-numref">Fig. 9</span></a>) and wait for your
+account to be approved.</p>
+<figure class="align-center" id="account-registration">
+<a class="reference internal image-reference" href="../_images/Heliotis_Account_Registration.png"><img alt="../_images/Heliotis_Account_Registration.png" src="../_images/Heliotis_Account_Registration.png" style="width: 95%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 9 </span><span class="caption-text">Heliotis Account Registration for Software Download</span><a class="headerlink" href="#account-registration" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>You receive the heliCam<sup>TM</sup> C4 with the latest version of the
+firmware installed at the time of shipment. For the first commissioning,
+you will therefore just need to download the computer-side applications;
+C4Utility and optionally the heliViewer<sup>TM</sup>. The description of the
+starter experiment in the next section, <a class="reference internal" href="../chapter3/chapter3.html#b"><span class="std std-ref">B) Get Started</span></a>,
+is based on the (full version of the) heliViewer<sup>TM</sup> (for
+Heliotis devices of the latest generation), which you therefore might want to
+install. Alternatively, you can get started directly in Python with the help of an
+illustrative <em>Jupyter Notebook</em> you receive as part of C4Utility. Make sure you
+download a version of the Heliotis software which is compatible with
+your operating system.</p>
+<p>Later, you may wish to download (updated) firmware and install it on the
+Heliotis hardware. It is available in two forms:</p>
+<ul class="simple">
+<li><p>as an Image Package to upgrade the firmware on your
+heliCam<sup>TM</sup> C4 through updateTool once a newer version is
+released.</p></li>
+<li><p>as a heliBoard B4 image, the way it is stored on an <a class="reference external" href="#sd-card-opening">SD
+card</a> within the heliCam<sup>TM</sup> C4. The
+firmware is only needed in this format if the Heliotis support team
+explicitly instructs you to overwrite a corrupt file system on the
+heliCam<sup>TM</sup> C4.</p></li>
+</ul>
+<p>At the same location, you find a changelog informing you
+about changes between versions and bug fixes.</p>
+</section>
+<section id="installing-c4utility-and-heliviewertm">
+<h3>Installing C4Utility and heliViewer<sup>TM</sup><a class="headerlink" href="#installing-c4utility-and-heliviewertm" title="Link to this heading"></a></h3>
+<p>After you downloaded the Heliotis software, install C4Utility by running
+the executable “C4Utility*.exe” and following the instructions of the
+installation wizard. If you decided to install the heliViewer<sup>TM</sup>
+as well, do so by unzipping its installation folder and running
+“setup.exe”. Make sure you install heliViewer<sup>TM</sup> after C4Utility. As
+explained above, the latter provides the drivers and interface libraries
+for communication with the heliCam<sup>TM</sup> C4, which
+heliViewer<sup>TM</sup> relies on. Please restart the computer when the
+installation is complete.</p>
+</section>
+<section id="establishing-network-connection">
+<h3>Establishing Network Connection<a class="headerlink" href="#establishing-network-connection" title="Link to this heading"></a></h3>
+<p>The heliCam<sup>TM</sup> C4 is connected to the host computer via Ethernet
+in a local area network. To exchange control commands and data, the
+heliCam<sup>TM</sup> C4 and the computer must locate each other within
+this network.</p>
+<section id="configuring-the-host-ethernet-adapters-ip-address">
+<h4>Configuring the Host Ethernet Adapter’s IP-Address<a class="headerlink" href="#configuring-the-host-ethernet-adapters-ip-address" title="Link to this heading"></a></h4>
+<p>The heliCam<sup>TM</sup> C4 and the host use the internet protocol suite,
+TCP/IP, to communicate with each other. These devices therefore need an
+identifier called IP address. In private networks, as is the case here,
+IP addresses are not routed on the Internet. Thus, they need not be
+coordinated with an IP address registry. But within the confines of the
+private network, each device’s IP address needs to be unique to avoid
+ambiguity. Additionally, the IP addresses of the heliCam<sup>TM</sup> C4
+and host must specify that they are both found in the same subnet. The
+two conditions are usually not met by default.</p>
+<p>To ensure these requirements are satisfied, you may manually configure
+the IP address of the host computer’s Ethernet adapter, through which it
+is connected to the heliCam<sup>TM</sup> C4. By default, the static IPv4
+address of the heliCam<sup>TM</sup> C4 is 192.168.2.71 with subnet mask
+255.255.255.0. This subnet mask indicates that the first three octets of
+bits in the IP address designate the network and only the last octet is
+used to identify devices within this network. Hence, the first three
+octets of the host IP address must match the heliCam<sup>TM</sup> C4’s and
+the last must differ. IP addresses specified in this way lie within
+a range of IPv4 addresses reserved for private networks. <strong>In short, if
+you do not change the heliCam™ C4 ’s default IP address, the host</strong>
+<strong>Ethernet adapter must use an IPv4 address of the form 192.168.2.x,
+where x is an integer between 1 and 254 other than 71 and the subnet mask
+255.255.255.0 (see</strong> <a class="reference internal" href="#ip-configuration"><span class="std std-numref">Fig. 10</span></a> <strong>).</strong></p>
+</section>
+<section id="configuring-host-security-software">
+<h4>Configuring Host Security Software<a class="headerlink" href="#configuring-host-security-software" title="Link to this heading"></a></h4>
+<p>The firewall or other security software may prevent you from opening a
+connection to the heliCam<sup>TM</sup> C4 from the updateTool and the
+heliViewer<sup>TM</sup>. Check that these Heliotis programs are not blocked
+from interfacing the camera by your computer’s
+security measures. How the Windows firewall
+can be configured to let updateTool (and by analogy the
+heliViewer<sup>TM</sup>) communication pass through is depicted in <a class="reference internal" href="#firewall-configuration"><span class="std std-numref">Fig. 11</span></a>.</p>
+<figure class="align-center" id="ip-configuration">
+<a class="reference internal image-reference" href="../_images/network_adapter_IP_configuration.png"><img alt="../_images/network_adapter_IP_configuration.png" src="../_images/network_adapter_IP_configuration.png" style="width: 90%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 10 </span><span class="caption-text">Network Adapter IP Address Configuration</span><a class="headerlink" href="#ip-configuration" title="Link to this image"></a></p>
+<div class="legend">
+<ol class="arabic simple">
+<li><p>Open Network settings. (Start &gt; System control &gt; Network &amp; Internet &gt; Ethernet)</p></li>
+<li><p>Open the dialog “Change settings”.</p></li>
+<li><p>Select network to which the heliCam<sup>TM</sup> C4 is connected.</p></li>
+<li><p>Open TCP/IPv4 - properties. (We also recommend you disable GigE
+vision filters if possible since they can interfere with the
+connection.)</p></li>
+<li><p>Set the IP address to 192.168.2.x (with x=1-70 or 72-254), the
+subnet mask to 255.255.255.0 and confirm your choice.</p></li>
+</ol>
+</div>
+</figcaption>
+</figure>
+<figure class="align-center" id="firewall-configuration">
+<a class="reference internal image-reference" href="../_images/windows_firewall_configuration.png"><img alt="../_images/windows_firewall_configuration.png" src="../_images/windows_firewall_configuration.png" style="width: 95%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 11 </span><span class="caption-text">Allowing Apps to communicate through the Windows Firewall</span><a class="headerlink" href="#firewall-configuration" title="Link to this image"></a></p>
+<div class="legend">
+<ol class="arabic">
+<li><p>In the Windows firewall configuration menu (Start &gt; System Control &gt;
+Windows Firewall), open the dialog “Allow an app through the
+Firewall”.</p></li>
+<li><p>Open the dialog “Change settings”.</p></li>
+<li><p>Add authentication exceptions for C4Utility and heliViewer <sup>TM</sup></p>
+<p><span class="math notranslate nohighlight">\(\Rightarrow\)</span> Add exceptions (tick) for public, private and domain networks.</p>
+</li>
+</ol>
+</div>
+</figcaption>
+</figure>
+</section>
+<section id="network-interface-controller">
+<h4>Network Interface Controller<a class="headerlink" href="#network-interface-controller" title="Link to this heading"></a></h4>
+<p>Heliotis recommends you use a separate Network Interface Controller
+(NIC) for the heliCam<sup>TM</sup> C4 instead of a router and switches.
+This ensures that the data transmission is faster, as the transmission
+line is not shared by multiple clients.</p>
+</section>
+</section>
+<section id="checking-the-software-setup">
+<span id="id3"></span><h3>Checking the Software Setup<a class="headerlink" href="#checking-the-software-setup" title="Link to this heading"></a></h3>
+<p>The program updateTool, that <a class="reference external" href="#installing-c4utility-and-heliviewertm">you
+installed</a> as <a class="reference external" href="#c4utility">part of
+C4Utitlity</a> , allows
+you to check if the software is set up correctly by verifying:</p>
+<ul class="simple">
+<li><p>if the computer-side driver software is compatible with the firmware
+on the hardware.</p></li>
+<li><p>whether the network connection between host computer and
+heliCam<sup>TM</sup> C4 could be properly established.</p></li>
+</ul>
+<p>You may do so by opening the updateTool and pressing the button “Update
+Device List” to tabulate all available devices in the network (see
+<a class="reference internal" href="#check-updatetool"><span class="std std-numref">Fig. 12</span></a>).</p>
+<figure class="align-center" id="check-updatetool">
+<a class="reference internal image-reference" href="../_images/software_setup_check_in_updateTool.png"><img alt="../_images/software_setup_check_in_updateTool.png" src="../_images/software_setup_check_in_updateTool.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 12 </span><span class="caption-text">Software Setup Check in updateTool</span><a class="headerlink" href="#check-updatetool" title="Link to this image"></a></p>
+<div class="legend">
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Detect devices in the network using the “Update Device List” button.</p></li>
+</ol>
+<p>2. Select the heliCam<sup>TM</sup> C4. The status indicator reveals if the camera is ready for use or, if necessary, why it is not. A
+specific status message is displayed if you hover over the status indicator with your mouse.</p>
+<p>3. A network configuration mismatch indicates that the network adapter IP address is not compatible with the
+heliCam<sup>TM</sup> C4’s, which is marked on the window’s right-hand side.</p>
+<p>4. The heliCam<sup>TM</sup> C4 firmware component heliService and the computer-side driver software Diaphus communicate
+directly with one another. This communication is only successful if their versions match.</p>
+<ol class="arabic simple" start="5">
+<li><p>If necessary, update the selected heliCam<sup>TM</sup> C4 with an Image Package from the Heliotis download page.</p></li>
+</ol>
+</div></blockquote>
+</div>
+</figcaption>
+</figure>
+<p>The heliCam<sup>TM</sup> C4 should then appear along with a
+color-coded status indicator (see <a class="reference internal" href="#connection-status-indicator"><span class="std std-numref">Table 6</span></a>) to the left of its IP
+address. Your software setup is functional if the status indicator is a
+check mark. In the contrary case, it is a cross, meaning you must make
+adjustments. If the indicator’s color is orange, there is already an
+open connection to the camera. The indicator is green if the camera is
+ready for use, or red otherwise.</p>
+<span id="connection-status-indicator"></span><table class="docutils align-default" id="id5">
+<caption><span class="caption-number">Table 6 </span><span class="caption-text">Software Connection Status Indicator in updateTool</span><a class="headerlink" href="#id5" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Sign</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="../_images/ok.png"><img alt="ok" src="../_images/ok.png" style="width: 25px;" /></a></p></td>
+<td><div class="line-block">
+<div class="line">A green check mark indicates that the camera is ready for use.</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../_images/inUse.png"><img alt="inUse" src="../_images/inUse.png" style="width: 25px;" /></a></p></td>
+<td><div class="line-block">
+<div class="line">An orange check mark stipulates that your setup is</div>
+<div class="line">functional, and that you already have an open connection</div>
+<div class="line">to the heliCam<sup>TM</sup> C4 in some application.</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../_images/nokInUse.png"><img alt="NinUse" src="../_images/nokInUse.png" style="width: 25px;" /></a></p></td>
+<td><div class="line-block">
+<div class="line">An orange cross means you are not properly set up to</div>
+<div class="line">connect to heliCam<sup>TM</sup> C4 with this computer but</div>
+<div class="line">that another device in the network has an open connection</div>
+<div class="line">to it.</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../_images/nok.png"><img alt="nok" src="../_images/nok.png" style="width: 25px;" /></a></p></td>
+<td><div class="line-block">
+<div class="line">A red cross tells you, that an issue needs to be fixed</div>
+<div class="line">before you can interact with the camera.</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-trouble-shooting admonition">
+<p class="admonition-title">Trouble Shooting</p>
+<p>If the camera is not marked ready for use by a green check mark, proceed as follows (see <a class="reference internal" href="#connection-trouble-shooting"><span class="std std-numref">Fig. 13</span></a>):</p>
+<ul>
+<li><p>An <strong>orange check mark</strong> does not indicate an error per se. If you want to update the heliCam<sup>TM</sup> C4
+or open a new connection, simply close the application program from which originates the
+open connection or terminate the software connection within it.</p></li>
+<li><p>The <strong>orange cross</strong> status indicator becomes a red cross, when closing the program that is accessing
+the heliCam<sup>TM</sup> C4 from some device in the network other than the computer running
+updateTool.</p></li>
+<li><p>If the status indicator is a <strong>red cross</strong>, hover over it with your mouse to receive a specific status
+message.</p>
+<blockquote>
+<div><ul>
+<li><p>A network configuration mismatch is flagged if the IP addresses of host and heliCam<sup>TM</sup> C4
+are not compatible (see <a class="reference internal" href="#check-updatetool"><span class="std std-numref">Fig. 12</span></a>).</p>
+<blockquote>
+<div><p><span class="math notranslate nohighlight">\(\Rightarrow\)</span> <a class="reference external" href="#configuring-the-host-ethernet-adapters-ip-address">Configure the host ethernet adapter’s IP address as described earlier.</a></p>
+</div></blockquote>
+</li>
+<li><p>The connection to the camera cannot be established either if the firmware version on
+the heliCam<sup>TM</sup> C4 does not match the Heliotis software version installed on the host
+computer. The status message tells you in this case that the software versions of the
+camera-side heliService and computer-side Diaphus do not match (cf. <a class="reference internal" href="#software-overview"><span class="std std-numref">Fig. 8</span></a>).</p>
+<blockquote>
+<div><p><span class="math notranslate nohighlight">\(\Rightarrow\)</span> Install firmware to match C4Utility or vice versa. We recommend installing the
+latest version of C4Utility and <a class="reference external" href="#updating-firmware">updating the firmware</a> accordingly. You can
+compare the version of the camera-side firmware component heliService (select
+the camera in the updateTool and the version is displayed on the right-hand side)
+explicitly with that of the computer-side counterpart Diaphus (found in the
+updateTool menu under Help/about). This is illustrated in <a class="reference internal" href="#check-updatetool"><span class="std std-numref">Fig. 12</span></a>.</p>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>If the heliCam<sup>TM</sup> C4 is not detected at all when pressing “Update Device List”, proceed with
+<a class="reference external" href="#checking-the-hardware-setup">checking the hardware setup according to the relevant, foregoing section</a> and <a class="reference external" href="#configuring-host-security-software">making sure that your
+computer’s security measures do not prevent updateTool from connecting to the camera</a>.</p></li>
+</ul>
+<figure class="align-center" id="connection-trouble-shooting">
+<a class="reference internal image-reference" href="../_images/network_connection_trouble_shooting.png"><img alt="../_images/network_connection_trouble_shooting.png" src="../_images/network_connection_trouble_shooting.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 13 </span><span class="caption-text">Network Connection Trouble Shooting</span><a class="headerlink" href="#connection-trouble-shooting" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="updating-firmware">
+<h3>Updating Firmware<a class="headerlink" href="#updating-firmware" title="Link to this heading"></a></h3>
+<p>In addition to verifying your software setup, updateTool also allows you
+to upgrade the firmware on both heliCam<sup>TM</sup> C4 and
+heliDriver<sup>TM</sup> D3 from the host computer using an installable
+board image.</p>
+<p>If you wish to do so, make sure that the following prerequisite is met
+before continuing.</p>
+<ul class="simple">
+<li><p>You have retrieved the installable Image Package, with the extension
+“.ipkg”, from the Heliotis webpage as described in the paragraph on
+<a class="reference external" href="#heliotis-software-download">downloading Heliotis software</a>.
+There are multiple Image Packages available containing different
+versions of the firmware. Double-check that you have the desired
+version, which is usually the most recent one.</p></li>
+</ul>
+<p>Then, update the lock-in camera in the updateTool as follows (see <a class="reference internal" href="#firmware-update"><span class="std std-numref">Fig. 14</span></a>).</p>
+<p>Click on the “Update Device” button, select the firmware Image Package
+you downloaded and press “Open”. The updating process gets initiated and
+can be tracked in a console that opens. The message “update done”
+appears once the installation is complete. Please be patient as the
+update can take several minutes. Since a reboot is initiated
+automatically, you can finish the update by clicking “Close”.</p>
+<figure class="align-center" id="firmware-update">
+<a class="reference internal image-reference" href="../_images/firmware_update.png"><img alt="../_images/firmware_update.png" src="../_images/firmware_update.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 14 </span><span class="caption-text">Firmware Update</span><a class="headerlink" href="#firmware-update" title="Link to this image"></a></p>
+<div class="legend">
+<ol class="arabic simple">
+<li><p>Update the device list.</p></li>
+<li><p>Select the heliCamTM C4.</p></li>
+<li><p>Click on the “Update Device” button.</p></li>
+<li><p>Select the firmware Image Package you downloaded.</p></li>
+<li><p>Press “Open”.</p></li>
+<li><p>Wait until the Message “update done” appears in the box that pops up. Please be patient. The update process can take several minutes.</p></li>
+<li><p>Finish the update by clicking “Close”.</p></li>
+</ol>
+</div>
+</figcaption>
+</figure>
+<div class="admonition-trouble-shooting admonition">
+<p class="admonition-title">Trouble Shooting</p>
+<p>After the update is done, check that you can still connect to the heliCam<sup>TM</sup> C4 in updateTool.
+When updating the device list by pressing the corresponding button, the heliCam<sup>TM</sup> C4 must be
+listed and bearing a green status indicator in the update Tool. Should this not be the case,
+proceed as follows:</p>
+<ul class="simple">
+<li><p>If the heliCam<sup>TM</sup> C4 is displayed, but its status indicator is not green:</p></li>
+</ul>
+<blockquote>
+<div><p><span class="math notranslate nohighlight">\(\Rightarrow\)</span> Make sure that the version of Diaphus running on your computer matches that of the newly
+installed firmware as described in the previous paragraph.</p>
+<p><span class="math notranslate nohighlight">\(\Rightarrow\)</span> Then, press “Reboot”, wait 10-30 seconds until the reboot is complete and update the device list again. (The first boot takes longer.)</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>If the previous step was unsuccessful or the heliCam<sup>TM</sup> C4 is not listed in the updateTool:</p></li>
+</ul>
+<blockquote>
+<div><p><span class="math notranslate nohighlight">\(\Rightarrow\)</span> Perform a power cycle (unplug the power supply and plug it back again) and update the list
+of devices after it booted.</p>
+</div></blockquote>
+<p>Should the list still not contain the heliCam<sup>TM</sup> C4, contact
+<a class="reference external" href="mailto:support&#37;&#52;&#48;heliotis&#46;com?subject=Update%20Unsuccessful">Heliotis support</a>.
+Please report the LED status on the heliDriver<sup>TM</sup> D3 so that Heliotis can provide you with targeted help.</p>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../chapter1/chapter1.html" class="btn btn-neutral float-left" title="Introducing the heliCamTM C4 Lock-In Camera" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../chapter3/chapter3.html" class="btn btn-neutral float-right" title="B) Get Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

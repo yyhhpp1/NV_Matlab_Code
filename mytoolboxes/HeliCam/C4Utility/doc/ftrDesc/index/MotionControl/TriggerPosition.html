@@ -1,0 +1,184 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TriggerPosition &mdash; gen4 Devices Feature Description v1.11.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=38fd80f2" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=46dc9575"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="GeneralSpeed" href="GeneralSpeed.html" />
+    <link rel="prev" title="EndPosition" href="EndPosition.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            gen4 Devices Feature Description
+              <img src="../../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Content</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../AcquisitionControl.html">AcquisitionControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ChunkDataControl.html">ChunkDataControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../CounterAndTimerControl.html">CounterAndTimerControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DACDevice.html">DACDevice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DeviceControl.html">DeviceControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DigitalIOControl.html">DigitalIOControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EncoderControl.html">EncoderControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EventControl.html">EventControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExtractionControl.html">ExtractionControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FPGAControl.html">FPGAControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FieldbusControl.html">FieldbusControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FileAccessControl.html">FileAccessControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../HardwareControl.html">HardwareControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../HeliDriverControl.html">HeliDriverControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ImageFormatControl.html">ImageFormatControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../LightControl.html">LightControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../LockInControl.html">LockInControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../MiscControl.html">MiscControl</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../MotionControl.html">MotionControl</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="StageType.html">StageType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zTagResolution.html">zTagResolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ScanMode.html">ScanMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Position.html">Position</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TargetPosition.html">TargetPosition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MotionMode.html">MotionMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="StartPosition.html">StartPosition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="EndPosition.html">EndPosition</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">TriggerPosition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GeneralSpeed.html">GeneralSpeed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AccelerationRamp.html">AccelerationRamp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AutomatedStageInit.html">AutomatedStageInit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="StageInit.html">StageInit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="StageMove.html">StageMove</a></li>
+<li class="toctree-l2"><a class="reference internal" href="StageCategory.html">StageCategory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MoLibName.html">MoLibName</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MoLibVersion.html">MoLibVersion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SoftlimitSelector.html">SoftlimitSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SoftlimitEnable.html">SoftlimitEnable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SoftlimitPosition.html">SoftlimitPosition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SoftlimitSave.html">SoftlimitSave</a></li>
+<li class="toctree-l2"><a class="reference internal" href="StageInitialized.html">StageInitialized</a></li>
+<li class="toctree-l2"><a class="reference internal" href="StageInMotion.html">StageInMotion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="StageStatusSelector.html">StageStatusSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="StageStatus.html">StageStatus</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../MotionFeatures.html">MotionFeatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../OpticControl.html">OpticControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../S4Device.html">S4Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Scan3dControl.html">Scan3dControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SensorControl.html">SensorControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SequencerControl.html">SequencerControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../TransferControl.html">TransferControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../TransportLayerControl.html">TransportLayerControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UserSetControl.html">UserSetControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../WLIControl.html">WLIControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../appendix/Appendix.html">Appendix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">gen4 Devices Feature Description</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../MotionControl.html">MotionControl</a></li>
+      <li class="breadcrumb-item active">TriggerPosition</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="triggerposition">
+<span id="id1"></span><h1>TriggerPosition<a class="headerlink" href="#triggerposition" title="Link to this heading"></a></h1>
+<table class="docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p>Name</p></td>
+<td><p>TriggerPosition</p></td>
+</tr>
+<tr class="row-even"><td><p>Type</p></td>
+<td><p>FloatReg</p></td>
+</tr>
+<tr class="row-odd"><td><p>Visibility</p></td>
+<td><p>Expert</p></td>
+</tr>
+<tr class="row-even"><td><p>AccessMode</p></td>
+<td><p>RO</p></td>
+</tr>
+</tbody>
+</table>
+<p>Next measurement trigger position [mm], if nothing changes until next measurement.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="EndPosition.html" class="btn btn-neutral float-left" title="EndPosition" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="GeneralSpeed.html" class="btn btn-neutral float-right" title="GeneralSpeed" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

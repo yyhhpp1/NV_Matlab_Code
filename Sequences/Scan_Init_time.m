@@ -24,6 +24,13 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
 gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_initial_wait + gmSEQ.m + T_AfterLaser;
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT = gmSEQ.pi;
 
+
+gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('MWSwitchHP');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 1;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T = T_initial_wait + gmSEQ.m + T_AfterLaser - 100;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT = gmSEQ.pi + 200;
+
+
 gmSEQ.CHN(numel(gmSEQ.CHN) + 1).PBN = PBDictionary('GreenAOM');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise = 2;
 gmSEQ.CHN(numel(gmSEQ.CHN)).T = [T_initial_wait, ...

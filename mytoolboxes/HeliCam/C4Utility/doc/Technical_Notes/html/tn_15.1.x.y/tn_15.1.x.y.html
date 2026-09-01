@@ -1,0 +1,246 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TN_15.1.0.1: heliBrd B4 SD Card Re-Writing &mdash; Technical Notes for heliotis gen4 Devices 2025.09 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=0ac42c78" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=200dd705"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TN_15.2.0.0: Adjust 3D Data Scaling and Offset" href="../tn_15.2.x.y/tn_15.2.x.y.html" />
+    <link rel="prev" title="Technical Notes for gen4 Devices" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Technical Notes for heliotis gen4 Devices
+              <img src="../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TN_15.1.0.1: heliBrd B4 SD Card Re-Writing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#challenge-corrupt-sd-card-content">Challenge: Corrupt SD Card Content</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#solution-sd-card-re-writing">Solution: SD-Card Re-Writing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#remove-sd-card-from-heliinspect-h8-or-helicam-c4">Remove SD-Card from heliInspect H8 or heliCam C4</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#load-an-sd-card-image">Load an SD-Card Image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#insert-an-sd-card-to-heliinspect-helicam-device">Insert an SD-Card to heliInspect/heliCam Device</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.2.x.y/tn_15.2.x.y.html">TN_15.2.0.0: Adjust 3D Data Scaling and Offset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.3.x.y/tn_15.3.x.y.html">TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.1.x.y/tn_19.1.x.y.html">TN_19.1.0.1: UserSet - A short Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.10.x.y/tn_19.10.x.y.html">TN_19.10.0.1: Configuring Offset (FPN) Correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.2.x.y/tn_19.2.x.y.html">TN_19.2.0.1: Configuring the Optic Type</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.3.x.y/tn_19.3.x.y.html">TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.4.x.y/tn_19.4.x.y.html">TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.9.x.y/tn_19.9.x.y.html">TN_19.9.0.0:  First/Last Surface Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_51.1.x.y/tn_51.1.x.y.html">TN_51.1.0.0: Heliotis Gen4 Device Fieldbus Reference for D3</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Technical Notes for heliotis gen4 Devices</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">TN_15.1.0.1: heliBrd B4 SD Card Re-Writing</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <a href="../_pdf/tn_15.1.x.y.pdf" target="_blank">PDF version</a><section id="tn-15-1-0-1-helibrd-b4-sd-card-re-writing">
+<h1>TN_15.1.0.1: heliBrd B4 SD Card Re-Writing<a class="headerlink" href="#tn-15-1-0-1-helibrd-b4-sd-card-re-writing" title="Link to this heading"></a></h1>
+<section id="challenge-corrupt-sd-card-content">
+<h2>Challenge: Corrupt SD Card Content<a class="headerlink" href="#challenge-corrupt-sd-card-content" title="Link to this heading"></a></h2>
+<p>heliBrd B4 based devices (like heliInspect H8, heliCam C4) store a file system on an SD Card. Updates of this file system are handled using the UpdateTool application (comes with C4Utility installer) and image package or update package files
+(available for download on heliotis webpage). The file system is robust, i.e. it tolerates conditions such as power interruption during use. Only in exceptional failure cases the file system may be corrupted to the point of boot failures.
+In such rare cases, however, the device becomes inaccessible throught its ethernet interface even after attempts to reboot it (power cycle).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you suspect your file system to be corrupt contact <a class="reference external" href="mailto:support&#37;&#52;&#48;heliotis&#46;ch">support<span>&#64;</span>heliotis<span>&#46;</span>ch</a> before proceeding with solution described below.</p>
+</div>
+</section>
+<section id="solution-sd-card-re-writing">
+<h2>Solution: SD-Card Re-Writing<a class="headerlink" href="#solution-sd-card-re-writing" title="Link to this heading"></a></h2>
+<p>To recover from a corrupt file system load a full SD-Card image to the device. The required steps are as follows.</p>
+<section id="remove-sd-card-from-heliinspect-h8-or-helicam-c4">
+<h3>Remove SD-Card from heliInspect H8 or heliCam C4<a class="headerlink" href="#remove-sd-card-from-heliinspect-h8-or-helicam-c4" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Required tools (figure <a class="reference internal" href="#tools"><span class="std std-numref">Fig. 1</span></a>):</dt><dd><ul class="simple">
+<li><p>1.5mm hexagonal socket wrench (Allen key)</p></li>
+<li><p>tweezers</p></li>
+</ul>
+</dd>
+</dl>
+<figure class="align-center" id="id1">
+<span id="tools"></span><a class="reference internal image-reference" href="../_images/Tools.jpg"><img alt="../_images/Tools.jpg" src="../_images/Tools.jpg" style="width: 337.92px; height: 450.45000000000005px;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Required Tools</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<dl class="simple">
+<dt>Steps:</dt><dd><ol class="arabic simple">
+<li><p>Switch off the power supply.</p></li>
+<li><p>Remove SD-Card cover. Unscrew the two screws on the right hand side of heliInspect H8 (figure <a class="reference internal" href="#cover"><span class="std std-numref">Fig. 2</span></a>). Remove the cover.</p></li>
+<li><p>Remove the SD-Card. The SD-Card holder has a push/pull mechanism. To remove the SD-Card, push the card with a thin rod (e.g. the back of your tweezers). A soft click should be audible. Afterwards, the card pops out a bit and can be removed carefully. (e.g. with the tweezers)</p></li>
+</ol>
+</dd>
+</dl>
+<figure class="align-center" id="id2">
+<span id="cover"></span><a class="reference internal image-reference" href="../_images/Cover.jpg"><img alt="../_images/Cover.jpg" src="../_images/Cover.jpg" style="width: 337.92px; height: 450.45000000000005px;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 2 </span><span class="caption-text">SD-Card Cover Screws</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>SD card is not accessible for heliInspect H9 devices. Don’t attempt to open H9 devices witout heliotis assistance.</p>
+</div>
+</section>
+<section id="load-an-sd-card-image">
+<h3>Load an SD-Card Image<a class="headerlink" href="#load-an-sd-card-image" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Required software:</dt><dd><ul class="simple">
+<li><p>balenaEtcher <a class="reference external" href="https://www.balena.io/etcher/">https://www.balena.io/etcher/</a></p></li>
+<li><p>heliBoard B4 Image (e.g. b4brdImg_1.8.0.zip)</p></li>
+</ul>
+</dd>
+<dt>Steps:</dt><dd><ol class="arabic simple">
+<li><p>Extract the *.zip file. (It contains a single *.img file)</p></li>
+<li><p>Insert the card into PC’s SD-Card slot and start balenaEtcher</p></li>
+<li><p>Push the <em>Flash from file</em> button and select the extracted *.img file</p></li>
+<li><p>Push the <em>Select target</em> button and select the SD-Card drive.</p></li>
+<li><p>The final selections are shown in figure <a class="reference internal" href="#etcher"><span class="std std-numref">Fig. 3</span></a>. Now push the <em>Flash!</em> button to write the image to the SD-Card (PC administrator privileges are required)</p></li>
+<li><p>After a successful write procedure, remove the SD-Card from the PC and insert it into the heliInspect H8.</p></li>
+</ol>
+</dd>
+</dl>
+<figure class="align-center" id="id3">
+<span id="etcher"></span><a class="reference internal image-reference" href="../_images/balenaEtcher.png"><img alt="../_images/balenaEtcher.png" src="../_images/balenaEtcher.png" style="width: 529.32px; height: 334.62px;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 3 </span><span class="caption-text">balenaEtcher selection</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="insert-an-sd-card-to-heliinspect-helicam-device">
+<h3>Insert an SD-Card to heliInspect/heliCam Device<a class="headerlink" href="#insert-an-sd-card-to-heliinspect-helicam-device" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Steps:</dt><dd><ol class="arabic simple">
+<li><p>Insert the SD-Card into heliInspect H8. Use tweezers to hold the card and insert it carefully into the SD-Card slot. The SD-Card slot has a push/pull mechanism. After inserting the SD-Card push it carefully until a soft click is audible. The SD-Card orientation is shown is figure <a class="reference internal" href="#sdcard"><span class="std std-numref">Fig. 4</span></a>.</p></li>
+<li><p>Mount the cover with the two screws.</p></li>
+</ol>
+</dd>
+</dl>
+<figure class="align-center" id="id4">
+<span id="sdcard"></span><a class="reference internal image-reference" href="../_images/SDCard.jpg"><img alt="../_images/SDCard.jpg" src="../_images/SDCard.jpg" style="width: 337.92px; height: 450.45000000000005px;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 4 </span><span class="caption-text">SD-Card Orientation</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="document-history">
+<h2>Document History<a class="headerlink" href="#document-history" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Version</p></th>
+<th class="head"><p>Date</p></th>
+<th class="head"><p>Changes</p></th>
+<th class="head"><p>Responsible</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>15.1.0.0</p></td>
+<td><p>19-05-2022</p></td>
+<td><p>initial version</p></td>
+<td><p>sm</p></td>
+</tr>
+<tr class="row-odd"><td><p>15.1.0.1</p></td>
+<td><p>14-11-2022</p></td>
+<td><p>review, typos</p></td>
+<td><p>cl</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Technical Notes for gen4 Devices" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tn_15.2.x.y/tn_15.2.x.y.html" class="btn btn-neutral float-right" title="TN_15.2.0.0: Adjust 3D Data Scaling and Offset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

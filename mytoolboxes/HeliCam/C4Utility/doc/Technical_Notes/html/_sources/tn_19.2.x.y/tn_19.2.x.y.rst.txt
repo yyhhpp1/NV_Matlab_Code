@@ -1,0 +1,46 @@
+.. raw:: html
+
+    <a href="../_pdf/tn_19.2.x.y.pdf" target="_blank">PDF version</a>
+    
+TN_19.2.0.1: Configuring the Optic Type
+*******************************************************************************
+
+Context: Variety of Optics Types for heliInspect H8/H9
+========================================================================
+
+heliInspect H8 and H9 devices are available with different optics types, implementing different magnifications and/or interferometer designs. 
+For optimum device performance, a group of camera features requires settings specific to the optic type installed on the device. 
+These features can be written individually or loaded from predefined configurations.
+
+Challenge: Correctly Configure heliInspect H8/H9 for an Optics Type
+===================================================================
+
+The magnification, the numerical aperture and the effective wavelength depend on the optic type used. 
+Also, the peak shape of the raw interferometric signal is altered. 
+As a consequence, the vertical sample spacing of a scan needs to be adjusted in order to sample the signal appropriately. 
+The programmers guide includes recommendations for the ``TargetVerticalSpacing`` values for different optic types. 
+As a rule of thumb, the vertical spacing needs to be lower for higher magnifications.
+
+Solution: Load Predefined Configurations using the ``OpticType`` Feature
+========================================================================
+
+The camera feature ``OpticType`` allows to load predefined, recommended, configurations for
+``Magnification``, ``NumericalAperture``, ``WavelengthCorrection`` and ``TargetVerticalSpacing``.
+Consequently, any changes of these features written before the ``OpticType`` feature is updated will be lost. 
+When changing any of these features individually after setting the ``OpticType`` feature, the ``OpticType`` will take the value Custom.
+ 
+.. note:: The ``EffectiveWavelength`` value predefined in ``OpticType`` configurations reflects nominal optic properties. If production variation and temperature variation effects are to be covered, the fine-tuning of ``WavelengthCorrection`` is required. The fine tuned value must be written after the ``OpticType`` feature.
+ 
+.. note:: The values of ``TargetVerticalSpacing`` defined in ``OpticType`` configuration strike a trade-off between accuracy (improves with decreasing spacing) and measurement cycle time (maximum available scan speed increases and amount of data decreases with increasing spacing). Try half of the predefined value for optimized accuracy or twice the predefined value for optimized cycle time, respectively.
+
+
+Document History
+================
+
++------------+--------------+------------------+-------------+
+| Version    | Date         | Changes          | Responsible |
++============+==============+==================+=============+
+| 19.2.0.1   | 19-02-2025   | initial version  | ls          | 
++------------+--------------+------------------+-------------+
+
+

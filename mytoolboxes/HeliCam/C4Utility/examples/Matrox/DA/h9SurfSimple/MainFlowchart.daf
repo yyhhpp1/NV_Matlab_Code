@@ -1,0 +1,1892 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<flowchart id="ffc669b1-3fd2-40f0-9212-05cbaa27b805" version="8.0.291.0" description="">
+  <Variables id="6da4b2d3-fb40-4a50-8498-56721cc88003" name="Variables" />
+  <StaticImages />
+  <flowchartElements>
+    <step name="BasicSettings" enabled="True" resettable="False" persistentState="NotPersistent" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.CameraSettings, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="30d0da03-b463-4b43-ab65-501c3cacdab8" Version="8.0.291.0">
+      <inputs>
+        <objectCollection name="GenICamFeatures" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamFeatures, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="fddba1dc-91c1-4996-bc86-aafabfca674d" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <collectionItems>
+            <subObject name="ComponentSelector" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="3121fac7-38a3-408f-a3c6-5160e4026cdf" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ComponentSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ComponentSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>Intensity</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ComponentEnable" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Boolean, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="6e855914-cf41-44ee-9820-a29103d29962" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ComponentEnable</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ComponentEnable</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>False</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ComponentSelector2" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="815870e2-ddd4-4c54-8e0b-cc8f4b224292" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ComponentSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ComponentSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>Range</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ComponentEnable2" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Boolean, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="2a8f7cfe-8090-44be-a1bc-3c74a3948e50" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ComponentEnable</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ComponentEnable</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ComponentSelector3" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="338b48e3-91cf-4a17-95be-5d82c57997ad" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ComponentSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ComponentSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>Reflectance</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ComponentEnable3" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Boolean, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="d7f2fc66-fc88-4a87-9402-0cc920fbc8c2" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ComponentEnable</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ComponentEnable</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ComponentSelector4" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="69edb52b-b82c-4b9f-b737-ec664f150811" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ComponentSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ComponentSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>Phase</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ComponentEnable4" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Boolean, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="9766680f-2608-448b-bd50-1a61a6f020a6" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ComponentEnable</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ComponentEnable</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>False</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ChunkModeActive" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Boolean, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="d529e722-2331-44ca-aefc-bf77ee30efc7" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ChunkModeActive</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ChunkModeActive</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>False</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="TriggerSelector" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="eb886323-ab7f-487d-bee4-13350116ce00" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>TriggerSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>TriggerSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>RecordingStart</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="TriggerMode" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="16d7df33-6ba1-4858-be89-c4f8c4ef0910" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>TriggerMode</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>TriggerMode</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>On</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="TriggerSource" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="41e1a4fd-460e-462e-af6f-efdb6c23139a" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>TriggerSource</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>TriggerSource</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>RTIO7</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="TriggerSelector2" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="9e2dc491-a58f-43b8-9db5-b2bb3468f4be" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>TriggerSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>TriggerSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>AcquisitionStart</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="TriggerMode2" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="095eade4-1363-48df-bd5e-f3512f51bf42" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>TriggerMode</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>TriggerMode</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>Off</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="TriggerSelector3" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="47e1dd52-9613-4b0e-98ce-ecdeeb5f3a57" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>TriggerSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>TriggerSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>FrameStart</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="TriggerMode3" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="58a79bdf-e1d3-402d-8b2d-d551a4e1bc7f" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>TriggerMode</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>TriggerMode</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>On</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="TriggerSource3" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="2390b905-927a-42df-a807-9f54b1d22493" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>TriggerSource</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>TriggerSource</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>Software</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="Scan3dExtractionMethod" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="6e311091-632a-438c-a9cb-8a0c72c5304b" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>Scan3dExtractionMethod</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>Scan3dExtractionMethod</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>AcceleratedCenterOfMassIQCorrection</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="Scan3dScalingMethod" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="3352f0d7-e21c-4778-a91a-58754d391f8e" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>Scan3dScalingMethod</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>Scan3dScalingMethod</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>zTags</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="Scan3dDistanceUnit" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="fcaf666e-db54-40ca-9f6a-07192225c621" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>Scan3dDistanceUnit</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>Scan3dDistanceUnit</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>um</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="FPNCorrection" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="67316f09-ec91-4dc8-afcd-5e178118cc92" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>FPNCorrection</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>FPNCorrection</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>AverageLastFrames</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="FPNCorrectionNFrames" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Double, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="392a0b41-cb7b-44da-9b0b-f12ecdf2bbfa" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>FPNCorrectionNFrames</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>FPNCorrectionNFrames</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>8</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ExtSimpMaxHWin" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Double, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="a502689b-667a-4ee5-98e0-2ab86bc6ac40" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ExtSimpMaxHWin</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ExtSimpMaxHWin</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>7</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+          </collectionItems>
+          <userXML />
+        </objectCollection>
+        <input name="StopGrab">
+          <expression>
+            <expression-string>Default</expression-string>
+          </expression>
+        </input>
+        <input name="WhiteBalanceName">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="BlackOffset">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="BlackReference">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="ExposureDelay">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="ExposureTime">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="InputGain">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="CameraName">
+          <expression>
+            <expression-string>PhysicalCamera1</expression-string>
+          </expression>
+        </input>
+        <input name="Comment">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+        </input>
+        <input name="ResetPoint">
+          <expression>
+            <expression-string>InspectionStart</expression-string>
+          </expression>
+        </input>
+        <input name="Timeout">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="OffsetX">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="OffsetY">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="SizeX">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="SizeY">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="ScaleX">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="ScaleY">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="Intensity">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="StrobeDelay">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="StrobeTime">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="Trigger">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="TriggerDebounceTime">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="TriggerDelay">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="TriggerPeriod">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="TriggerSource">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="TriggerTarget">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </step>
+    <step name="ProjectSpecificSettings" enabled="True" resettable="False" persistentState="NotPersistent" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.CameraSettings, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="35d0c75b-3b74-4a39-ba1d-94866eb88ce3" Version="8.0.291.0">
+      <inputs>
+        <objectCollection name="GenICamFeatures" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamFeatures, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="4deb1f22-0a89-4786-a55f-379b17b08674" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <collectionItems>
+            <subObject name="EncoderSelector" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamEnumValueFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="7be6418d-65f8-4039-b0c6-9379adf1f2a1" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>EncoderSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>EncoderSelector</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="EncoderInverter" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Boolean, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="29c83cab-7b14-4eed-8f00-cbb5f3b56a53" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>EncoderInverter</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>EncoderInverter</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>False</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ScanPosition" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Double, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="c5e44cea-3da1-4d9b-9b05-c01eca130643" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ScanPosition</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ScanPosition</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>28.5</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="TargetVerticalSpacing" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Double, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="2f6bda5a-2ed3-4c36-ad4d-bd41532c5d8c" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>TargetVerticalSpacing</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>TargetVerticalSpacing</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>6</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ExposureRatio" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Double, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="8027d9fa-fbad-4301-87c7-d133f0da3d02" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ExposureRatio</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ExposureRatio</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>0.72</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ScanRange" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Double, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="57fc74aa-5926-4a1c-ac4c-67a353d01eee" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ScanRange</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ScanRange</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>1.75</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ScanSpeed" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Double, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="83377cf3-2ce6-424b-89fc-2120bf4a9fa1" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>ScanSpeed</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>ScanSpeed</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>6</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="GeneralSpeed" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.Double, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="2092e2b3-2692-4675-ba67-a42cb6b702da" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>GeneralSpeed</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>GeneralSpeed</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>10</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="XenaxIP" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamValueFeature`1[[System.String, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="76bdb9f0-71d9-4238-8cf1-cde67be0864c" Version="8.0.291.0" linkedAssemblies="Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>XenaxIP</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>XenaxIP</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>192.168.2.101</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="StageInit" type="Matrox.DesignAssistant.Steps.CameraSettingsPackage.GenICamCommandFeature, Matrox.DesignAssistant.Steps.CameraSettingsPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="d41bd25d-fd5e-437c-88aa-c5d05ad1a47e" Version="8.0.291.0">
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureDisplayName">
+                  <expression>
+                    <expression-string>StageInit</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureLevelType">
+                  <expression>
+                    <expression-string>Camera</expression-string>
+                  </expression>
+                </input>
+                <input name="FeatureName">
+                  <expression>
+                    <expression-string>StageInit</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+          </collectionItems>
+          <userXML />
+        </objectCollection>
+        <input name="StopGrab">
+          <expression>
+            <expression-string>Default</expression-string>
+          </expression>
+        </input>
+        <input name="WhiteBalanceName">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="BlackOffset">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="BlackReference">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="ExposureDelay">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="ExposureTime">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="InputGain">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="CameraName">
+          <expression>
+            <expression-string>PhysicalCamera1</expression-string>
+          </expression>
+        </input>
+        <input name="Comment">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+        </input>
+        <input name="ResetPoint">
+          <expression>
+            <expression-string>InspectionStart</expression-string>
+          </expression>
+        </input>
+        <input name="Timeout">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="OffsetX">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="OffsetY">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="SizeX">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="SizeY">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="ScaleX">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="ScaleY">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="Intensity">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="StrobeDelay">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="StrobeTime">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="Trigger">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="TriggerDebounceTime">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="TriggerDelay">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="TriggerPeriod">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="TriggerSource">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+        <input name="TriggerTarget">
+          <expression>
+            <expression-string>Unchanged</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </step>
+    <loop enabled="True" type="Matrox.DesignAssistant.Core.Flowcharts.Loop, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7">
+      <step name="Loop" enabled="True" resettable="False" persistentState="NotPersistent" type="Matrox.DesignAssistant.Core.Flowcharts.LoopStep, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="82a3a5ba-c0a0-4012-b171-41588cf2861a" Version="8.0.291.0">
+        <inputs>
+          <input name="Comment">
+            <expression>
+              <expression-string></expression-string>
+            </expression>
+          </input>
+          <input name="ResetPoint">
+            <expression>
+              <expression-string>InspectionStart</expression-string>
+            </expression>
+          </input>
+        </inputs>
+        <userXML />
+      </step>
+      <flowchartElements>
+        <step name="Trigger" enabled="True" resettable="False" persistentState="NotPersistent" type="Matrox.DesignAssistant.Steps.TriggerPackage.Trigger, Matrox.DesignAssistant.Steps.TriggerPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="e4aac729-40c3-4ba8-bc92-4be161e003be" Version="8.0.291.0">
+          <inputs>
+            <input name="TargetType">
+              <expression>
+                <expression-string>Camera</expression-string>
+              </expression>
+            </input>
+            <input name="Camera">
+              <expression>
+                <expression-string>PhysicalCamera1</expression-string>
+              </expression>
+            </input>
+            <input name="ReUseImage">
+              <expression>
+                <expression-string>False</expression-string>
+              </expression>
+            </input>
+            <input name="System">
+              <expression>
+                <expression-string>Default</expression-string>
+              </expression>
+            </input>
+            <input name="Timer">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+            </input>
+            <input name="Comment">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+            </input>
+            <input name="ResetPoint">
+              <expression>
+                <expression-string>InspectionStart</expression-string>
+              </expression>
+            </input>
+          </inputs>
+          <userXML />
+        </step>
+        <step name="Camera" enabled="True" resettable="False" persistentState="NotPersistent" type="Matrox.DesignAssistant.Steps.CameraPackage.Camera, Matrox.DesignAssistant.Steps.CameraPackage, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="643ced08-8cf2-49e2-b86d-210188d59ce8" Version="8.0.291.0">
+          <inputs>
+            <input name="CalibrationName">
+              <expression>
+                <expression-string>None</expression-string>
+              </expression>
+            </input>
+            <input name="CorrectImage">
+              <expression>
+                <expression-string>False</expression-string>
+              </expression>
+            </input>
+            <input name="InterpolationMode">
+              <expression>
+                <expression-string>Bilinear</expression-string>
+              </expression>
+            </input>
+            <input name="Overscan">
+              <expression>
+                <expression-string>Clear</expression-string>
+              </expression>
+            </input>
+            <subObject name="ProjectDepthMap" type="Matrox.DesignAssistant.Core.CommonTypes.ConfigurableDepthMapProjection, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="33d0ac73-28d6-4766-8bbf-a5aac817e0d2" Version="8.0.291.0">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="ProjectionMode">
+                  <expression>
+                    <expression-string>Default</expression-string>
+                  </expression>
+                </input>
+                <input name="Direction">
+                  <expression>
+                    <expression-string>Default</expression-string>
+                  </expression>
+                </input>
+                <input name="OverlapMode">
+                  <expression>
+                    <expression-string>MaxValue</expression-string>
+                  </expression>
+                </input>
+                <input name="SizeX">
+                  <expression>
+                    <expression-string>Default</expression-string>
+                  </expression>
+                </input>
+                <input name="SizeY">
+                  <expression>
+                    <expression-string>Default</expression-string>
+                  </expression>
+                </input>
+                <input name="ProjectionBox">
+                  <expression>
+                    <expression-string>BoundingBox</expression-string>
+                  </expression>
+                </input>
+                <input name="ApplyProjectionToImage">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="BoundingBoxAlgorithm">
+                  <expression>
+                    <expression-string>AllPoints</expression-string>
+                  </expression>
+                </input>
+                <input name="BoundingBoxOutlierRatioX">
+                  <expression>
+                    <expression-string>0.002</expression-string>
+                  </expression>
+                </input>
+                <input name="BoundingBoxOutlierRatioY">
+                  <expression>
+                    <expression-string>0.002</expression-string>
+                  </expression>
+                </input>
+                <input name="BoundingBoxOutlierRatioZ">
+                  <expression>
+                    <expression-string>0.010</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="RemapDepthMap" type="Matrox.DesignAssistant.Core.CommonTypes.ConfigurableRemap, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="bcc85f5e-f8eb-4b52-bc7b-fcedcdf59fbe" Version="8.0.291.0">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="StartMode">
+                  <expression>
+                    <expression-string>MinValue</expression-string>
+                  </expression>
+                </input>
+                <input name="StartValue">
+                  <expression>
+                    <expression-string>0</expression-string>
+                  </expression>
+                </input>
+                <input name="StdDevStartValue">
+                  <expression>
+                    <expression-string>1</expression-string>
+                  </expression>
+                </input>
+                <input name="EndMode">
+                  <expression>
+                    <expression-string>MaxValue</expression-string>
+                  </expression>
+                </input>
+                <input name="EndValue">
+                  <expression>
+                    <expression-string>0</expression-string>
+                  </expression>
+                </input>
+                <input name="StdDevEndValue">
+                  <expression>
+                    <expression-string>1</expression-string>
+                  </expression>
+                </input>
+                <input name="SaturateValues">
+                  <expression>
+                    <expression-string>False</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="FillGapsInDepthMap" type="Matrox.DesignAssistant.Core.CommonTypes.ConfigurableFillGapDepthMap, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="29354db1-0c49-4d81-89ef-2110ff245fe1" Version="8.0.291.0">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>False</expression-string>
+                  </expression>
+                </input>
+                <input name="FillDirectionOrder">
+                  <expression>
+                    <expression-string>XThenY</expression-string>
+                  </expression>
+                </input>
+                <input name="Interpolate">
+                  <expression>
+                    <expression-string>Always</expression-string>
+                  </expression>
+                </input>
+                <input name="ZDifferenceThreshold">
+                  <expression>
+                    <expression-string>1.0</expression-string>
+                  </expression>
+                </input>
+                <input name="GapBoundaryPropagation">
+                  <expression>
+                    <expression-string>GapMinZ</expression-string>
+                  </expression>
+                </input>
+                <input name="MaxGapFillingX">
+                  <expression>
+                    <expression-string>Infinite</expression-string>
+                  </expression>
+                </input>
+                <input name="MaxGapFillingY">
+                  <expression>
+                    <expression-string>Infinite</expression-string>
+                  </expression>
+                </input>
+                <input name="GapFillingInputUnits">
+                  <expression>
+                    <expression-string>World</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="Mesh" type="Matrox.DesignAssistant.Core.CommonTypes.ConfigurableMesh, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="bd1893b2-fcb8-406d-96e8-01b39f7c53a4" Version="8.0.291.0">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>False</expression-string>
+                  </expression>
+                </input>
+                <input name="MaxDistance">
+                  <expression>
+                    <expression-string>Infinite</expression-string>
+                  </expression>
+                </input>
+                <input name="MeshStepX">
+                  <expression>
+                    <expression-string>10</expression-string>
+                  </expression>
+                </input>
+                <input name="MeshStepY">
+                  <expression>
+                    <expression-string>10</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="ReplaceInvalidValuesInDepthMap" type="Matrox.DesignAssistant.Core.CommonTypes.ConfigurableReplaceInvalidValuesDepthMap, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="6501dd25-3d45-4316-bdf9-2a9a70085d9f" Version="8.0.291.0">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>False</expression-string>
+                  </expression>
+                </input>
+                <input name="FillValue">
+                  <expression>
+                    <expression-string>MinValue</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <subObject name="CustomZCalibration" type="Matrox.DesignAssistant.Core.CommonTypes.ConfigurableCustomZCalibration, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="2d79e5c0-39ca-4bd8-afaf-a248999ee3ba" Version="8.0.291.0">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>False</expression-string>
+                  </expression>
+                </input>
+                <input name="ZReference">
+                  <expression>
+                    <expression-string>0</expression-string>
+                  </expression>
+                </input>
+                <input name="ZScale">
+                  <expression>
+                    <expression-string>1</expression-string>
+                  </expression>
+                </input>
+                <input name="ZUnit">
+                  <expression>
+                    <expression-string>Millimeters</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <input name="CameraSource">
+              <expression>
+                <expression-string>PhysicalCamera1</expression-string>
+              </expression>
+            </input>
+            <input name="Comment">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+            </input>
+            <input name="ResetPoint">
+              <expression>
+                <expression-string>InspectionStart</expression-string>
+              </expression>
+            </input>
+            <subObject name="RemapImage" type="Matrox.DesignAssistant.Core.CommonTypes.ConfigurableRemap, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="ac00c20b-284c-4f19-9d57-7434229ae8c3" Version="8.0.291.0">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+              <inputs>
+                <input name="Enabled">
+                  <expression>
+                    <expression-string>False</expression-string>
+                  </expression>
+                </input>
+                <input name="StartMode">
+                  <expression>
+                    <expression-string>MinValue</expression-string>
+                  </expression>
+                </input>
+                <input name="StartValue">
+                  <expression>
+                    <expression-string>4</expression-string>
+                  </expression>
+                </input>
+                <input name="StdDevStartValue">
+                  <expression>
+                    <expression-string>1</expression-string>
+                  </expression>
+                </input>
+                <input name="EndMode">
+                  <expression>
+                    <expression-string>MaxValue</expression-string>
+                  </expression>
+                </input>
+                <input name="EndValue">
+                  <expression>
+                    <expression-string>90</expression-string>
+                  </expression>
+                </input>
+                <input name="StdDevEndValue">
+                  <expression>
+                    <expression-string>1</expression-string>
+                  </expression>
+                </input>
+                <input name="SaturateValues">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML />
+            </subObject>
+            <input name="ProfileOrientation">
+              <expression>
+                <expression-string>Default</expression-string>
+              </expression>
+            </input>
+            <input name="ProfileImageSizeX">
+              <expression>
+                <expression-string>Default</expression-string>
+              </expression>
+            </input>
+            <input name="ProfileImageSizeY">
+              <expression>
+                <expression-string>Default</expression-string>
+              </expression>
+            </input>
+            <input name="ProfileImageViewport">
+              <expression>
+                <expression-string>BoundingBox</expression-string>
+              </expression>
+            </input>
+          </inputs>
+          <userXML />
+        </step>
+        <step name="Status" enabled="True" resettable="True" persistentState="Global" type="Matrox.DesignAssistant.Core.Flowcharts.StatusStep.Status, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="79508921-73eb-454c-a77e-15098d801368" Version="8.0.291.0">
+          <inputs>
+            <input name="AssociatedStatusStep">
+              <expression>
+                <expression-string>None</expression-string>
+              </expression>
+            </input>
+            <input name="Comment">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+            </input>
+            <objectCollection name="Conditions" type="Matrox.DesignAssistant.Core.Flowcharts.StatusStep.StatusConditionsCollection, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="97b42e64-674f-4f16-bc06-a07fdc3f9c65" Version="8.0.291.0">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+              <collectionItems />
+              <userXML />
+            </objectCollection>
+            <input name="CreateAutomaticLabels">
+              <expression>
+                <expression-string>True</expression-string>
+              </expression>
+            </input>
+            <subObject name="ErrorCaughtInspectionLabel" type="Matrox.DesignAssistant.Core.Projects.BaseLabel, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="e6379200-5ff4-458e-8d68-b1e38dc6e3b8" Version="8.0.291.0">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+              <inputs>
+                <input name="Background">
+                  <expression>
+                    <expression-string>-65536</expression-string>
+                  </expression>
+                </input>
+                <input name="Condition">
+                  <expression>
+                    <expression-string need-link-container="True">Status.ErrorCaught=True</expression-string>
+                  </expression>
+                </input>
+                <input name="DesignTimeVisible">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="Foreground">
+                  <expression>
+                    <expression-string>-1</expression-string>
+                  </expression>
+                </input>
+                <input name="RuntimeVisible">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="Type">
+                  <expression>
+                    <expression-string>StatusCondition</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>None</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML>
+                <AutomaticName>ErrorCaught</AutomaticName>
+              </userXML>
+            </subObject>
+            <subObject name="FailInspectionLabel" type="Matrox.DesignAssistant.Core.Projects.BaseLabel, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="b0c1596c-896f-4c75-a211-1ab16a44f074" Version="8.0.291.0">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+              <inputs>
+                <input name="Background">
+                  <expression>
+                    <expression-string>-65536</expression-string>
+                  </expression>
+                </input>
+                <input name="Condition">
+                  <expression>
+                    <expression-string need-link-container="True">Status.Result=Fail</expression-string>
+                  </expression>
+                </input>
+                <input name="DesignTimeVisible">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="Foreground">
+                  <expression>
+                    <expression-string>-1</expression-string>
+                  </expression>
+                </input>
+                <input name="RuntimeVisible">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="Type">
+                  <expression>
+                    <expression-string>StatusCondition</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>None</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML>
+                <AutomaticName>Fail</AutomaticName>
+              </userXML>
+            </subObject>
+            <subObject name="PassInspectionLabel" type="Matrox.DesignAssistant.Core.Projects.BaseLabel, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="74ded3df-ec9d-4e19-8499-038b053fa4a6" Version="8.0.291.0">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+              <inputs>
+                <input name="Background">
+                  <expression>
+                    <expression-string>-16744448</expression-string>
+                  </expression>
+                </input>
+                <input name="Condition">
+                  <expression>
+                    <expression-string need-link-container="True">Status.Result=Pass</expression-string>
+                  </expression>
+                </input>
+                <input name="DesignTimeVisible">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="Foreground">
+                  <expression>
+                    <expression-string>-1</expression-string>
+                  </expression>
+                </input>
+                <input name="RuntimeVisible">
+                  <expression>
+                    <expression-string>True</expression-string>
+                  </expression>
+                </input>
+                <input name="Type">
+                  <expression>
+                    <expression-string>StatusCondition</expression-string>
+                  </expression>
+                </input>
+                <input name="Value">
+                  <expression>
+                    <expression-string>None</expression-string>
+                  </expression>
+                </input>
+              </inputs>
+              <userXML>
+                <AutomaticName>Pass</AutomaticName>
+              </userXML>
+            </subObject>
+            <input name="ResetPoint">
+              <expression>
+                <expression-string>NeverReset</expression-string>
+              </expression>
+            </input>
+            <input name="Suspended">
+              <expression>
+                <expression-string>False</expression-string>
+              </expression>
+            </input>
+          </inputs>
+          <userXML />
+        </step>
+        <step name="LoopEnd" enabled="True" resettable="True" persistentState="NotPersistent" type="Matrox.DesignAssistant.Core.Flowcharts.LoopEndStep, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="3c238430-658e-4665-b8fb-3a26632988e1" Version="8.0.291.0">
+          <inputs>
+            <input name="Comment">
+              <expression>
+                <expression-string></expression-string>
+              </expression>
+            </input>
+            <input name="ResetPoint">
+              <expression>
+                <expression-string>InspectionStart</expression-string>
+              </expression>
+            </input>
+          </inputs>
+          <userXML />
+        </step>
+      </flowchartElements>
+    </loop>
+    <step name="FlowchartEnd" enabled="True" resettable="False" persistentState="NotPersistent" type="Matrox.DesignAssistant.Core.Flowcharts.FlowchartEnd, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="34363492-3ce0-4018-abd1-74b93f6278b8" Version="8.0.291.0">
+      <inputs>
+        <input name="Comment">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+        </input>
+        <objectCollection name="Outputs" type="Matrox.DesignAssistant.Core.Flowcharts.FlowchartOutputCollection, Matrox.DesignAssistant.Core, Version=8.0.291.0, Culture=neutral, PublicKeyToken=726f03a4652993c7" id="cd090dff-e494-4aad-8030-ac71479459af" Version="8.0.291.0">
+          <expression>
+            <expression-string></expression-string>
+          </expression>
+          <collectionItems />
+          <userXML />
+        </objectCollection>
+        <input name="ResetPoint">
+          <expression>
+            <expression-string>InspectionStart</expression-string>
+          </expression>
+        </input>
+      </inputs>
+      <userXML />
+    </step>
+  </flowchartElements>
+</flowchart>

@@ -11,10 +11,10 @@ function tf = InstrumentEnabled(name)
 % 'camera'. Unknown names default to enabled (true) so existing code is unaffected.
 
 switch lower(name)
-    case 'fpga';          tf = true;
+    case 'fpga';          tf = false;
     case 'srs';           tf = true;   % main SRS SG386 (gSG)
-    case 'srs2';          tf = true;   % second signal generator (gSG2)
-    case 'srs3';          tf = true;   % third signal generator (gSG3)
+    case 'srs2';          tf = false;   % second signal generator (gSG2)
+    case 'srs3';          tf = false;   % third signal generator (gSG3)
     case 'pulseblaster';  tf = true;
     case 'nidaq';         tf = true;   % NI-DAQ counters / KillAllTasks
     case 'camera';        tf = true;   % HeliCam widefield detector

@@ -1,0 +1,433 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TN_15.2.0.0: Adjust 3D Data Scaling and Offset &mdash; Technical Notes for heliotis gen4 Devices 2025.09 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=0ac42c78" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=200dd705"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices" href="../tn_15.3.x.y/tn_15.3.x.y.html" />
+    <link rel="prev" title="TN_15.1.0.1: heliBrd B4 SD Card Re-Writing" href="../tn_15.1.x.y/tn_15.1.x.y.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Technical Notes for heliotis gen4 Devices
+              <img src="../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.1.x.y/tn_15.1.x.y.html">TN_15.1.0.1: heliBrd B4 SD Card Re-Writing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TN_15.2.0.0: Adjust 3D Data Scaling and Offset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#challange">Challange</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#configure-custom-surface-scaling">Configure Custom Surface Scaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configure-custom-surface-offset">Configure Custom Surface Offset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calculate-real-world-coordinates-data">Calculate Real-World Coordinates Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.3.x.y/tn_15.3.x.y.html">TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.1.x.y/tn_19.1.x.y.html">TN_19.1.0.1: UserSet - A short Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.10.x.y/tn_19.10.x.y.html">TN_19.10.0.1: Configuring Offset (FPN) Correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.2.x.y/tn_19.2.x.y.html">TN_19.2.0.1: Configuring the Optic Type</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.3.x.y/tn_19.3.x.y.html">TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.4.x.y/tn_19.4.x.y.html">TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.9.x.y/tn_19.9.x.y.html">TN_19.9.0.0:  First/Last Surface Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_51.1.x.y/tn_51.1.x.y.html">TN_51.1.0.0: Heliotis Gen4 Device Fieldbus Reference for D3</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Technical Notes for heliotis gen4 Devices</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">TN_15.2.0.0: Adjust 3D Data Scaling and Offset</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <a href="../_pdf/tn_15.2.x.y.pdf" target="_blank">PDF version</a><section id="tn-15-2-0-0-adjust-3d-data-scaling-and-offset">
+<h1>TN_15.2.0.0: Adjust 3D Data Scaling and Offset<a class="headerlink" href="#tn-15-2-0-0-adjust-3d-data-scaling-and-offset" title="Link to this heading"></a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h2>
+<p>heliInspect devices scale 3D output data in <em>um</em> and map the value to the current stage possition which is in many cases a negative position</p>
+<p>This application note describes how to setup 3D data scaling and offset. This allows a well configured value range for <em>unsigned int16</em> (Mono16) surface output.</p>
+<p>The required features described in this documentation are available since software version <strong>1.9.0</strong>.</p>
+<section id="challange">
+<h3>Challange<a class="headerlink" href="#challange" title="Link to this heading"></a></h3>
+<p>Some applications could not handle the 3D data output as 32bit floating point value. For such applications, the heliInspect H8/H9 as well as any other heliBrd B4 based camera systems from heliotis supports an 16bit unsignet integer data output.
+Within this mode, the output values are integers and its range is limited from <em>0 - 65535</em>.</p>
+<p>As a default configuration, the camera scales the 3D output data in <em>um</em> and maps the value to the current stage possition which is in many cases a negative position.
+In section <a class="reference internal" href="#scale"><span class="std std-ref">Configure Custom Surface Scaling</span></a> the configuration for custom output data scaling is described. Section <a class="reference internal" href="#offset"><span class="std std-ref">Configure Custom Surface Offset</span></a> contains the configuration for a custom surface shift allong the z dirrection and finally, the section <a class="reference internal" href="#calc"><span class="std std-ref">Calculate Real-World Coordinates Data</span></a> contains the calculations and additional information how the submitted 3D data are transfered back to the <em>real-world</em> data.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The Scaling and Offset configuration is applied to any 3D Data output data (16bit integer as well as 32bit floating point).</p>
+</div>
+</section>
+</section>
+<section id="configure-custom-surface-scaling">
+<span id="scale"></span><h2>Configure Custom Surface Scaling<a class="headerlink" href="#configure-custom-surface-scaling" title="Link to this heading"></a></h2>
+<p>A rough scaling setting is applied with the feature <cite>Scan3dDistanceUnit</cite> which allows to select the data output unit as <em>mm</em>, <em>um</em> or <em>nm</em>. The default value, and in almost all cases the best sellection is <em>um</em>.</p>
+<p>To adjust a custom scaling the feature <cite>Scan3dCoordinateScale[Scan3dCoordinateSelector]</cite> is avalable. The reciprocal value of the <em>CoordinateC</em> configuration is internally multiplied with the real-world z value. As an example, the following code listening shows the configuration to adjust the z values to 100nm per integer step.</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-number">Listing 1 </span><span class="caption-text">Scan3dCoordinateScale example</span><a class="headerlink" href="#id2" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Scan3dDistanceUnit</span> <span class="o">=</span> <span class="s2">&quot;um&quot;</span>
+<span class="n">Scan3dCoordinateSelector</span> <span class="o">=</span> <span class="s2">&quot;CoordinateC&quot;</span>
+<span class="n">Scan3dCoordinateScale</span> <span class="o">=</span> <span class="mf">0.1</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="configure-custom-surface-offset">
+<span id="offset"></span><h2>Configure Custom Surface Offset<a class="headerlink" href="#configure-custom-surface-offset" title="Link to this heading"></a></h2>
+<p>The feature <cite>Scan3dCoordinateOffset[Scan3dCoordinateSelector]</cite> allows the shifting of the 3D output data along the z axis. The value configured within the <em>CoordinateC</em> selector is internally subtracted from the real-world z values. As an example, the following code listening shows the configuration to shift the the surface 14.1mm upper. This place a real-world pixelvalue from -13900um up to 200um.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-number">Listing 2 </span><span class="caption-text">Scan3dCoordinateOffset example</span><a class="headerlink" href="#id3" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Scan3dDistanceUnit</span> <span class="o">=</span> <span class="s2">&quot;um&quot;</span>
+<span class="n">Scan3dCoordinateSelector</span> <span class="o">=</span> <span class="s2">&quot;CoordinateC&quot;</span>
+<span class="n">Scan3dCoordinateOffset</span> <span class="o">=</span> <span class="o">-</span><span class="mf">14100.0</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The unit of the <cite>Scan3dCoordinateOffset</cite> feature is configured with the <cite>Scan3dDistanceUnit</cite> feature. It is recommended to select a well <cite>Scan3dDistanceUnit</cite> before tuning the <cite>Scan3dCoordinateOffset</cite> value.</p>
+</div>
+</section>
+<section id="calculate-real-world-coordinates-data">
+<span id="calc"></span><h2>Calculate Real-World Coordinates Data<a class="headerlink" href="#calculate-real-world-coordinates-data" title="Link to this heading"></a></h2>
+<p>The calculation of the 3d data to real-world data requires the configuration value of the <cite>Scan3dCoordinateScale[Scan3dCoordinateSelector]</cite> and <cite>Scan3dCoordinateOffset[Scan3dCoordinateSelector]</cite>  features. The values are readable from the device configuration by reading the two features directly or optionally included in the data buffers meta data as so-called chunk data.</p>
+<p>The first listening <a class="reference internal" href="#read-features"><span class="std std-numref">Listing 3</span></a> shows how to read the information from the device configuration and the second listening <a class="reference internal" href="#read-chunk"><span class="std std-numref">Listing 4</span></a> how to enable the chunk data and read the information from the buffer chunk data. For the final calculation one of this two approaches could be selected.</p>
+<div class="literal-block-wrapper docutils container" id="read-features">
+<div class="code-block-caption"><span class="caption-number">Listing 3 </span><span class="caption-text">read Scan3dCoordinateScale and Scan3dCoordinateOffset example</span><a class="headerlink" href="#read-features" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Scan3dCoordinateSelector</span> <span class="o">=</span> <span class="s2">&quot;CoordinateC&quot;</span>
+<span class="n">scaleC</span> <span class="o">=</span> <span class="n">Scan3dCoordinateScale</span>
+<span class="n">offsetC</span> <span class="o">=</span> <span class="n">Scan3dCoordinateOffset</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="read-chunk">
+<div class="code-block-caption"><span class="caption-number">Listing 4 </span><span class="caption-text">enable Chunk data and read Scan3dCoordinateScale and Scan3dCoordinateOffset from the data buffer</span><a class="headerlink" href="#read-chunk" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># enable the chunk data</span>
+<span class="n">ChunkModeActive</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ChunkSelector</span> <span class="o">=</span> <span class="s2">&quot;Scan3dCoordinateScale&quot;</span>
+<span class="n">ChunkEnable</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ChunkSelector</span> <span class="o">=</span> <span class="s2">&quot;Scan3dCoordinateOffset&quot;</span>
+<span class="n">ChunkEnable</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># after an acquisition, the configuration is readable from the buffers chunk data</span>
+<span class="n">ChunkScan3dCoordinateSelector</span> <span class="o">=</span> <span class="s2">&quot;CoordinateC&quot;</span>
+<span class="n">scaleC</span> <span class="o">=</span> <span class="n">ChunkScan3dCoordinateScale</span>
+<span class="n">offsetC</span> <span class="o">=</span> <span class="n">ChunkScan3dCoordinateOffset</span>
+</pre></div>
+</div>
+</div>
+<p>The following pseudo code shows the transformation of the submitted 3d data to real-world cordinate.</p>
+<div class="literal-block-wrapper docutils container" id="data-calculation">
+<div class="code-block-caption"><span class="caption-number">Listing 5 </span><span class="caption-text">pseudo code how to transform the 3d Data to real-world coordinate data</span><a class="headerlink" href="#data-calculation" title="Link to this code"></a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Height</span><span class="p">;</span><span class="w"> </span><span class="n">row</span><span class="o">++</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="k">for</span><span class="p">(</span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">Width</span><span class="p">;</span><span class="w"> </span><span class="n">col</span><span class="o">++</span><span class="p">)</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="n">coordC</span><span class="p">[</span><span class="n">row</span><span class="p">,</span><span class="n">col</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">imageC</span><span class="p">[</span><span class="n">row</span><span class="p">,</span><span class="n">col</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">scaleC</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">offsetC</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="test-calculation">
+<div class="code-block-caption"><span class="caption-number">Listing 6 </span><span class="caption-text">test 42</span><a class="headerlink" href="#test-calculation" title="Link to this code"></a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-number">Listing 7 </span><span class="caption-text">Python example demonstrate this application node</span><a class="headerlink" href="#id1" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="c1">##</span>
+<span class="linenos">  2</span><span class="c1"># \file        an_15.2.x.y.py</span>
+<span class="linenos">  3</span><span class="c1"># \author      Silvan Murer</span>
+<span class="linenos">  4</span><span class="c1"># \date        04 Aug 2022</span>
+<span class="linenos">  5</span><span class="c1"># \copyright   Heliotis, 2022</span>
+<span class="linenos">  6</span><span class="c1">#</span>
+<span class="linenos">  7</span><span class="c1"># \brief       Example for an_15.2.x.y</span>
+<span class="linenos">  8</span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span>
+<span class="linenos">  9</span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="linenos"> 10</span><span class="kn">from</span><span class="w"> </span><span class="nn">harvesters.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Harvester</span>
+<span class="linenos"> 11</span><span class="kn">import</span><span class="w"> </span><span class="nn">genicam.genapi</span> 
+<span class="linenos"> 12</span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="linenos"> 13</span><span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.axes_grid1</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_axes_locatable</span>
+<span class="linenos"> 14</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="linenos"> 15</span><span class="kn">import</span><span class="w"> </span><span class="nn">statistics</span> 
+<span class="linenos"> 16</span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="linenos"> 17</span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="linenos"> 18</span>
+<span class="linenos"> 19</span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="linenos"> 20</span><span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;always&#39;</span><span class="p">)</span> <span class="c1"># always, ignore</span>
+<span class="linenos"> 21</span>
+<span class="linenos"> 22</span>
+<span class="linenos"> 23</span><span class="c1">##</span>
+<span class="linenos"> 24</span><span class="c1"># Scan for devices and let the user select one</span>
+<span class="linenos"> 25</span><span class="c1">#</span>
+<span class="linenos"> 26</span><span class="c1"># \param   h harvesters object</span>
+<span class="linenos"> 27</span><span class="c1"># \return  harvesters camera object</span>
+<span class="linenos"> 28</span><span class="k">def</span><span class="w"> </span><span class="nf">selectDevice</span><span class="p">(</span><span class="n">h</span><span class="p">):</span>
+<span class="linenos"> 29</span>    <span class="n">h</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+<span class="linenos"> 30</span>    <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">device_info_list</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; devices detected on the Network</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos"> 31</span>    <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos"> 32</span>    <span class="k">for</span> <span class="n">dev</span> <span class="ow">in</span> <span class="n">h</span><span class="o">.</span><span class="n">device_info_list</span><span class="p">:</span>
+<span class="linenos"> 33</span>        <span class="n">cnt</span> <span class="o">=</span> <span class="n">cnt</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="linenos"> 34</span>        <span class="n">msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cnt</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;) &quot;</span> <span class="o">+</span> <span class="n">dev</span><span class="o">.</span><span class="n">id_</span> <span class="o">+</span> <span class="s2">&quot; (sn:&quot;</span> <span class="o">+</span> <span class="n">dev</span><span class="o">.</span><span class="n">serial_number</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+<span class="linenos"> 35</span>        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="linenos"> 36</span>
+<span class="linenos"> 37</span>    <span class="n">selection_str</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Select a device (0=exit): &quot;</span><span class="p">)</span>
+<span class="linenos"> 38</span>    <span class="n">selection_int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">selection_str</span><span class="p">)</span>
+<span class="linenos"> 39</span>    <span class="k">if</span><span class="p">((</span><span class="n">selection_int</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">selection_int</span> <span class="o">&gt;</span> <span class="n">cnt</span><span class="p">)):</span>
+<span class="linenos"> 40</span>        <span class="n">exit</span><span class="p">(</span><span class="s1">&#39;No device selected - exit script&#39;</span><span class="p">)</span>
+<span class="linenos"> 41</span>
+<span class="linenos"> 42</span>    <span class="n">deviceID</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">device_info_list</span><span class="p">[</span><span class="n">selection_int</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">id_</span>
+<span class="linenos"> 43</span>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;selected device:&#39;</span><span class="p">,</span> <span class="n">deviceID</span><span class="p">)</span>
+<span class="linenos"> 44</span>    <span class="k">return</span> <span class="n">h</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">selection_int</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos"> 45</span>
+<span class="linenos"> 46</span>
+<span class="linenos"> 47</span><span class="c1">##</span>
+<span class="linenos"> 48</span><span class="c1"># initialize the camera with some default parameters</span>
+<span class="linenos"> 49</span><span class="c1">#</span>
+<span class="linenos"> 50</span><span class="c1"># \param camera camera handler</span>
+<span class="linenos"> 51</span><span class="k">def</span><span class="w"> </span><span class="nf">initializeDevice</span><span class="p">(</span><span class="n">camera</span><span class="p">):</span>
+<span class="linenos"> 52</span>    <span class="c1"># enable required components</span>
+<span class="linenos"> 53</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ComponentSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Intensity&quot;</span>
+<span class="linenos"> 54</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ComponentEnable</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos"> 55</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ComponentSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Range&quot;</span>
+<span class="linenos"> 56</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ComponentEnable</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos"> 57</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ComponentSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Reflectance&quot;</span>
+<span class="linenos"> 58</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ComponentEnable</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos"> 59</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ComponentSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Phase&quot;</span>
+<span class="linenos"> 60</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ComponentEnable</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos"> 61</span>
+<span class="linenos"> 62</span>    <span class="c1"># trigger configuration</span>
+<span class="linenos"> 63</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;RecordingStart&quot;</span>
+<span class="linenos"> 64</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerMode</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;On&quot;</span>
+<span class="linenos"> 65</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerSource</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Stage&quot;</span>
+<span class="linenos"> 66</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;AcquisitionStart&quot;</span>
+<span class="linenos"> 67</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerMode</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Off&quot;</span>
+<span class="linenos"> 68</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;FrameStart&quot;</span>
+<span class="linenos"> 69</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerMode</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;On&quot;</span>
+<span class="linenos"> 70</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerSource</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Software&quot;</span>
+<span class="linenos"> 71</span>
+<span class="linenos"> 72</span>    <span class="c1"># motion and position configuration</span>
+<span class="linenos"> 73</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ScanPosition</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="mf">14.5</span>
+<span class="linenos"> 74</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ScanRange</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="linenos"> 75</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ScanSpeed</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">5.0</span>
+<span class="linenos"> 76</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">GeneralSpeed</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="linenos"> 77</span>
+<span class="linenos"> 78</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ScanMode</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Down&quot;</span>
+<span class="linenos"> 79</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">StageInit</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="linenos"> 80</span>
+<span class="linenos"> 81</span>    <span class="c1"># additional camera and processing configuration</span>
+<span class="linenos"> 82</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">Scan3dExtractionMethod</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;AcceleratedCenterOfMassIQCorrection&quot;</span>
+<span class="linenos"> 83</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">Scan3dScalingMethod</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;zTags&quot;</span>
+<span class="linenos"> 84</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">Scan3dDistanceUnit</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;um&quot;</span>
+<span class="linenos"> 85</span>
+<span class="linenos"> 86</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TargetVerticalSpacing</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">2.5</span>
+<span class="linenos"> 87</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ExposureRatio</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="linenos"> 88</span>
+<span class="linenos"> 89</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">FPNCorrection</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;AverageLastFrames&quot;</span>
+<span class="linenos"> 90</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">FPNCorrectionNFrames</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="linenos"> 91</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ExtSimpMaxHWin</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="linenos"> 92</span>
+<span class="linenos"> 93</span>    <span class="n">heliDriverFamily</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">HeliDriverFamily</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos"> 94</span>    <span class="c1"># illumination control (D3)</span>
+<span class="linenos"> 95</span>    <span class="k">if</span> <span class="p">(</span><span class="n">heliDriverFamily</span> <span class="o">==</span> <span class="s2">&quot;D3&quot;</span><span class="p">):</span>
+<span class="linenos"> 96</span>        <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">LightControllerSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;LightController0&quot;</span>
+<span class="linenos"> 97</span>        <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">LightControllerSource</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;UserOutput0&quot;</span>
+<span class="linenos"> 98</span>        <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">LightBrightness</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">100.0</span>
+<span class="linenos"> 99</span>    <span class="c1"># illumination control (D2)</span>
+<span class="linenos">100</span>    <span class="k">elif</span> <span class="p">(</span><span class="n">heliDriverFamily</span> <span class="o">==</span> <span class="s2">&quot;D2&quot;</span><span class="p">):</span>
+<span class="linenos">101</span>        <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">LineSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Line2&quot;</span>
+<span class="linenos">102</span>        <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">LineSource</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;UserOutput0&quot;</span>
+<span class="linenos">103</span>        <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">LineInverter</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="linenos">104</span>    <span class="c1"># switch on the illumination (D2/D3)</span>
+<span class="linenos">105</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">UserOutputSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;UserOutput0&quot;</span>
+<span class="linenos">106</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">UserOutputValue</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">107</span>
+<span class="linenos">108</span>
+<span class="linenos">109</span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;************************************************&#39;</span><span class="p">)</span>
+<span class="linenos">110</span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;* &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))</span>
+<span class="linenos">111</span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;************************************************&#39;</span><span class="p">)</span>
+<span class="linenos">112</span>
+<span class="linenos">113</span><span class="k">try</span><span class="p">:</span>
+<span class="linenos">114</span>    <span class="n">ctiFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;DIAPHUS_GENTL64_FILE&#39;</span><span class="p">]</span>
+<span class="linenos">115</span>
+<span class="linenos">116</span>    <span class="n">h</span> <span class="o">=</span> <span class="n">Harvester</span><span class="p">()</span>
+<span class="linenos">117</span>    <span class="n">h</span><span class="o">.</span><span class="n">add_file</span><span class="p">(</span><span class="n">ctiFile</span><span class="p">)</span>
+<span class="linenos">118</span>
+<span class="linenos">119</span>    <span class="n">camera</span> <span class="o">=</span> <span class="n">selectDevice</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+<span class="linenos">120</span>    <span class="n">initializeDevice</span><span class="p">(</span><span class="n">camera</span><span class="p">)</span>
+<span class="linenos">121</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;INIT DONE&quot;</span><span class="p">)</span>
+<span class="linenos">122</span>
+<span class="linenos">123</span>    <span class="c1"># configure application node specific features</span>
+<span class="linenos">124</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ChunkModeActive</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">125</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ChunkSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Scan3dCoordinateScale&quot;</span>
+<span class="linenos">126</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ChunkEnable</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">127</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ChunkSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Scan3dCoordinateOffset&quot;</span>
+<span class="linenos">128</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ChunkEnable</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">129</span>
+<span class="linenos">130</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">Scan3dCoordinateSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;CoordinateC&quot;</span>
+<span class="linenos">131</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">Scan3dCoordinateScale</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="linenos">132</span>    <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">Scan3dCoordinateOffset</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="mf">15000.0</span>
+<span class="linenos">133</span>
+<span class="linenos">134</span>    <span class="c1"># setup plot</span>
+<span class="linenos">135</span>    <span class="n">gridsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="linenos">136</span>    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="linenos">137</span>    <span class="n">axOrgSurf</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">(</span><span class="n">gridsize</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="linenos">138</span>    <span class="n">axRWSurf</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">(</span><span class="n">gridsize</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="linenos">139</span>    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;Measurements&#39;</span><span class="p">)</span>
+<span class="linenos">140</span>    <span class="n">axOrgSurf</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Original Surface&#39;</span><span class="p">)</span>
+<span class="linenos">141</span>    <span class="n">imOrgSurf</span> <span class="o">=</span> <span class="n">axOrgSurf</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="mi">542</span><span class="p">,</span> <span class="mi">512</span><span class="p">]))</span>
+<span class="linenos">142</span>    <span class="n">axRWSurf</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Real-World Surface&#39;</span><span class="p">)</span>
+<span class="linenos">143</span>    <span class="n">imRWSurf</span> <span class="o">=</span> <span class="n">axRWSurf</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="mi">542</span><span class="p">,</span> <span class="mi">512</span><span class="p">]))</span>
+<span class="linenos">144</span>    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="linenos">145</span>    <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="linenos">146</span>    <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="linenos">147</span>    
+<span class="linenos">148</span>    <span class="c1"># acquire data</span>
+<span class="linenos">149</span>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;start acquisition&#39;</span><span class="p">)</span>
+<span class="linenos">150</span>    <span class="n">camera</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="linenos">151</span>    <span class="k">for</span> <span class="n">itr</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+<span class="linenos">152</span>        <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;FrameStart&quot;</span>
+<span class="linenos">153</span>        <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerSoftware</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="linenos">154</span>
+<span class="linenos">155</span>        <span class="n">buffer</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="linenos">156</span>
+<span class="linenos">157</span>        <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ChunkScan3dCoordinateSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;CoordinateC&quot;</span>
+<span class="linenos">158</span>        <span class="n">coordCScale</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ChunkScan3dCoordinateScale</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">159</span>        <span class="n">coordCOffset</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">ChunkScan3dCoordinateOffset</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">160</span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ChunkScan3dCoordinateScale: </span><span class="si">{</span><span class="n">coordCScale</span><span class="si">}</span><span class="s2">, ChunkScan3dCoordinateOffset: </span><span class="si">{</span><span class="n">coordCOffset</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos">161</span>
+<span class="linenos">162</span>        <span class="n">height</span> <span class="o">=</span> <span class="n">buffer</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">height</span>
+<span class="linenos">163</span>        <span class="n">width</span> <span class="o">=</span> <span class="n">buffer</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">width</span>
+<span class="linenos">164</span>        <span class="n">orgSurf</span> <span class="o">=</span> <span class="n">buffer</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+<span class="linenos">165</span>        <span class="n">orgSurf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">orgSurf</span><span class="p">)</span>
+<span class="linenos">166</span>        <span class="n">rwSurf</span> <span class="o">=</span> <span class="n">orgSurf</span> <span class="o">*</span> <span class="n">coordCScale</span> <span class="o">+</span> <span class="n">coordCOffset</span>
+<span class="linenos">167</span>        <span class="n">orgSurfMean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">orgSurf</span><span class="p">)</span>
+<span class="linenos">168</span>        <span class="n">rwSurfMean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rwSurf</span><span class="p">)</span>
+<span class="linenos">169</span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Surface Mean Values: Original </span><span class="si">{</span><span class="n">orgSurfMean</span><span class="si">}</span><span class="s2">, Real-Word: </span><span class="si">{</span><span class="n">rwSurfMean</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos">170</span>
+<span class="linenos">171</span>        <span class="n">imOrgSurf</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">orgSurf</span><span class="p">)</span>
+<span class="linenos">172</span>        <span class="n">imOrgSurf</span><span class="o">.</span><span class="n">set_clim</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">orgSurf</span><span class="p">),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">orgSurf</span><span class="p">))</span>
+<span class="linenos">173</span>        <span class="n">imOrgSurf</span><span class="o">.</span><span class="n">set_extent</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="linenos">174</span>        
+<span class="linenos">175</span>        <span class="n">imRWSurf</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">rwSurf</span><span class="p">)</span>
+<span class="linenos">176</span>        <span class="n">imRWSurf</span><span class="o">.</span><span class="n">set_clim</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">rwSurf</span><span class="p">),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">rwSurf</span><span class="p">))</span>
+<span class="linenos">177</span>        <span class="n">imRWSurf</span><span class="o">.</span><span class="n">set_extent</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="linenos">178</span>        
+<span class="linenos">179</span>        <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="linenos">180</span>        <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="linenos">181</span>
+<span class="linenos">182</span>        <span class="n">buffer</span><span class="o">.</span><span class="n">queue</span><span class="p">()</span>
+<span class="linenos">183</span>    <span class="n">camera</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<span class="linenos">184</span><span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+<span class="linenos">185</span>    <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+<span class="linenos">186</span>
+<span class="linenos">187</span><span class="n">camera</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+<span class="linenos">188</span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SCRIPT END&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="document-history">
+<h2>Document History<a class="headerlink" href="#document-history" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Version</p></th>
+<th class="head"><p>Date</p></th>
+<th class="head"><p>Changes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>15.2.0.0</p></td>
+<td><p>19-05-2022</p></td>
+<td><p>initial version</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../tn_15.1.x.y/tn_15.1.x.y.html" class="btn btn-neutral float-left" title="TN_15.1.0.1: heliBrd B4 SD Card Re-Writing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tn_15.3.x.y/tn_15.3.x.y.html" class="btn btn-neutral float-right" title="TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

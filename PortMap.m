@@ -14,9 +14,9 @@ switch what
     case 'Ctr Trig'
         path='/Dev1/PFI13';
     case 'SG ip'
-        path = '169.254.215.80';
-    case 'SG2 ip'
         path = '192.168.0.170';
+    case 'SG2 ip'
+        path = '192.168.0.212';
     case 'SG3 ip'
         path = '192.168.0.210';
     case 'SG com'
@@ -27,8 +27,8 @@ switch what
         path='com10';
     case 'meas'
         %path='SPCM';
-        %path='HeliCam';   % HeliCam C4 widefield lock-in detector
-        path='APD';
+        path='HeliCam';   % HeliCam C4 widefield lock-in detector
+        %path='APD';
     case 'meas2'
         %path='PD0';
         path = 'none';
@@ -69,7 +69,7 @@ switch what
     case 'dds'
         path='C:\Program Files\SpinAPI\include\dds.h';
     case 'Data'
-        path='D:\Data\';
+        path='C:\Data\';
     case 'Ctr src'  % SPCM0
         path='/Dev1/PFI0'; %DF
         % path='/Dev1/PFI6'; %RT

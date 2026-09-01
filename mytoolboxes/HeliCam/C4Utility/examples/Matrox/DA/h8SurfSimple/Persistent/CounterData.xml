@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<counterdata>
+  <step name="Status" id="79508921-73eb-454c-a77e-15098d801368">
+    <data name="CurrentPassCount">
+      <value>58</value>
+    </data>
+    <data name="CurrentFailCount">
+      <value>0</value>
+    </data>
+    <data name="CurrentTotalCount">
+      <value>58</value>
+    </data>
+    <data name="CurrentErrorCount">
+      <value>0</value>
+    </data>
+  </step>
+</counterdata>

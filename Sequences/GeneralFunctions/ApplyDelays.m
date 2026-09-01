@@ -29,14 +29,14 @@ for i=1:numel(gmSEQ.CHN)
         gmSEQ.CHN(i).Delays=ones(1,2)*green_aom_delay;
 %     elseif gmSEQ.CHN(i).PBN==PBDictionary('OrangeAOM')
 %         gmSEQ.CHN(i).Delays=ones(1,2)*orange_aom_delay;
-    elseif gmSEQ.CHN(i).PBN==PBDictionary('RedAOM')
-        gmSEQ.CHN(i).Delays=ones(1,2)*red_aom_delay;
+    % elseif gmSEQ.CHN(i).PBN==PBDictionary('RedAOM')
+    %     gmSEQ.CHN(i).Delays=ones(1,2)*red_aom_delay;
     elseif gmSEQ.CHN(i).PBN==PBDictionary('ctr0')
         gmSEQ.CHN(i).Delays=ones(1,2)*detector_delay;
-    elseif gmSEQ.CHN(i).PBN == PBDictionary('PD')
-        gmSEQ.CHN(i).Delays = ones(1, 2) * photodiode_delay;
-    elseif gmSEQ.CHN(i).PBN == PBDictionary('CamRef')
-        gmSEQ.CHN(i).Delays = zeros(1, gmSEQ.CHN(i).NRise);  % FI2 train, no delay
+    % elseif gmSEQ.CHN(i).PBN == PBDictionary('PD')
+    %     gmSEQ.CHN(i).Delays = ones(1, 2) * photodiode_delay;
+    % elseif gmSEQ.CHN(i).PBN == PBDictionary('CamRef')
+    %     gmSEQ.CHN(i).Delays = zeros(1, gmSEQ.CHN(i).NRise);  % FI2 train, no delay
 %     elseif gmSEQ.CHN(i).PBN == PBDictionary('AWGTrig2')
 %         gmSEQ.CHN(i).Delays = ones(1, 2) * AWG_Delay;
 %     elseif gmSEQ.CHN(i).PBN == PBDictionary('AWGTrig3') 

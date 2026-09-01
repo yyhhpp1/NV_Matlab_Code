@@ -1,0 +1,342 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices &mdash; Technical Notes for heliotis gen4 Devices 2025.09 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=0ac42c78" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=200dd705"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TN_19.1.0.1: UserSet - A short Introduction" href="../tn_19.1.x.y/tn_19.1.x.y.html" />
+    <link rel="prev" title="TN_15.2.0.0: Adjust 3D Data Scaling and Offset" href="../tn_15.2.x.y/tn_15.2.x.y.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Technical Notes for heliotis gen4 Devices
+              <img src="../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.1.x.y/tn_15.1.x.y.html">TN_15.1.0.1: heliBrd B4 SD Card Re-Writing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.2.x.y/tn_15.2.x.y.html">TN_15.2.0.0: Adjust 3D Data Scaling and Offset</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#context-and-challenge-finding-root-causes-of-non-systematic-issues">Context and Challenge: Finding Root Causes of Non-Systematic Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#solution-client-based-system-monitoring">Solution: Client-Based System Monitoring</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#permanently-available-status-information">Permanently Available Status Information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#status-information-relevant-after-configuration">Status Information Relevant after Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#status-information-of-the-acquisition-engine">Status Information of the Acquisition Engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#status-information-related-to-measurement-data">Status Information Related to Measurement Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.1.x.y/tn_19.1.x.y.html">TN_19.1.0.1: UserSet - A short Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.10.x.y/tn_19.10.x.y.html">TN_19.10.0.1: Configuring Offset (FPN) Correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.2.x.y/tn_19.2.x.y.html">TN_19.2.0.1: Configuring the Optic Type</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.3.x.y/tn_19.3.x.y.html">TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.4.x.y/tn_19.4.x.y.html">TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.9.x.y/tn_19.9.x.y.html">TN_19.9.0.0:  First/Last Surface Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_51.1.x.y/tn_51.1.x.y.html">TN_51.1.0.0: Heliotis Gen4 Device Fieldbus Reference for D3</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Technical Notes for heliotis gen4 Devices</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <a href="../_pdf/tn_15.3.x.y.pdf" target="_blank">PDF version</a><section id="tn-15-3-0-1-collecting-and-interpreting-monitoring-information-of-gen4-devices">
+<h1>TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices<a class="headerlink" href="#tn-15-3-0-1-collecting-and-interpreting-monitoring-information-of-gen4-devices" title="Link to this heading"></a></h1>
+<section id="context-and-challenge-finding-root-causes-of-non-systematic-issues">
+<h2>Context and Challenge: Finding Root Causes of Non-Systematic Issues<a class="headerlink" href="#context-and-challenge-finding-root-causes-of-non-systematic-issues" title="Link to this heading"></a></h2>
+<p>HeliInspect H8, H9, or heliCam C4 devices may suddenly, sporadically, or gradually fail or deliver poor quality data. Hardware defects or environmental issues, including interactions on their interfaces, are possible root causes.</p>
+<p>The devices and software tools do, for the time being, not provide accessible log files or interactive monitoring of internal or external operating conditions. Finding root causes of such issues, therefore, requires high debugging efforts.</p>
+</section>
+<section id="solution-client-based-system-monitoring">
+<h2>Solution: Client-Based System Monitoring<a class="headerlink" href="#solution-client-based-system-monitoring" title="Link to this heading"></a></h2>
+<p>Debugging of issues is simplified or made possible in the first place by collecting and possibly monitoring status information from the device. This should be implemented in the client (consumer) application that controls the heliCam/heliInspect device.</p>
+<p>The tables below point at useful status information. Client applications read it throught the standard camera interface at the configuration stage, after performing a measurement, or in case of an exception.
+Depending on the type of information and on user requirements, the application may implement monitoring and/or logging.</p>
+<section id="permanently-available-status-information">
+<h3>Permanently Available Status Information<a class="headerlink" href="#permanently-available-status-information" title="Link to this heading"></a></h3>
+<p>The client application can read the device and status information listed below at any time as long as it has an open connection to the device.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Feature</p></th>
+<th class="head"><p>Value (expected / healthy)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>DeviceFirmwareVersion</strong></p></td>
+<td><p>camera embedded SW version (format e.g. 1.x.y)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>DeviceFPGAFwVersion</strong></p></td>
+<td><p>camera fpga firmware version in cryptic format</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>HeliDriverFirmwareVersion</strong></p></td>
+<td><p>heliDriver firmware version (format: e.g. 1.x)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>HeliDriverStatus</strong></p></td>
+<td><p>status of the heliDriver in cryptic format</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>DeviceTemperature</strong> [ DeviceTemperatureSelector= <em>Processor</em> ]</p></td>
+<td><p><span class="math notranslate nohighlight">\(&lt; 80\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>DeviceMonitorActualValue</strong> [ DeviceMonitorSelector = <em>VddVoltage</em> ]</p></td>
+<td><p>between <span class="math notranslate nohighlight">\(21.5\)</span> and <span class="math notranslate nohighlight">\(26.5\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>DeviceMonitorActualValue</strong> [ DeviceMonitorSelector = <em>VddCurrent</em> ]</p></td>
+<td><p><span class="math notranslate nohighlight">\(&lt; 1.5\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>DeviceMonitorActualValue</strong> [ DeviceMonitorSelector = <em>UserVddVoltage</em> ]</p></td>
+<td><p>between <span class="math notranslate nohighlight">\(21.5\)</span> and <span class="math notranslate nohighlight">\(26.5\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>DeviceMonitorActualValue</strong> [ DeviceMonitorSelector = <em>UserVddCurrent</em> ]</p></td>
+<td><p><span class="math notranslate nohighlight">\(&lt; 0.15\)</span></p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Refer to the feature description document for data types and detailed information about the features mentioned.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Some features are sensitive to values of selector features. Refer to the programmer’s manual for more information on the concept.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Providing logged information in support requests to heliotis is very helpful. In particular, please contact heliotis for interpreting information in cryptic format.</p>
+</div>
+</section>
+<section id="status-information-relevant-after-configuration">
+<h3>Status Information Relevant after Configuration<a class="headerlink" href="#status-information-relevant-after-configuration" title="Link to this heading"></a></h3>
+<p>The status information below is readable any time but its content is sensitive to configuration features. The client application may log it after configuring the device.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Feature</p></th>
+<th class="head"><p>Value (expected / healthy)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>ActualVerticalSpacing</strong></p></td>
+<td><p>near <strong>TargetVerticalSpacing</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>FrameRate</strong></p></td>
+<td><div class="line-block">
+<div class="line">H8,H9,C4 (542x512 pixel) devices: &lt; 4000</div>
+<div class="line">H8M, H9M, C4M (1.1M pixel) devices: &lt; 1000</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><p><strong>RecordingNFrame</strong></p></td>
+<td><p>appoximately: <span class="math notranslate nohighlight">\(\frac{ ScanRange }{ActualVerticalSpacing}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>TriggerPosition</strong></p></td>
+<td><p>defined by <strong>ScanMode</strong>, <strong>ScanPosition</strong>, <strong>ScanRange</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>LightBrightness</strong> [ LightControllerSelector = <em>LightController0</em> ]</p></td>
+<td><p><span class="math notranslate nohighlight">\(10\%\)</span> to <span class="math notranslate nohighlight">\(100\%\)</span></p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>FrameRate maximum values are approximate. The exact maximum depends on further settings.</p>
+</div>
+</section>
+<section id="status-information-of-the-acquisition-engine">
+<h3>Status Information of the Acquisition Engine<a class="headerlink" href="#status-information-of-the-acquisition-engine" title="Link to this heading"></a></h3>
+<p>The following status information represents the internal state of the acquisition engine.
+In case of a timeout during recording, the client application could find out why the acquisition engine got stuck.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Feature</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>AcquisitionStatus</strong> [ AcquisitionStatusSelector = <em>FrameTriggerWait</em> ]</p></td>
+<td><p><em>True</em> : state active, <em>False</em> : state inactive</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>AcquisitionStatus</strong> [ AcquisitionStatusSelector = <em>RecordingTriggerWait</em> ]</p></td>
+<td><p><em>True</em> : state active, <em>False</em> : state inactive</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>AcquisitionStatus</strong> [ AcquisitionStatusSelector = <em>FrameActive</em> ]</p></td>
+<td><p><em>True</em> : state active, <em>False</em> : state inactive</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>AcquisitionStatus</strong> [ AcquisitionStatusSelector = <em>RecordingActive</em> ]</p></td>
+<td><p><em>True</em> : state active, <em>False</em> : state inactive</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>TransferStatus</strong> [ TransferStatusSelector = <em>Streaming</em> ]</p></td>
+<td><p><em>True</em> : state active, <em>False</em> : state inactive</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>StageStatus</strong> [ StageStatusSelector = <em>InMotion</em> ]</p></td>
+<td><p><em>True</em> : state active, <em>False</em> : state inactive</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All possible acquisition engine states are documented in the appendix of the feature description.</p>
+</div>
+</section>
+<section id="status-information-related-to-measurement-data">
+<h3>Status Information Related to Measurement Data<a class="headerlink" href="#status-information-related-to-measurement-data" title="Link to this heading"></a></h3>
+<p>The following status information is related to measurement data. It should be read after a successful measurement and always relates to the latest measurement.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Feature</p></th>
+<th class="head"><p>Value (expected / healthy)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>LightCurrentMeasured</strong> [ LightControllerSelector = <em>LightController0</em> ]</p></td>
+<td><p><span class="math notranslate nohighlight">\(LightCurrentRating[..] * \frac{ LightBrightness[..] }{ 100 \% }\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>ChunkZTagCount</strong></p></td>
+<td><p>equal to <strong>RecordingNFrame</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>ChunkZTagValue</strong> [ ChunkZTagSelector = <em>1</em> ]</p></td>
+<td><p><span class="math notranslate nohighlight">\(\frac{ TriggerPosition }{ EncoderResolution[Camera] }\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>ChunkProcessingString</strong></p></td>
+<td><p>(.json string) dump from on-camera data processing</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>ChunkConfigString</strong></p></td>
+<td><p>(.json string) dump of camera configuration</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Make sure the illumination is enabled when reading the value of <strong>LightCurrentMeasured</strong>. Typical values for LED current rating are 1A (H8) or 2A (H9).</p>
+</div>
+<p>Much of the measurement-related information are transmitted as GenTL ChunkData along with measurement data. The host application must enable transmission
+by setting the following configuration features already before the measurement, e.g. when initializing the camera:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-number">Listing 8 </span><span class="caption-text">Enable relevant chunk data</span><a class="headerlink" href="#id1" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ChunkModeActive</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ChunkSelector</span> <span class="o">=</span> <span class="s2">&quot;ZTagCount&quot;</span>
+<span class="n">ChunkEnable</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ChunkSelector</span> <span class="o">=</span> <span class="s2">&quot;ZTagValue&quot;</span>
+<span class="n">ChunkEnable</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ChunkSelector</span> <span class="o">=</span> <span class="s2">&quot;ProcessingString&quot;</span>
+<span class="n">ChunkEnable</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ChunkSelector</span> <span class="o">=</span> <span class="s2">&quot;ConfigString&quot;</span>
+<span class="n">ChunkEnable</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Some of the debugging chunk data like <em>ConfigurationString</em> could significantly increase the measurement cycle time. General enabling is not recommended.</p>
+</div>
+</section>
+</section>
+<section id="document-history">
+<h2>Document History<a class="headerlink" href="#document-history" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Version</p></th>
+<th class="head"><p>Date</p></th>
+<th class="head"><p>Changes</p></th>
+<th class="head"><p>Responsible</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>15.3.0.0</p></td>
+<td><p>14-11-2022</p></td>
+<td><p>initial version</p></td>
+<td><p>cl</p></td>
+</tr>
+<tr class="row-odd"><td><p>15.3.0.1</p></td>
+<td><p>01-03-2024</p></td>
+<td><p>review/correction</p></td>
+<td><p>sm</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../tn_15.2.x.y/tn_15.2.x.y.html" class="btn btn-neutral float-left" title="TN_15.2.0.0: Adjust 3D Data Scaling and Offset" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tn_19.1.x.y/tn_19.1.x.y.html" class="btn btn-neutral float-right" title="TN_19.1.0.1: UserSet - A short Introduction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

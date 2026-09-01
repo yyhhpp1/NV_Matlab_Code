@@ -1,0 +1,125 @@
+.. raw:: html
+
+    <a href="../_pdf/tn_15.2.x.y.pdf" target="_blank">PDF version</a>
+
+TN_15.2.0.0: Adjust 3D Data Scaling and Offset
+**********************************************
+
+Introduction
+============
+heliInspect devices scale 3D output data in *um* and map the value to the current stage possition which is in many cases a negative position
+
+This application note describes how to setup 3D data scaling and offset. This allows a well configured value range for *unsigned int16* (Mono16) surface output.
+
+The required features described in this documentation are available since software version **1.9.0**.
+
+Challange
+---------
+
+Some applications could not handle the 3D data output as 32bit floating point value. For such applications, the heliInspect H8/H9 as well as any other heliBrd B4 based camera systems from heliotis supports an 16bit unsignet integer data output.
+Within this mode, the output values are integers and its range is limited from *0 - 65535*.
+
+As a default configuration, the camera scales the 3D output data in *um* and maps the value to the current stage possition which is in many cases a negative position.
+In section :ref:`scale` the configuration for custom output data scaling is described. Section :ref:`offset` contains the configuration for a custom surface shift allong the z dirrection and finally, the section :ref:`calc` contains the calculations and additional information how the submitted 3D data are transfered back to the *real-world* data.
+
+.. note::  The Scaling and Offset configuration is applied to any 3D Data output data (16bit integer as well as 32bit floating point).
+
+.. _scale:
+
+Configure Custom Surface Scaling
+================================
+A rough scaling setting is applied with the feature `Scan3dDistanceUnit` which allows to select the data output unit as *mm*, *um* or *nm*. The default value, and in almost all cases the best sellection is *um*.
+
+To adjust a custom scaling the feature `Scan3dCoordinateScale[Scan3dCoordinateSelector]` is avalable. The reciprocal value of the *CoordinateC* configuration is internally multiplied with the real-world z value. As an example, the following code listening shows the configuration to adjust the z values to 100nm per integer step.
+
+.. code-block::
+  :caption: Scan3dCoordinateScale example
+
+  Scan3dDistanceUnit = "um"
+  Scan3dCoordinateSelector = "CoordinateC"
+  Scan3dCoordinateScale = 0.1
+
+
+.. _offset:
+
+Configure Custom Surface Offset
+===============================
+The feature `Scan3dCoordinateOffset[Scan3dCoordinateSelector]` allows the shifting of the 3D output data along the z axis. The value configured within the *CoordinateC* selector is internally subtracted from the real-world z values. As an example, the following code listening shows the configuration to shift the the surface 14.1mm upper. This place a real-world pixelvalue from -13900um up to 200um.
+
+.. code-block::
+  :caption: Scan3dCoordinateOffset example
+
+  Scan3dDistanceUnit = "um"
+  Scan3dCoordinateSelector = "CoordinateC"
+  Scan3dCoordinateOffset = -14100.0
+
+
+.. note::  The unit of the `Scan3dCoordinateOffset` feature is configured with the `Scan3dDistanceUnit` feature. It is recommended to select a well `Scan3dDistanceUnit` before tuning the `Scan3dCoordinateOffset` value.
+
+.. _calc:
+
+Calculate Real-World Coordinates Data
+=====================================
+The calculation of the 3d data to real-world data requires the configuration value of the `Scan3dCoordinateScale[Scan3dCoordinateSelector]` and `Scan3dCoordinateOffset[Scan3dCoordinateSelector]`  features. The values are readable from the device configuration by reading the two features directly or optionally included in the data buffers meta data as so-called chunk data.
+
+The first listening :numref:`read-features` shows how to read the information from the device configuration and the second listening :numref:`read-chunk` how to enable the chunk data and read the information from the buffer chunk data. For the final calculation one of this two approaches could be selected.
+
+.. code-block::
+  :caption: read Scan3dCoordinateScale and Scan3dCoordinateOffset example
+  :name: read-features
+
+  Scan3dCoordinateSelector = "CoordinateC"
+  scaleC = Scan3dCoordinateScale
+  offsetC = Scan3dCoordinateOffset
+
+
+.. code-block::
+  :caption: enable Chunk data and read Scan3dCoordinateScale and Scan3dCoordinateOffset from the data buffer
+  :name: read-chunk
+
+  # enable the chunk data
+  ChunkModeActive = True
+  ChunkSelector = "Scan3dCoordinateScale"
+  ChunkEnable = True
+  ChunkSelector = "Scan3dCoordinateOffset"
+  ChunkEnable = True
+
+  # after an acquisition, the configuration is readable from the buffers chunk data
+  ChunkScan3dCoordinateSelector = "CoordinateC"
+  scaleC = ChunkScan3dCoordinateScale
+  offsetC = ChunkScan3dCoordinateOffset
+  
+The following pseudo code shows the transformation of the submitted 3d data to real-world cordinate.
+
+.. code-block:: c
+  :caption: pseudo code how to transform the 3d Data to real-world coordinate data
+  :name: data-calculation
+
+  for(row = 0; row < Height; row++)
+  {
+    for(col = 0; col < Width; col++)
+    {
+      coordC[row,col] = imageC[row,col] * scaleC + offsetC; 
+    }
+  }
+
+.. code-block:: c
+  :caption: test 42
+  :name: test-calculation
+
+.. literalinclude:: src/an_15.2.x.y.py
+  :caption: Python example demonstrate this application node
+  :name: test-calculation
+  :linenos:
+
+
+Document History
+================
+
++------------+--------------+------------------+
+| Version    | Date         | Changes          |
++============+==============+==================+
+| 15.2.0.0   | 19-05-2022   | initial version  |
++------------+--------------+------------------+
+
+

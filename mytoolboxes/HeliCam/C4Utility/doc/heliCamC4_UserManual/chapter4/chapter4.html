@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C) Basics of Application Software Development &mdash; heliCam C4 - User Manual v1.0.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=38fd80f2" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=411a527d"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="D) Advanced Concepts and Control" href="../chapter5/chapter5.html" />
+    <link rel="prev" title="B) Get Started" href="../chapter3/chapter3.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            heliCam C4 - User Manual
+              <img src="../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v1.0.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Chapter 1</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter1/chapter1.html">Introducing the heliCam<sup>TM</sup> C4 Lock-In Camera</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 2</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter2/chapter2.html">A) Set Up</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 3</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter3/chapter3.html">B) Get Started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 4</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">C) Basics of Application Software Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#feature">Feature</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#api-description">API Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#access">Access</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#writing">Writing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#reading">Reading</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#special-feature-types">Special Feature Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#selector">Selector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#target-and-actual">Target and Actual</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#status-trigger-and-event">Status, Trigger and Event</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#monitoring-and-control-of-measurement-sequence">Monitoring and Control of Measurement Sequence</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#trigger-configuration">Trigger Configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#status-output">Status Output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#retrieving-measurement-data">Retrieving Measurement Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-sequence-of-operations">Basic Sequence of Operations</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 5</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter5/chapter5.html">D) Advanced Concepts and Control</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 6</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter6/chapter6.html">Graphical Summary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 7</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter7/chapter7.html">Worldwide Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 8</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter8/chapter8.html">Document History</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chapter 9</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../chapter9/chapter9.html">Annex</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">heliCam C4 - User Manual</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">C) Basics of Application Software Development</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="c-basics-of-application-software-development">
+<span id="c"></span><h1>C) Basics of Application Software Development<a class="headerlink" href="#c-basics-of-application-software-development" title="Link to this heading"></a></h1>
+<p>Here, we briefly introduce the fundamental organizing principles behind
+software control of the heliCam<sup>TM</sup> C4.</p>
+<p>These concepts and the associated terminology are heavily shaped by the
+Generic Interface for Cameras
+(<a class="reference external" href="https://www.emva.org/standards-technology/genicam">GenICam</a>)
+framework, to which the heliCam<sup>TM</sup> C4’s programming interface
+complies. Rather than explaining this standard in depth, the following
+section wants to present you with the fundamental notions required to
+adapt Heliotis provided example code in C4Utility according to your needs. For more complete
+information, the reader is referred to the <a class="reference external" href="https://www.heliotis.com/download/heliinspect-h8-programmers-guide-draft-2021-08-05/">Programmer’s
+Guide</a>
+of the heliInspect<sup>TM</sup> H8 interferometer, whose software
+integration works on the same principles as that of the
+heliCam<sup>TM</sup> C4.</p>
+<p>Implementation details differ depending on the <a class="reference internal" href="../chapter2/chapter2.html#software-organization-and-integration-options"><span class="std std-ref">software integration
+option</span></a> you choose. Specific versions of the <a class="reference external" href="https://www.heliotis.com/download/heliinspect-h8-programmers-guide-draft-2021-08-05/">Programmer’s
+Guide</a>
+of the heliInspect<sup>TM</sup> H8 and code examples for different programming languages are available.
+To avoid a purely abstract discussion, we give examples in Python syntax
+in the style of a camera interaction through the “Harvesters” package.
+Thus, the code is directly comparable with the lock-in camera specific
+usage examples “c4DemodSimple.py” and “c4DemodAdvanced.ipynb” (C: &gt; Program Files &gt;
+C4Utility &gt; examples).</p>
+<section id="feature">
+<h2>Feature<a class="headerlink" href="#feature" title="Link to this heading"></a></h2>
+<p>The heliCam<sup>TM</sup> C4’s application user interface (API) defines
+special software variables used for reading and writing operation modes and
+lock-in camera parameters. They are referred to as <em>features</em>. In the
+starter experiment, you have already encountered some, such as the
+<code class="docutils literal notranslate"><span class="pre">SignalGeneratorAmplitude</span></code> or the <code class="docutils literal notranslate"><span class="pre">LockInTargetReferenceFrequency</span></code>,
+albeit they were plainly called <strong>Amplitude</strong> and <strong>Offset</strong>.</p>
+<section id="api-description">
+<h3>API Description<a class="headerlink" href="#api-description" title="Link to this heading"></a></h3>
+<p>If C4Utility is installed, you can find a complete list of all currently
+available lock-in camera features and their properties (C: &gt; Program
+Files &gt; C4Utility &gt; doc). <a class="reference internal" href="#example-feature-description"><span class="std std-numref">Table 8</span></a> illustrates how features are described
+using the example of the feature <code class="docutils literal notranslate"><span class="pre">LockInSensitivity</span></code>.</p>
+<span id="example-feature-description"></span><table class="docutils align-default" id="id1">
+<caption><span class="caption-number">Table 8 </span><span class="caption-text">Example Feature Description</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>Name</p></td>
+<td><p>LockInSensitivity</p></td>
+</tr>
+<tr class="row-even"><td><p>Type</p></td>
+<td><p>Float</p></td>
+</tr>
+<tr class="row-odd"><td><p>Visibility</p></td>
+<td><p>Expert</p></td>
+</tr>
+<tr class="row-even"><td><p>OperationMode</p></td>
+<td><p>LockInCam</p></td>
+</tr>
+<tr class="row-odd"><td><p>AccessMode</p></td>
+<td><p>RW</p></td>
+</tr>
+<tr class="row-even"><td><p>Min</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Max</p></td>
+<td><p>1.0</p></td>
+</tr>
+</tbody>
+</table>
+</td>
+<td><div class="line-block">
+<div class="line">Specifies the sensitivity range of 0.0 – 1.0.</div>
+<div class="line">The highest sensitivity setting 1.0 maximizes the signal amplitude.</div>
+<div class="line">LockInSensitivity is an alias of the feature ExposureRatio.</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<p>This example also reveals some generic elements of features and their description.</p>
+<ul>
+<li><p>Features are typed like other programming variables (see <a class="reference internal" href="#feature-data-type"><span class="std std-numref">Table 9</span></a>).</p>
+<span id="feature-data-type"></span><table class="docutils align-default" id="id2">
+<caption><span class="caption-number">Table 9 </span><span class="caption-text">Data Types of Features</span><a class="headerlink" href="#id2" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Data Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Boolean</p></td>
+<td><p>Boolean value (True or False)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Command</p></td>
+<td><p>Executable command</p></td>
+</tr>
+<tr class="row-even"><td><p>Enumeration</p></td>
+<td><p>Discrete value list</p></td>
+</tr>
+<tr class="row-odd"><td><p>Float</p></td>
+<td><p>Floating point number</p></td>
+</tr>
+<tr class="row-even"><td><p>Integer</p></td>
+<td><p>Integer number</p></td>
+</tr>
+<tr class="row-odd"><td><p>String</p></td>
+<td><p>Character string</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p>Visibility is a GenICam concept. Useful for application software developers,
+it specifies at what approximate
+level of expertise camera users should be exposed a certain feature,
+given its complexity, see <a class="reference internal" href="#feature-visibility"><span class="std std-numref">Table 10</span></a>.</p>
+<span id="feature-visibility"></span><table class="docutils align-default" id="id3">
+<caption><span class="caption-number">Table 10 </span><span class="caption-text">Visibility Levels of Features</span><a class="headerlink" href="#id3" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Visibility</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Beginner</p></td>
+<td><p>Feature can be used easily.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Expert</p></td>
+<td><p>Feature requires in-depth knowledge of the device or
+transport technology.</p></td>
+</tr>
+<tr class="row-even"><td><p>Guru</p></td>
+<td><p>Features requires exact knowledge about that
+specific device or transport technology.</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p>The description moreover reveals if one has the authorization to
+access and modify a feature (see <a class="reference internal" href="#feature-accessibility"><span class="std std-numref">Table 11</span></a>).</p>
+<span id="feature-accessibility"></span><table class="docutils align-default" id="id4">
+<caption><span class="caption-number">Table 11 </span><span class="caption-text">Accessibility Levels of Features</span><a class="headerlink" href="#id4" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Accessibility</p></th>
+<th class="head"><p>Abbreviation</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Read Only</p></td>
+<td><p>RO</p></td>
+<td><p>Status information only or currently
+not write-able because of the device
+state</p></td>
+</tr>
+<tr class="row-odd"><td><p>Write Only</p></td>
+<td><p>WO</p></td>
+<td><p>Written feature (command)</p></td>
+</tr>
+<tr class="row-even"><td><p>Read and Write</p></td>
+<td><p>RW</p></td>
+<td><p>Full access (writing changes state
+or an attribute of the device)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Not Available</p></td>
+<td><p>NA</p></td>
+<td><p>Temporary not available</p></td>
+</tr>
+<tr class="row-even"><td><p>Not Implemented</p></td>
+<td><p>NI</p></td>
+<td><p>Not implemented on this device or
+not active</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p>Operating the device in a different mode can change the accessibility
+of a feature. The camera device type can be
+changed by the feature <code class="docutils literal notranslate"><span class="pre">DeviceOperationMode</span></code>.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The heliCam<sup>TM</sup> C4 shares the same configuration interface
+with other Heliotis devices.</p>
+<blockquote>
+<div><p><span class="math notranslate nohighlight">\(\Rightarrow\)</span> Always use the heliCam<sup>TM</sup> C4 specific setting <code class="docutils literal notranslate"><span class="pre">DeviceOperationMode</span>
+<span class="pre">=</span> <span class="pre">'LockInCam'</span></code>.</p>
+</div></blockquote>
+</div>
+</li>
+<li><p>The scope of valid entries is also indicated, and a short text
+portrays the feature in words.</p></li>
+</ul>
+</section>
+<section id="access">
+<h3>Access<a class="headerlink" href="#access" title="Link to this heading"></a></h3>
+<p>Which features are available and how they need to be configured is the
+same in all development environments which are supported. The syntax to
+access the features varies among the different languages available,
+however, and is shown in sample scripts (C: &gt; Program Files &gt; C4Utility
+&gt; examples).</p>
+<p>With the Python library “Harvesters”, you configure the
+heliCam<sup>TM</sup> C4 by interacting with a camera object, which is
+simply called camera in the examples. A feature’s value is accessed by
+prepending <code class="docutils literal notranslate"><span class="pre">camera.remote_device.node_map.</span></code> to the feature name and
+appending <code class="docutils literal notranslate"><span class="pre">.value</span></code>.</p>
+<section id="writing">
+<h4>Writing<a class="headerlink" href="#writing" title="Link to this heading"></a></h4>
+<p>Setting the <code class="docutils literal notranslate"><span class="pre">LockInSensitivity</span></code> feature to its maximum 1.0 can thus be
+achieved with the following line.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">LockInSensitivity</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">1.0</span>
+</pre></div>
+</div>
+</section>
+<section id="reading">
+<h4>Reading<a class="headerlink" href="#reading" title="Link to this heading"></a></h4>
+<p>Similarly, reading back the camera configuration for the same parameter
+(and storing it in a float variable called <code class="docutils literal notranslate"><span class="pre">sensitivity</span></code>) is done as
+follows.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sensitivity</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">LockInSensitivity</span><span class="o">.</span><span class="n">value</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="special-feature-types">
+<h3>Special Feature Types<a class="headerlink" href="#special-feature-types" title="Link to this heading"></a></h3>
+<p>Some special features are not as directly accessible as the previous
+example <code class="docutils literal notranslate"><span class="pre">LockInSensitivity</span></code>.</p>
+<section id="selector">
+<h4>Selector<a class="headerlink" href="#selector" title="Link to this heading"></a></h4>
+<p>One such feature category is under the control of specific integer and
+enumeration features called selectors. These selectors enable indexed
+access to other features. What this means is best illustrated with an
+example.</p>
+<p>The feature <code class="docutils literal notranslate"><span class="pre">TriggerSelector</span></code> determines which of multiple triggers
+(e.g, <code class="docutils literal notranslate"><span class="pre">'FrameStart'</span></code>, <code class="docutils literal notranslate"><span class="pre">'RecordingStart'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'Reference'</span></code> – see <a class="reference internal" href="#selector-feature"><span class="std std-numref">Table 12</span></a>) is
+configured. Features under the control of this selector, such as
+<code class="docutils literal notranslate"><span class="pre">TriggerSource</span></code>, change their behavior according to the value of the
+selector. <code class="docutils literal notranslate"><span class="pre">TriggerSource</span></code>, for instance, controls which input channel is
+used for the selected trigger. To choose the input pin <code class="docutils literal notranslate"><span class="pre">'FI2'</span></code> for the
+<code class="docutils literal notranslate"><span class="pre">'Recording</span> <span class="pre">Start'</span></code> trigger, for instance, one would write:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;RecordingStart&#39;</span>
+<span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerSource</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;FI2&#39;</span>
+</pre></div>
+</div>
+<p>In the feature description document, the selector features include a
+list with all possible selection options. Selector-controlled features
+have the corresponding selector printed in square brackets after their
+name.</p>
+<span id="selector-feature"></span><table class="docutils align-default" id="id5">
+<caption><span class="caption-number">Table 12 </span><span class="caption-text">Selector and Selector-Controlled Features</span><a class="headerlink" href="#id5" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p class="centered">
+<strong><em>Selector</em></strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Name</p></td>
+<td><p>TriggerSelector</p></td>
+</tr>
+<tr class="row-odd"><td><p>Type</p></td>
+<td><p>Enumeration</p></td>
+</tr>
+<tr class="row-even"><td><p>Visibility</p></td>
+<td><p>Beginner</p></td>
+</tr>
+<tr class="row-odd"><td><p>AccessMode</p></td>
+<td><p>RW</p></td>
+</tr>
+<tr class="row-even"><td><p>EnumEntry</p></td>
+<td><ul class="simple">
+<li><p>AcquisitionStart</p></li>
+<li><p>FrameStart</p></li>
+<li><p>FrameBurstStart</p></li>
+<li><p>RecordingStart</p></li>
+<li><p>Reference</p></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+<td><table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p class="centered">
+<strong><em>Selector-Controlled</em></strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Name</p></td>
+<td><p>TriggerSource
+[TriggerSelector]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Type</p></td>
+<td><p>Enumeration</p></td>
+</tr>
+<tr class="row-even"><td><p>Visibility</p></td>
+<td><p>Beginner</p></td>
+</tr>
+<tr class="row-odd"><td><p>AccessMode</p></td>
+<td><p>RW</p></td>
+</tr>
+<tr class="row-even"><td><p>EnumEntry</p></td>
+<td><ul class="simple">
+<li><p>Software</p></li>
+<li><p>Auto</p></li>
+<li><p>…</p></li>
+<li><p>FI2</p></li>
+<li><p>…</p></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="target-and-actual">
+<h4>Target and Actual<a class="headerlink" href="#target-and-actual" title="Link to this heading"></a></h4>
+<p>There are lock-in camera parameters which can only assume discrete
+values in their range of validity. The <code class="docutils literal notranslate"><span class="pre">LockInReferenceFrequency</span></code> feature,
+for example, can only take values that are a fraction of the sensor’s clock
+frequency. In this case, the parameter is covered by two separate
+features (see <a class="reference internal" href="#actual-target"><span class="std std-numref">Table 13</span></a>). The user sets a “target” feature, from which the
+closest possible parameter value is deduced automatically and stored in
+the feature reflecting the “actual” setting. The actual value cannot be
+written directly but is readable.</p>
+<span id="actual-target"></span><table class="docutils align-default" id="id6">
+<caption><span class="caption-number">Table 13 </span><span class="caption-text">Target and Actual Feature Pairs</span><a class="headerlink" href="#id6" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p class="centered">
+<strong><em>Target</em></strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Name</p></td>
+<td><p>LockInTargetReferenceFrequency</p></td>
+</tr>
+<tr class="row-odd"><td><p>Type</p></td>
+<td><p>Float</p></td>
+</tr>
+<tr class="row-even"><td><p>Visibility</p></td>
+<td><p>Beginner</p></td>
+</tr>
+<tr class="row-odd"><td><p>OperationMode</p></td>
+<td><p>LockInCam</p></td>
+</tr>
+<tr class="row-even"><td><p>AccessMode</p></td>
+<td><p>RW</p></td>
+</tr>
+<tr class="row-odd"><td><p>Min</p></td>
+<td><p>305 Hz</p></td>
+</tr>
+<tr class="row-even"><td><p>Max</p></td>
+<td><p>135000 Hz</p></td>
+</tr>
+</tbody>
+</table>
+</td>
+<td><table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p class="centered">
+<strong><em>Actual</em></strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Name</p></td>
+<td><p>LockInActualReferenceFrequency</p></td>
+</tr>
+<tr class="row-odd"><td><p>Type</p></td>
+<td><p>FloatReg</p></td>
+</tr>
+<tr class="row-even"><td><p>Visibility</p></td>
+<td><p>Beginner</p></td>
+</tr>
+<tr class="row-odd"><td><p>OperationMode</p></td>
+<td><p>LockInCam</p></td>
+</tr>
+<tr class="row-even"><td><p>AccessMode</p></td>
+<td><p>RO</p></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="status-trigger-and-event">
+<h2>Status, Trigger and Event<a class="headerlink" href="#status-trigger-and-event" title="Link to this heading"></a></h2>
+<p>The camera goes through a sequence of states during a measurement (see
+<a class="reference internal" href="#status-and-event"><span class="std std-numref">Fig. 25</span></a>), more than one of which can be active at the same time.
+Changes of state require an internal – often software-controlled – or an
+external trigger signal (cf. <a class="reference internal" href="../chapter5/chapter5.html#temporal-sequence"><span class="std std-ref">paragraph on the temporal sequence of the
+sensor operation</span></a>). Following a change of state,
+software events may be sent or recorded.</p>
+<section id="monitoring-and-control-of-measurement-sequence">
+<h3>Monitoring and Control of Measurement Sequence<a class="headerlink" href="#monitoring-and-control-of-measurement-sequence" title="Link to this heading"></a></h3>
+<p>Let us consider the initiation of a measurement to illustrate what this
+means in practice.</p>
+<ol class="arabic simple">
+<li><p>During acquisition, the heliCam<sup>TM</sup> C4 is initially in a state
+where it waits for the <code class="docutils literal notranslate"><span class="pre">'FrameStart'</span></code> trigger, the first signal
+required to start a measurement.</p></li>
+<li><p>Upon arrival of this trigger, the lock-in camera enters another state
+in which it waits for the <code class="docutils literal notranslate"><span class="pre">'RecordingStart'</span></code> trigger.</p></li>
+<li><p>Only when it receives this second trigger, does it get into a third
+state, one of active recording.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There is currently no option to acquire individual frames. In each
+measurement, an entire burst of frames is recorded. Note that both
+the <code class="docutils literal notranslate"><span class="pre">'FrameStart'</span></code> and the <code class="docutils literal notranslate"><span class="pre">'RecordingStart'</span></code> trigger, are thus only needed
+once per measurement to induce its beginning.</p>
+</div>
+<figure class="align-center" id="status-and-event">
+<a class="reference internal image-reference" href="../_images/Event-And-Status-Diagram.png"><img alt="../_images/Event-And-Status-Diagram.png" src="../_images/Event-And-Status-Diagram.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 25 </span><span class="caption-text">Status and Event Signaling during Measurement Sequence</span><a class="headerlink" href="#status-and-event" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<section id="trigger-configuration">
+<h4>Trigger Configuration<a class="headerlink" href="#trigger-configuration" title="Link to this heading"></a></h4>
+<p>As you have seen in a previous example, these triggers are configured
+via selector features. For further illustration, let us assume more
+specifically that we wish to start a new measurement with a software
+command, <code class="docutils literal notranslate"><span class="pre">camera.remote_device.node_map.TriggerSoftware.execute()</span></code>. In
+this case, we specify that the <code class="docutils literal notranslate"><span class="pre">'FrameStart'</span></code> trigger should come
+internally from <code class="docutils literal notranslate"><span class="pre">'Software'</span></code> and set the <code class="docutils literal notranslate"><span class="pre">'RecordingStart'</span></code> trigger to
+<code class="docutils literal notranslate"><span class="pre">'Off'</span></code>. By switching it off, <code class="docutils literal notranslate"><span class="pre">'RecordingStart'</span></code> is triggered
+automatically after a “FrameTrigger” event.</p>
+<p>These settings can be achieved with the following code sniplet.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;FrameStart&#39;</span>
+<span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerMode</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;On&#39;</span>
+<span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerSource</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;Software&#39;</span>
+
+<span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;RecordingStart&#39;</span>
+<span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">TriggerMode</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;Off&#39;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">'RecordingStart'</span></code> trigger goes directly to the image sensor. To
+start a measurement with an external synchronization signal via the
+heliDriver<sup>TM</sup> D3’s communication interface, you thus usually
+employ this trigger. To do so, enable it and set the <code class="docutils literal notranslate"><span class="pre">TriggerSource</span></code>
+feature to the relevant input pin. Note also that the <code class="docutils literal notranslate"><span class="pre">'FrameStart'</span></code>
+signal cannot come from an external source.</p>
+</div>
+</section>
+<section id="status-output">
+<h4>Status Output<a class="headerlink" href="#status-output" title="Link to this heading"></a></h4>
+<p>You may also wish to monitor the status of your camera with an
+oscilloscope. To route a status signal, such as <code class="docutils literal notranslate"><span class="pre">'RecordingActive'</span></code>, in
+real time to a heliDriver<sup>TM</sup> D3 output pin, e.g., <code class="docutils literal notranslate"><span class="pre">'RTIO2'</span></code>, you
+may use the selector <code class="docutils literal notranslate"><span class="pre">LineSelecter</span></code> and the feature <code class="docutils literal notranslate"><span class="pre">LineSource</span></code>
+depending on it.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">LineSelector</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;RTIO2&#39;</span>
+<span class="n">camera</span><span class="o">.</span><span class="n">remote_device</span><span class="o">.</span><span class="n">node_map</span><span class="o">.</span><span class="n">LineSource</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;RecordingActive&#39;</span>
+</pre></div>
+</div>
+<p>For currently available status, trigger and event monitoring/control,
+see chapters 1, 6, and 8 of the device feature description document (C:
+&gt; ProgramFiles &gt; C4Utility &gt; doc &gt; ftrDesc.pdf). <strong>Status signals from the
+camera are delayed by ~ 1 μs.</strong></p>
+</section>
+</section>
+</section>
+<section id="retrieving-measurement-data">
+<h2>Retrieving Measurement Data<a class="headerlink" href="#retrieving-measurement-data" title="Link to this heading"></a></h2>
+<p>After a measurement, we would like to retrieve the data. This is not
+done via heliCam<sup>TM</sup> C4 features. Measurement data are
+transferred as multi-part buffers. Consult the code examples (C: &gt;
+ProgramFiles &gt; C4Utility &gt; example &gt; Python) to learn
+how they are retrieved.</p>
+</section>
+<section id="basic-sequence-of-operations">
+<h2>Basic Sequence of Operations<a class="headerlink" href="#basic-sequence-of-operations" title="Link to this heading"></a></h2>
+<p>Application programs to operate the heliCam<sup>TM</sup> C4
+should follow the sequence shown below. When developing camera software,
+we recommend you start with a Heliotis code example and adapt it while
+preserving the following structure.</p>
+<figure class="align-center" id="basic-operational-sequence">
+<a class="reference internal image-reference" href="../_images/basic_operational_sequence.png"><img alt="../_images/basic_operational_sequence.png" src="../_images/basic_operational_sequence.png" style="width: 97.5%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 26 </span><span class="caption-text">Basic Sequence of Operations</span><a class="headerlink" href="#basic-operational-sequence" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only in “configuration mode” can the heliCam<sup>TM</sup> C4’s settings
+be altered. Once the acquisition has started, this is no longer possible
+until it is stopped again.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../chapter3/chapter3.html" class="btn btn-neutral float-left" title="B) Get Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../chapter5/chapter5.html" class="btn btn-neutral float-right" title="D) Advanced Concepts and Control" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

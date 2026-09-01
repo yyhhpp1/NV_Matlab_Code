@@ -22,7 +22,7 @@ switch varargin{1}
     case 'CaliPi' % backward compatibility alias
         PiCal()
     case 'Rabi'
-        Rabi();
+        Rabi_HP();
     case 'Rabi_IQ'
         Rabi_IQ();
     case 'Rabi_fix_MWDutyCycle'
@@ -110,7 +110,7 @@ switch varargin{1}
     case 'XY8_N_tomo1'
         XY8_N_tomo1();        
     case 'ESR'
-        ESR();
+        CWESR_HP();
     case 'T1'
         T1();
     case 'T1_S00_S01'
@@ -156,19 +156,39 @@ switch varargin{1}
     case 'T1_S00_R0_S01_R1_fixDutyCycle'
         T1_S00_R0_S01_R1_fixDutyCycle();
     case 'ODMR'
-        ODMR();
+        PulsedESR_HP();
     case 'ODMR_sweep'
         ODMR_sweep()
     case 'ODMR_1m1'
         ODMR_1m1()
     case 'hc_Image'
         hc_Image();
+    case 'hc_ZScan'
+        hc_ZScan();
+    case 'hc_scan_AOM_delay'
+        hc_scan_AOM_delay();
+    case 'hc_scan_AOM_delay2'
+        hc_scan_AOM_delay2();
+    case 'hc_scan_exposure'
+        hc_scan_exposure();
     case 'hc_Rabi'
         hc_Rabi();
-    case 'hc_T1'
-        hc_T1();
+    case 'hc_Rabi_matched_ref'
+        hc_Rabi_matched_ref();
+    case 'hc_Rabi_R_S_D_R'
+        hc_Rabi_R_S_D_R();
+    case 'hc_T1_D_S01_Rb_S00'
+        hc_T1_D_S01_Rb_S00();
+    case 'hc_T1_S00_R_D_R'
+        hc_T1_S00_R_D_R();
+    case 'hc_T1_S01_R_D_R'
+        hc_T1_S01_R_D_R();
     case 'hc_ODMR'
         hc_ODMR();
+    case 'hc_Scan_init_time'
+        hc_Scan_init_time();
+    case 'hc_Scan_init_time_matched_ref'
+        hc_Scan_init_time_matched_ref();
     case 'PBDictionary'
         varargout{1}=PBDictionary(varargin{2});
     case 'CtrDur'
@@ -255,9 +275,19 @@ StrL{numel(StrL)+1}='XY8_N_tomo1';
 
 StrL{numel(StrL)+1}='--------------------Widefield (HeliCam)--------------------';
 StrL{numel(StrL)+1}='hc_Image';
+StrL{numel(StrL)+1}='hc_ZScan';
+StrL{numel(StrL)+1}='hc_scan_AOM_delay';
+StrL{numel(StrL)+1}='hc_scan_AOM_delay2';
+StrL{numel(StrL)+1}='hc_scan_exposure';
 StrL{numel(StrL)+1}='hc_Rabi';
-StrL{numel(StrL)+1}='hc_T1';
+StrL{numel(StrL)+1}='hc_Rabi_matched_ref';
+StrL{numel(StrL)+1}='hc_Rabi_R_S_D_R';
+StrL{numel(StrL)+1}='hc_T1_D_S01_Rb_S00';
+StrL{numel(StrL)+1}='hc_T1_S00_R_D_R';
+StrL{numel(StrL)+1}='hc_T1_S01_R_D_R';
 StrL{numel(StrL)+1}='hc_ODMR';
+StrL{numel(StrL)+1}='hc_Scan_init_time';
+StrL{numel(StrL)+1}='hc_Scan_init_time_matched_ref';
 
 StrL{numel(StrL)+1}='--------------------T1--------------------';
 StrL{numel(StrL)+1}='T1_Sij_all';

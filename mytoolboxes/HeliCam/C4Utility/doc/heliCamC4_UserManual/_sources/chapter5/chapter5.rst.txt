@@ -1,0 +1,1646 @@
+.. _D:
+
+D) Advanced Concepts and Control
+================================
+
+This chapter offers a detailed, mathematical, and mechanistic view of
+the measured signal, which enables the user to exploit
+the full potential of the heliCam\ :sup:`TM` C4 lock-in camera.
+
+Lock-In Amplification
+---------------------
+
+This first section aims to convey the basic theory behind lock-in
+amplification in depth to users with a technical background, who are not
+fully familiar with the subject. Later sections draw heavily on the
+picture presented here.
+
+A lock-in amplifier exclusively extracts frequency components in a
+defined band around a tunable reference frequency from the input.
+Lock-in amplifiers can be used to isolate the information-bearing
+modulation amplitude from a known carrier wave in a process called
+demodulation. Due to their selectivity for specific frequencies, lock-in
+detectors are effective at suppressing background noise.
+
+The implementation of lock-in amplification comprises two key steps: 
+
+   - First, the input signal is compared to a standard oscillation called
+     reference signal by multiplication. This process is also called
+     heterodyning - or homodyning if the reference oscillation has the same
+     frequency as the input.
+   - Then, the result is averaged in time.
+   
+Lock-in amplification is 
+equivalently described in the frequency domain as (down-)mixing 
+and subsequent low-pass filtering.
+
+Single- and Dual-Phase
+~~~~~~~~~~~~~~~~~~~~~~
+
+In their most basic form, so-called *single-phase* lock-in
+amplifiers also attenuate signal components that are out of phase with
+the reference signal even if they oscillate at the same frequency.
+*Dual-phase* or *phase-sensitive* lock-in amplification refers to a more
+advanced technique, which can detect both the amplitude of the input
+oscillation and its phase shift with respect to the reference signal.
+With this approach, used by the heliCam\ :sup:`TM` C4, the lock-in
+process is repeated once more with the reference signal shifted by
+:math:`\frac{\pi}{2}` (see :numref:`DP_LIA`).
+
+.. figure:: img/dual_phase_lock_in_amplification.png
+      :name: DP_LIA
+      :align: center
+      :width: 100%
+
+      Block Diagram of Single- and Dual-phase Lock-In Amplification
+
+      Lock-in amplification selectively extracts frequency components around the
+      reference frequency. To this end, the input is mixed with a reference
+      signal provided by a local oscillator and subsequently low-pass
+      filtered. Single-phase lock-in amplification (black part) not only
+      suppresses signal components with frequency- but also with
+      phase-mismatch relative to the reference signal. With a dual-phase
+      lock-in design (grey part included), the amplification is repeated with
+      a :math:`\frac{\pi}{2}`- shifted copy of the reference signal. The two
+      outputs components, “In-Phase” and “Quadrature” after their phase
+      relation to the reference, are usually transformed to polar coordinates.
+      In this manner, both the signal amplitude of the passing frequency
+      components and their phase with respect to the local oscillator can be
+      retrieved. In the literature on lock-in amplification, “In-Phase” and
+      “Quadrature” components are often referred to as X and Y, respectively.
+
+Most lock-in amplifiers use a sine wave as reference signal. It is a
+pulse wave in some instruments, however, including the
+heliCam\ :sup:`TM` C4. These lock-in amplifiers are also sensitive to
+odd harmonics of the fundamental reference frequency. For the sake of
+simplicity, we will first focus on ideal dual-phase demodulation with a
+perfect sine and its :math:`\frac{\pi}{2}`-shifted twin, a cosine wave,
+as reference signals. Only then will we consider the impact of
+demodulating with a pulse wave instead in the next section.
+
+.. _Idealized_Signal_Processing:
+
+Idealized Signal Processing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A mathematical examination of lock-in amplification reveals how the
+processing steps outlined above act upon the input. We will set out in
+time domain to track the treatment of the signal directly as it is
+implemented by the hardware. The analysis of the lock-in principle in
+the frequency domain offers a complementary view. Although very
+intuitive, this second perspective requires the reader to be familiar
+with the Fourier transform.
+
+Time Domain
+^^^^^^^^^^^
+
+In time domain, signals are expressed by their value as a function of
+time. Not with all inputs is lock-in amplification easily described
+using this representation.
+
+Sinusoid Input
+''''''''''''''
+
+Oscillatory inputs with a single frequency arise often, are suitable for
+analysis in time domain and the results generalize readily. They can
+also be considered as pure carriers, i.e., amplitude modulated signals
+of the simplest form, which do not contain any information. Let us
+initially assume a sinusoid input signal :math:`s_{in}` with constant
+amplitude, :math:`A_{in}`, frequency, :math:`f_{in}`, and phase, 
+:math:`{\varphi}_{in}`.
+
+.. math::
+     :label: s_in_ideal
+
+     s_{in}(t) = A_{in} \cdot cos\left( 2{\pi f}_{in}t + \varphi_{in} \right)
+
+Dual-phase lock-in amplification of this input, as described formally below,
+is graphically summarized in :numref:`LIA_monofreq` at the end of the paragraph.
+Using complex numbers, this process can be expressed 
+concisely. Euler's formula :eq:`euler` establishes a relationship between 
+the trigonometric functions and the complex exponential function.
+
+.. math::
+     :label: euler
+
+     e^{ix} = \cos(x) + i\sin(x)
+
+From :eq:`euler` follows that the cosine can be written as a sum of complex
+exponentials.
+
+.. math::
+     :label: cos_euler
+
+     cos(x) = \frac{e^{ix} + e^{- ix}}{2}
+
+Using this identity :eq:`euler`, the input signal :eq:`s_in_ideal` can be recast in complex
+form a clockwise and a counterclockwise rotating component in the
+complex plane.
+
+.. math::
+     :label: s_in_complex
+
+     s_{in}(t) = A_{in}\frac{e^{i\left( 2{\pi f}_{in}t + \varphi_{in} \right)} +
+     e^{- i\left( 2{\pi f}_{in}t + \varphi_{in} \right)}}{2}
+
+
+Comparison to Reference Signal
+''''''''''''''''''''''''''''''
+
+Writing the input in this fashion, the two-stage processing of the input
+in dual-phase demodulation can be mathematically treated in a single pass with
+a single, yet complex, reference signal :math:`s_{ref}(t)`. The real
+part of :math:`s_{ref}` is in phase with a local oscillator, that is
+setting the pace. Its imaginary part accounts for the second
+demodulation and is thus shifted by :math:`\frac{\pi}{2}` with respect
+to the real part. Here, :math:`s_{ref}`\ ’s two parts are presumed
+sinusoid. Euler’s formula :eq:`euler` is used once more for the second equality.
+
+.. math::
+     :label: s_ref_ideal
+
+     s_{ref}(t) = 2\cos\left( 2 \pi f_{ref}t \right) - i2\sin\left( 2 \pi f_{ref}t \right) 
+     = 2e^{- i\left( 2 \pi f_{ref} t \right)}
+
+
+Mixing the input signal :eq:`cos_euler` with the reference signal :eq:`s_ref_ideal` yields:
+
+.. math::
+     :label: s_mix_ideal
+
+     s_{mix}(t) = s_{in}(t) \cdot s_{ref}(t) = A_{in}\left( e^{i\left( 2{\pi(f_{in} - f}_{ref})t + 
+     \varphi_{in} \right)} + e^{- i\left( 2 {\pi(f_{in} + f}_{ref})t + \varphi_{in} \right)} \right)
+
+
+To measure the magnitude of the input signal, the frequency of the
+configurable reference signal, :math:`f_{ref}`, is closely matched to
+the input’s frequency :math:`f_{in}`. The first step of lock-in
+amplification therefore results in two complex sinusoids with very
+different oscillation frequencies, called heterodynes.
+
+     - The higher frequency is given by the sum of the signal and the reference frequency and thus commonly referred to as the :math:`2f`-*component*.
+     - The lower, so-called *baseband* frequency, is given by the difference between the two.
+
+Only the baseband is of interest in lock-in amplification.
+
+Averaging in Time
+'''''''''''''''''
+
+The mixed signal :math:`s_{mix}(t)` is then averaged over a shifting time interval to produce
+the lock-in output. Intuitively, computing this moving average on a sine
+wave that is much longer than the sine’s
+period, reduces the oscillation amplitude. Conversely, if this “mean” is
+taken over a very short time compared to the sine’s period, its
+amplitude is largely unaffected. Oscillations with higher frequencies
+therefore tend to be selectively more attenuated by the averaging.
+
+The moving average is a linear filtering operation
+and can be mathematically expressed as a convolution. The impulse
+response of the averaging filter is denoted as :math:`h_{avg}(t)`.
+
+.. math::
+     :label: s_out_ideal
+
+     {s_{out}(t) = (h}_{avg}*s_{mix})(t) = \int_{-\infty}^{+ \infty}{h_{avg}(\tau)s_{mix}(t - \tau)}d\tau \\
+     = A_{in}\ \left(  {\ e}^{i\left( 2{\pi(f_{in} - f}_{ref})t + \varphi_{in} \right)}
+     \int_{- \infty}^{+ \infty}{h_{avg}(\tau)\ e^{- i2{\pi(f_{in} - f}_{ref})\tau}d\tau} \right. \\
+     \left. + {\ e}^{- i\left( 2{\pi(f_{in} + f}_{ref})t+ \varphi_{in} \right)}\int_{- \infty}^{+ \infty}{h_{avg}
+     (\tau)\ e^{i2{\pi(f_{in} + f}_{ref})\tau}d\tau} \right)
+
+
+You may recognize the integral terms as Fourier transforms of the
+filter’s impulse response, i.e., its frequency response function,
+:math:`H_{avg}`.
+
+.. math::
+     :label: Fh_avg
+
+     H_{avg}(f) = \int_{- \infty}^{+ \infty}{h_{avg}(\tau)\ e^{- i2\pi f\tau}d\tau} 
+     = {\mathcal{F\{}\ h}_{avg}(\tau)\}(f)
+
+Equation :eq:`s_out_ideal` can then be written more succinctly. The change is in
+notation only.
+
+.. math::
+     :label: s_out_ideal_fourier
+
+     s_{out}(t) = A_{in}\ \left( {\ e}^{i\left( 2{\pi(f_{in} - f}_{ref})t + 
+     \varphi_{in} \right)}H_{avg}{(f_{in} - f}_{ref}) + {\ e}^{- i\left( 2{\pi(f_{in} + f}_{ref})t + 
+     \varphi_{in} \right)}H_{avg}{( - f_{in} - f}_{ref}) \right)
+
+
+
+Expression :eq:`s_out_ideal_fourier` shows that the amplitudes of 
+the output’s two oscillating components are given by the filter’s 
+response at their respective frequencies. Note that the filter serves 
+a dual purpose. On the one hand, it selects the frequency band around the
+reference frequency in which input frequencies are detected via
+the first term of the sum. On the other hand, it eliminates the
+second, fast undulating :math:`2f`-component, product of the
+multiplication with the reference signal.
+
+In practice, the heliCam\ :sup:`TM` C4 uses a rectangular filter
+function with adjustable size. In this introduction to lock-in amplification, however, we will
+use an ideal low-pass filter instead. The intuition gained in this
+simplified case remains largely valid in the detailed mathematical
+description of a more realistic signal processing model, which can be
+found in the following section.
+
+The ideal “brick-wall” filter lets frequency components below a cut off,
+:math:`f_{c}`, pass unaffected and removes all others completely. As is
+discussed in most textbooks on signals and systems, the impulse
+response, :math:`h_{avg}(t)`, of such a filter is the :math:`sinc`
+function dilatated by the “averaging duration”, :math:`T`. The cutoff
+frequency is inversely related to this dilation factor,
+:math:`f_{c} = \frac{1}{2T}`.
+
+.. math::
+     :label: h_avg_ideal
+
+     h_{avg}(t) = \frac{1}{T}sinc\left( \frac{t}{T} \right) \ \ \ \ \ \overset{\mathcal{F}}{\rightarrow} \ \ \ \ \ H_{avg}(f) = rect\left( \frac{f}{{2f}_{c}} \right)
+
+.. math::
+     \mbox{, where} \ \ \ \ \ sinc(x)\equiv \frac{\sin(\pi x)}{\pi x} \ \ \ \ \ \mbox{and} \ \ \ \ \ rect(x) \equiv\left\{ \begin{matrix} \begin{matrix} 1 & \mbox{if} \ |x| < \frac{1}{2} \\ \end{matrix} \\ \begin{matrix} 0 & \mbox{otherwise} \\ \end{matrix} \\ \end{matrix} \right.
+
+
+Plugging the frequency response of the ideal low-pass filter,
+:math:`H_{avg}`, into equation :eq:`s_out_ideal_fourier` yields an expression for the
+amplification output, :math:`s_{out}(t)`.
+
+.. math::
+     :label: h_avg_ideal_filter
+
+     s_{out}(t) = A_{in}\ \left( {\ e}^{i\left( 2{\pi(f_{in} - f}_{ref})t + \varphi_{in} \right)}rect\left( \frac{{f_{in} - f}_{ref}}{{2f}_{c}} \right)\  + {\ e}^{- i\left( 2{\pi(f_{in} + f}_{ref})t + \varphi_{in} \right)}rect\left( \frac{{f_{in} + f}_{ref}}{2f_{c}} \right) \right)
+
+
+The interplay between the frequency of the input, :math:`f_{in}`, the
+reference frequency, :math:`f_{ref},` and the filter’s cut-off frequency
+parameter, :math:`f_{c}`, determines the lock-in output.
+
+The simplest case arises if the reference frequency, :math:`f_{ref}`,
+matches the input frequency, :math:`f_{in}`, exactly and the filter
+removes the fast-rotating :math:`2f`-component.
+
+.. math::
+     :label: s_out_ideal_0
+
+     s_{out}(t) = A_{in}\ {\ e}^{i\varphi_{in}} \ \ \ \mbox{if} \ \ \ {f_{in} = f}_{ref} \ \ \ \mbox{and} \ \ \ {{f_{c} < f}_{in} + f}_{ref}
+
+
+This is the principal output of a dual-phase lock-in amplifier (see
+:numref:`LIA_monofreq` a). The result is a complex constant with amplitude and phase
+given by the amplitude and the phase shift of the input sinusoid before
+lock-in amplification, respectively.
+
+In the general case :math:`{f_{in} \neq f}_{ref}`, three outcomes (see
+:numref:`LIA_monofreq` b) can be distinguished based on the filter’s cut off
+frequency, :math:`f_{c}`.
+
+I. When averaging over a long interval compared to the period of the
+   signal’s two frequency components, both slow- and fast-rotating
+   signal terms are stripped away.
+
+.. math::
+     :label: s_out_ideal_I
+
+     s_{out}(t) = 0 \ \ \ \mbox{if} \ \ \  f_{c} < \left| {f_{in} - f}_{ref} \right|
+
+In this incident, the sinusoid input signal is outside the frequency
+band around :math:`f_{ref}`, which gets detected. If :math:`f_{c}` tends
+to zero, all but oscillations at the reference frequency are rejected.
+
+II. As the “averaging duration” shortens, :math:`f_{c}` increases and at
+    first, the slower oscillation alone is extracted from the mixed
+    signal.
+
+.. math::
+     :label: s_out_ideal_II
+
+     s_{out}(t) = A_{in}\ {\ e}^{i\left( 2{\pi(f_{in} - f}_{ref})t + \varphi_{in} \right)} \ \ \ \mbox{if} \ \ \  \left|{f_{in} - f}_{ref} \right|{{< f_{c} < f}_{in} + f}_{ref}
+
+
+Note that the amplitude of the output oscillation is the same as that of
+the input sinusoid, :math:`s_{in}`, which can therefore be retrieved.
+Its frequency, however, is given by the difference between the input
+frequency and the reference frequency, which is in general much lower
+than that of the input. This outcome is sometimes called a “beat” in
+analogy to the well-known phenomenon in acoustics occurring when two
+waves with slightly different frequencies are superimposed. Expression
+:eq:`s_out_ideal_0` is a particular instance of the more general case II.
+
+III. If averaging occurs over too short a period, the fast-rotating term
+     introduced by the mixing is not removed either. The output is the
+     same as the signal before filtering.
+
+.. math::
+     :label: s_out_ideal_III
+
+     s_{out}(t) = s_{mix}(t) \ \ \ \mbox{if} \ \ \  f_{in} + f_{ref} < f_{c}
+
+To sum up, the case distinction implies for practical lock-in
+applications in general that:
+
+-  The reference frequency, :math:`f_{ref}`, should be chosen to match
+   the input frequency, :math:`f_{in}`.
+
+-  The filter time constant :math:`T`, or equivalently the bandwidth,
+   should be picked so that case II is attained.
+
+Adjusting the filter size and hence :math:`f_{c}`, may change the result
+of lock-in amplification more gradually if the input does not consist of
+a single sinusoid. Yet the result with a sine wave input can easily be
+extended to more complex input signals; as we will see next, they can be decomposed into
+their frequency components by Fourier analysis (see :numref:`LIA_monofreq` c).
+
+.. figure:: img/lock_in_principle_FD.png
+      :name: LIA_monofreq
+      :align: center
+      :width: 97.5%
+
+      Dual-Phase Lock-In Amplification with Monofrequent Inputs
+
+      The idealized signal processing pipeline of lock-in detection is shown
+      sequentially from left to right. The real input signal, :math:`s_{in}`,
+      is multiplicatively mixed with a complex sinusoid reference signal,
+      :math:`s_{ref}`, which oscillates at the reference frequency
+      :math:`f_{ref}`. Subsequently, the mixed signal, :math:`s_{mix}`, is
+      averaged with an ideal low-pass filter with impulse response
+      :math:`h_{ref}`. :math:`s_{out}` is complex; its real and the imaginary
+      part, are respectively called the “in-phase”, :math:`I,`
+      and “quadrature”, :math:`Q,` component.
+
+      a. Time domain (TD) view of lock-in detection with a sinusoid input in
+         the special case where its frequency :math:`f_{in}` is equal to
+         :math:`f_{ref}` and the filter size is adequate. The output is a
+         complex constant whose amplitude and phase are given by the amplitude
+         and phase shift of :math:`s_{in}`. Note that
+         :math:`I(t) = Re\left\lbrack s_{out}(t) \right\rbrack` and
+         :math:`Q(t) = Im\left\lbrack s_{out}(t) \right\rbrack`.
+
+      b. The general case of a sinusoid input when
+         :math:`f_{in} \neq f_{ref}` with cases distinguished by the
+         adjustable filter size in TD.
+
+         I :math:`f_{in}` is outside the frequency band around :math:`f_{res}` that passes the filter. This input is hence rejected and :math:`s_{out}` is zero.
+
+         II With a shorter “averaging period”, the input gets detected. The modulation frequency of sinusoid :math:`s_{out}` is :math:`f_{in} - f_{ref}`.
+
+         III If the averaging duration is too short, the undesirable high-frequency component in :math:`s_{mix}` is still present in :math:`s_{out}`.
+
+      c. Fourier domain (FD) view of lock-in detection with a
+         multifrequential, amplitude modulated input. The reference
+         frequency, :math:`f_{ref}`, is equal to that of the sinusoid carrier
+         signal, :math:`f_{car}`. Frequency components treated individually in a. and b. are highlighted in blue and red, respectively. The same
+         filters I-III as in b. are considered. Only with filter II is the
+         modulation signal retrieved faithfully.
+
+.. admonition:: Conversion to Polar Coordinates
+
+   By default, the lock-in output is in cartesian coordinates. Its real and 
+   imaginary parts are named “in-phase” :math:`I\left(t\right)` and the 
+   “quadrature” :math:`Q\left(t\right)` components after their respective 
+   phase relationship with the local oscillator, that is driving the 
+   reference signal.
+
+   .. math::
+     :label: I_and_Q
+
+     I\left(t\right)=Re\left[s_{out}\left(t\right)\right]
+
+     Q\left(t\right)=Im\left[s_{out}\left(t\right)\right]
+
+   A conversion to polar coordinates yields amplitude and phase terms, 
+   which are often more natural to interpret.
+
+   .. math::
+     :label: A_and_Phi
+
+     A\left(t\right)=\sqrt{I^2\left(t\right)+Q^2\left(t\right)}
+
+     \varphi\left(t\right)=arctan2\left(Q\left(t\right),I\left(t\right)\right)
+
+Frequency Domain
+^^^^^^^^^^^^^^^^
+
+Lock-in amplification is linear, meaning the system’s response to a
+signal is equal to the sum of the responses to its constituent parts.
+Signals can generally be expressed as a continuous sum of complex
+sinusoids with different frequencies and phases. The Fourier transform
+determines how strongly each of these components are present in a signal
+– the frequency domain representation of a signal.
+
+.. math::
+     :label: Fourier_Transform
+
+     \int_{- \infty}^{+ \infty}{x(t)\ e^{- i 2\pi ft}dt} = \mathcal{F}\left\{ x(t) \right\}(f) = X(f)
+
+By Fourier transforming input, intermediary and processing signals, the
+chain of operations in lock-in detection introduced above can be
+analyzed in the frequency domain. Because its action is
+frequency-specific by design, lock-in amplification is inherently
+well-describable in the frequency domain.
+
+
+..
+     .. math::
+          :label: tototo1
+          
+          \quad
+
+     .. math::
+          :label: tototototo
+          
+          \quad
+
+
+     .. tabularcolumns:: |p{15cm}|
+
+     .. table::
+
+          +---------------------------------------------+
+          |    .. math::  \quad                         |
+          |        :label: toto                         |
+          |                                             |
+          |                                             |
+          +---------------------------------------------+
+
+     .. table:: Properties of the Fourier Transform
+
+
+          +---------------------+---------------------------------+-------------------------------------+---------------+
+          | Operation           | .. math:: x(t)                  | .. math:: X(f)                      |               |
+          +=====================+=================================+=====================================+===============+
+          | | Linear            |.. math::                        |.. math::                            |.. math:: \quad|
+          | | Combination       |  \alpha_{1}x_{1}(t)             |  \alpha_{1}X_{1}(f)                 | :label: lc    |
+          |                     |  +\alpha_{2}x_{2}(t)            |  +\alpha_{2}X_{2}(f)                |               |
+          |                     |                                 |                                     |               |
+          +---------------------+---------------------------------+-------------------------------------+---------------+
+          | | Convolution       |.. math::                        |.. math:: X_{1}(f)                   |.. math:: \quad|
+          |                     |   x_{1}(t)*x_{2}(t)             |   \cdot  X_{2}(f)                   | :label: co    |
+          |                     |                                 |                                     |               |
+          +---------------------+---------------------------------+-------------------------------------+---------------+
+          | | Multiplication    |.. math::                        | .. math::                           |.. math:: \quad|
+          |                     |   x_{1}(t)\cdot x_{2}(t)        |   X_{1}(f)*X_{2}(f)                 | :label: mu    |
+          |                     |                                 |                                     |               |
+          +---------------------+---------------------------------+-------------------------------------+---------------+
+          | | Translation       |.. math::                        | .. math:: e^{-i2\pi f{t}_{0}}X(f)   |.. math:: \quad|
+          |                     |  x\left(t - t_{0} \right)       |                                     | :label: tr    |
+          |                     |                                 |                                     |               |
+          +---------------------+---------------------------------+-------------------------------------+---------------+
+          | | Modulation        |.. math::                        | .. math:: X \left(f - f_{0} \right) |.. math:: \quad|
+          |                     |   e^{i2\pi f_{0}t}x(t)          |                                     | :label: mo    |
+          |                     |                                 |                                     |               |
+          +---------------------+---------------------------------+-------------------------------------+---------------+
+
+     .. table::
+
+          +-------------+---------------+---------------+
+          | .. centered:: *Signals  \                   |
+          |      with Finite Energy*                    |
+          +-------------+---------------+---------------+
+          | .. math::   | .. math::     |               |
+          |   x(t)      |          X(f) |               |
+          +=============+===============+===============+
+          | .. math ::  | .. math:: T \ |.. math:: \quad|
+          |  rect\left( |  \cdot  sinc\ | :label: rect  |
+          |  \frac{t}{T}|  (T \cdot f)  |               |
+          |  \right)    |               |               |
+          |             |               |               |
+          |             |               |               |
+          +-------------+---------------+---------------+
+          | .. math ::  | .. math:: T   |.. math:: \quad|
+          |  sinc\left( |  \cdot rect   | :label: sinc  |
+          |  \frac{t}{T}|  (T \cdot f)  |               |
+          |  \right)    |               |               |
+          |             |               |               |
+          |             |               |               |
+          +-------------+---------------+---------------+
+          | .. math::   | .. math::     |.. math:: \quad|
+          |  tri\left(  |  T \cdot      | :label: tri   |
+          |  \frac{t}{T}|  {sinc}^{2}   |               |
+          |  \right)    |  (T \cdot f)  |               |
+          |             |               |               |
+          |             |               |               |
+          +-------------+---------------+---------------+
+          | .. math::   | .. math::     |.. math:: \quad|
+          |   {sinc}^{2}|  T \cdot tri  | :label:       |
+          |   \left(    |  (T \cdot f)  |   sincsq      |
+          |   \frac{t}  |               |               |
+          |   {T}\right)|               |               |
+          |             |               |               |
+          +-------------+---------------+---------------+
+          |.. math::    | .. math:: e^{ |.. math:: \quad|
+          | \frac{1}    |  - 2\pi^{2}   | :label:       |
+          | {\sigma     |  \sigma^{2}   |  gaussian     |
+          | \sqrt{2\pi}}|  f^{2}}       |               |
+          | e^{- \frac{ |               |               |
+          | t^{2}}{2    |               |               |
+          | \sigma^{2}}}|               |               |
+          +-------------+---------------+---------------+
+          |             |               |               |
+          |             |               |               |
+          |             |               |               |
+          |             |               |               |
+          |             |               |               |
+          |             |               |               |
+          +-------------+---------------+---------------+
+
+..
+     .. math::
+          :label: tototo2
+          
+          &\ \\
+          &\
+
+
+
+..
+     .. math::
+          :label: tototo
+
+     .. math::
+          :label: tototo2
+          
+          toto
+
+     .. tabularcolumns:: |p{3cm}|
+
+     .. table::
+
+          +---------------------------------------------+
+          |    .. math::                                |
+          |        :label: toto                         |
+          |                                             |
+          |                                             |
+          +---------------------------------------------+
+
+
+          .. tabularcolumns:: |p{5cm}|p{5cm}| 
+..
+     .. list-table:: Fourier Transforms of Selected Signals
+          
+          * - .. math::
+               
+               hi
+
+          - .. math::
+               
+               ho
+
+     .. tabularcolumns:: |p{5cm}|p{5cm}| 
+
+     .. list-table:: Fourier Transforms of Selected Signals
+          
+          * - .. math::
+               :label: toto1 
+               
+               hi
+
+          - .. math::
+               :label: toto2 
+               
+               ho
+
+     +-----------+-----------------------------------+-------+
+     | Number    | Animal                            |       |
+     +===========+===================================+=======+
+     | 1         | :ref:`Dog <DogLabel>`             |       |
+     +-----------+-----------------------------------+-------+
+     | 2         | :ref:`Cat <CatLabel>`             |       |
+     +-----------+-----------------------------------+-------+
+
+     +-----------+-----------------------------------+-------+
+     | Dog       | .. _DogLabel:                     |       |
+     |           |                                   |       |
+     |           | Services                          |       |
+     +===========+===================================+=======+
+     | 1         | Vet                               |       |
+     +-----------+-----------------------------------+-------+
+     | 2         | .. _CatLabel:                     |       |
+     |           |                                   |       |
+     |           | Toy Shop                          |       |
+     +-----------+-----------------------------------+-------+
+
+     +---------------------+---------------------------------+-------------------------------------+---------------+
+     | *Operation*         | .. math:: x(t)                  | .. math:: X(f)                      |               |
+     +=====================+=================================+=====================================+===============+
+     | *Linear             |.. math::                        |.. math::                            |.. math::      |
+     | Combination*        |  \alpha_{1}x_{1}(t)             |  \alpha_{1}X_{1}(f)                 | :label: lc    |
+     |                     |  +\alpha_{2}x_{2}(t)            |  +\alpha_{2}X_{2}(f)                |               |
+     |                     |                                 |                                     |               |
+     +---------------------+---------------------------------+-------------------------------------+---------------+
+     | *Convolution*       |.. math::                        |.. math:: X_{1}(f)                   |.. math::      |
+     |                     |   x_{1}(t)*x_{2}(t)             |   \cdot  X_{2}(f)                   | :label: co    |
+     |                     |                                 |                                     |               |
+     +---------------------+---------------------------------+-------------------------------------+---------------+
+     | *Multiplication*    |.. math::                        | .. math::                           |.. math::      |
+     |                     |   x_{1}(t)\cdot x_{2}(t)        |   X_{1}(f)*X_{2}(f)                 | :label: mu    |
+     |                     |                                 |                                     |               |
+     +---------------------+---------------------------------+-------------------------------------+---------------+
+     | *Translation*       |.. math::                        | .. math:: e^{-i2\pi f{t}_{0}}X(f)   |.. math::      |
+     |                     |  x\left(t - t_{0} \right)       |                                     | :label: tr    |
+     |                     |                                 |                                     |               |
+     +---------------------+---------------------------------+-------------------------------------+---------------+
+     | *Modulation*        |.. math::                        | .. math:: X \left(f - f_{0} \right) |.. math::      |
+     |                     |   e^{i2\pi f_{0}t}x(t)          |                                     | :label: mo    |
+     |                     |                                 |                                     |               |
+     +---------------------+---------------------------------+-------------------------------------+---------------+
+
+     .. tabularcolumns:: |p{3cm}|p{3.5cm}|p{3.5cm}|p{2.5cm}|
+
+.. admonition:: Fourier Transform Summary
+
+   Knowledge of a set of its notable properties facilitates the handling 
+   of the Fourier transform. It is beyond the scope of this text to justify 
+   them. Fourier properties and relations, which are used in the following 
+   are listed hereafter in table form.
+
+   
+
+   .. _FT_Properties:
+
+   .. table:: Properties of the Fourier Transform
+
+
+     +---------------------+---------------------------------+-------------------------------------+---------------+
+     | Operation           | .. math:: x(t)                  | .. math:: X(f)                      |               |
+     +=====================+=================================+=====================================+===============+
+     | | Linear            |.. math::                        |.. math::                            |.. math:: \quad|
+     | | Combination       |  \alpha_{1}x_{1}(t)             |  \alpha_{1}X_{1}(f)                 | :label: lc    |
+     |                     |  +\alpha_{2}x_{2}(t)            |  +\alpha_{2}X_{2}(f)                |               |
+     |                     |                                 |                                     |               |
+     +---------------------+---------------------------------+-------------------------------------+---------------+
+     | | Convolution       |.. math::                        |.. math:: X_{1}(f)                   |.. math:: \quad|
+     |                     |   x_{1}(t)*x_{2}(t)             |   \cdot  X_{2}(f)                   | :label: co    |
+     |                     |                                 |                                     |               |
+     +---------------------+---------------------------------+-------------------------------------+---------------+
+     | | Multiplication    |.. math::                        | .. math::                           |.. math:: \quad|
+     |                     |   x_{1}(t)\cdot x_{2}(t)        |   X_{1}(f)*X_{2}(f)                 | :label: mu    |
+     |                     |                                 |                                     |               |
+     +---------------------+---------------------------------+-------------------------------------+---------------+
+     | | Translation       |.. math::                        | .. math:: e^{-i2\pi f{t}_{0}}X(f)   |.. math:: \quad|
+     |                     |  x\left(t - t_{0} \right)       |                                     | :label: tr    |
+     |                     |                                 |                                     |               |
+     +---------------------+---------------------------------+-------------------------------------+---------------+
+     | | Modulation        |.. math::                        | .. math:: X \left(f - f_{0} \right) |.. math:: \quad|
+     |                     |   e^{i2\pi f_{0}t}x(t)          |                                     | :label: mo    |
+     |                     |                                 |                                     |               |
+     +---------------------+---------------------------------+-------------------------------------+---------------+
+
+
+   .. _Selected_FTs:
+
+   .. list-table:: Fourier Transforms of Selected Signals
+
+      * - .. table::
+               :widths: 3 3 1
+
+               +-------------+---------------+---------------+
+               | .. centered:: *Signals  \                   |
+               |      with Finite Energy*                    |
+               +-------------+---------------+---------------+
+               | .. math::   | .. math::     |               |
+               |   x(t)      |          X(f) |               |
+               +=============+===============+===============+
+               | .. math ::  | .. math:: T \ |.. math:: \quad|
+               |  rect\left( |  \cdot  sinc\ | :label: rect  |
+               |  \frac{t}{T}|  (T \cdot f)  |               |
+               |  \right)    |               |               |
+               |             |               |               |
+               |             |               |               |
+               +-------------+---------------+---------------+
+               | .. math ::  | .. math:: T   |.. math:: \quad|
+               |  sinc\left( |  \cdot rect   | :label: sinc  |
+               |  \frac{t}{T}|  (T \cdot f)  |               |
+               |  \right)    |               |               |
+               |             |               |               |
+               |             |               |               |
+               +-------------+---------------+---------------+
+               | .. math::   | .. math::     |.. math:: \quad|
+               |  tri\left(  |  T \cdot      | :label: tri   |
+               |  \frac{t}{T}|  {sinc}^{2}   |               |
+               |  \right)    |  (T \cdot f)  |               |
+               |             |               |               |
+               |             |               |               |
+               +-------------+---------------+---------------+
+               | .. math::   | .. math::     |.. math:: \quad|
+               |   {sinc}^{2}|  T \cdot tri  | :label:       |
+               |   \left(    |  (T \cdot f)  |   sincsq      |
+               |   \frac{t}  |               |               |
+               |   {T}\right)|               |               |
+               |             |               |               |
+               +-------------+---------------+---------------+
+               |.. math::    | .. math:: e^{ |.. math:: \quad|
+               | \frac{1}    |  - 2\pi^{2}   | :label:       |
+               | {\sigma     |  \sigma^{2}   |  gaussian     |
+               | \sqrt{2\pi}}|  f^{2}}       |               |
+               | e^{- \frac{ |               |               |
+               | t^{2}}{2    |               |               |
+               | \sigma^{2}}}|               |               |
+               +-------------+---------------+---------------+
+
+
+        - .. table::
+               :widths: 2 4 1
+
+               +-------------+---------------+---------------+
+               | .. centered:: *Tempered                     |
+               |      Distributions*                         |
+               +-------------+---------------+---------------+
+               | .. math::   | .. math::     |               |
+               |   x(t)      |          X(f) |               |
+               +=============+===============+===============+
+               | .. math:: 1 | .. math::     |.. math:: \quad|
+               |             |  \delta(f)    | :label: one   |
+               |             |               |               |
+               |             |               |               |
+               |             |               |               |
+               |             |               |               |
+               +-------------+---------------+---------------+
+               | .. math ::  | .. math:: 1   |.. math:: \quad|
+               |  \delta(t)  |               | :label:       |
+               |             |               |    delta      |
+               |             |               |               |
+               |             |               |               |
+               |             |               |               |
+               +-------------+---------------+---------------+
+               | .. math::   | .. math::     |.. math:: \quad|
+               |  e^{i2 \pi  |  \delta\left( | :label:       |
+               |  f_{0}t}    |  f-f_{0}      |  c_sinusoid   |
+               |             |  \right)      |               |
+               |             |               |               |
+               |             |               |               |
+               +-------------+---------------+---------------+
+               | .. math::   |.. math::      |.. math:: \quad|
+               |  \cos\left( | \frac{\delta  | :label:       |
+               |  2\pi f_{0} | \left(f-f_{0} |   cos         |
+               |  t \right)  | \right)+\delta|               |
+               |             | \left(f+f_{0} |               |
+               |             | \right)}{2}   |               |
+               +-------------+---------------+---------------+
+               |.. math::    |.. math::      |.. math:: \quad|
+               | \sin\left(  | \frac{\delta  | :label:       |
+               | 2\pi f_{0}  | \left(f-f_{0} |   sin         |
+               | t \right)   | \right)-\delta|               |
+               |             | \left(f+f_{0} |               |
+               |             | \right)}{2i}  |               |
+               +-------------+---------------+---------------+
+               |.. math::    |.. math::      |.. math:: \quad|
+               | \sum_{n     | \frac{1}{T}   | :label:       |
+               | \mathbb{\in | \sum_{k       |   dirac_comb  |
+               | Z}}{\delta  | \mathbb{\in Z}|               |
+               | (t - nT)}   | }^{}{\delta   |               |
+               |             | \left(f-\frac |               |
+               |             | {k}{T}\right)}|               |
+               +-------------+---------------+---------------+
+
+   In this table, :math:`\delta( \cdot )` denotes the delta Dirac
+   distribution. This generalized function, also known as unit impulse, is
+   zero everywhere except at :math:`t = 0`\. It is furthermore
+   constrained to satisfy the following integral relation:
+
+   .. math::
+    :label: dirac_def 
+     
+     \int_{- \infty}^{+ \infty}{\delta(t) \ dt} = 1 
+
+
+
+   Shifting a function in time by :math:`t_{0}` can be expressed by means of a
+   convolution with a :math:`t_{0}` -shifted version of
+   :math:`\delta( \cdot )`\.
+
+   .. math::
+    :label: dirac_shift
+     
+     x\left(t - t_{0} \right) = x(t)*\delta\left( t - t_{0} \right)
+
+
+Noisy, Amplitude Modulated Input
+''''''''''''''''''''''''''''''''
+
+An amplitude modulated signal, :math:`s_{am}`, consists of a
+sinusoid carrier wave, :math:`s_{car}`, whose amplitude is varied or
+*modulated* slowly compared to its oscillation frequency (see :numref:`AM_DP_LIA`
+a). These amplitude variations bear the information contained in the
+signal. The time evolution of the amplitude is called the modulation
+signal, :math:`s_{mod}`.
+
+.. math::
+ :label: s_am
+
+     s_{am}(t) = A(t)\cdot cos\left( 2{\pi f}_{car}t + \varphi_{car} \right) 
+     = s_{mod}(t) \cdot s_{car}(t) 
+
+Demodulation of such signals, with variable amplitude and thus more than
+a single frequency component, is a common application of lock-in
+amplification. It can be achieved by matching the reference frequency to
+the carrier frequency. Realistic inputs moreover contain background
+noise. So, let us examine an arbitrary amplitude modulated signal,
+:math:`s_{am}`, with additive noise, :math:`s_{\sigma}`, as input,
+:math:`s_{in}`.
+
+.. math::
+ :label: s_noise
+
+     s_{in}(t) = s_{am}(t) + s_{\sigma}(t)
+
+
+We would like to perform our analysis in the Frequency domain and must
+therefore find the Fourier transform of :math:`s_{in}`. It is given by
+the sum of the Fourier transforms of :math:`s_{in}`\ ’s addends since
+the Fourier transform is a linear operation :eq:`lc`.
+
+.. math::
+ :label: S_noise_FD
+     
+     S_{in}(f) = S_{am}(f) + S_{\sigma}(f)
+
+
+:math:`S_{am}` can be stated in terms of :math:`S_{mod}`, the carrier
+frequency, :math:`f_{car}`, and phase shift, :math:`\varphi_{car}`.
+Expressions :eq:`lc`, :eq:`mu`, :eq:`c_sinusoid`, and :eq:`dirac_shift` from summary on the
+Fourier transform are used in conjunction with the complex form of the
+cosine :eq:`cos_euler` to derive :math:`S_{am}` in this form from its time domain
+expression :eq:`s_am`.
+
+.. math::
+ :label: S_am_FD
+     
+     S_{am}(f)&=S_{mod}(f)*S_{car}(f) \\
+     &= S_{mod}(f)*\mathcal{F}\left\{ \cos\left( 2{\pi f}_{car}t + \varphi_{car} \right) \right\}(f) \\
+     &= S_{mod}(f)*\mathcal{F}\left\{ \frac{e^{i\left(2{\pi f}_{car}t + \varphi_{car} \right)} + e^{- i\left(2{\pi f}_{car}t + \varphi_{car} \right)}}{2} \right\}(f) \\
+     &= S_{mod}(f)*\frac{e^{i\varphi_{car}}\mathcal{F}\left\{e^{i2{\pi f}_{car}t} \right\}(f) + e^{- i\varphi_{car}}\mathcal{F}\left\{ e^{- i2{\pi f}_{car}t} \right\}(f)}{2} \\
+     &= S_{mod}(f)*\frac{e^{i\varphi_{car}}\delta\left( f - f_{car} \right) +e^{- i\varphi_{car}}\delta\left( f + f_{car} \right)}{2} \\
+     &= \frac{{e^{i\varphi_{car}}S}_{mod}\left( f - f_{car} \right) + {e^{- i\varphi_{car}}S}_{mod}\left( f + f_{car} \right)}{2}
+
+
+
+As the last term reveals, the frequency domain description of amplitude
+modulation is that it produces a signal with power concentrated in two
+bands around plus and minus the carrier frequency.
+
+Plugging :eq:`S_am_FD` into :eq:`S_noise_FD` yields the frequency domain expression of the
+noisy, amplitude-modulated input to the lock-in amplifier.
+
+.. math::
+ :label: S_in_FD
+
+     S_{in}(f) = \frac{e^{i\varphi_{car}} S_{mod}\left( f - f_{car} \right) + {e^{- i\varphi_{car}}S}_{mod}\left( f + f_{car} \right)}{2} + S_{\sigma}(f)
+
+
+
+.. figure:: img/lock_in_amplification_FD_noise.png
+      :name: AM_DP_LIA
+      :align: center
+      :width: 100%
+
+      Amplitude Modulation and Ideal Dual-Phase Demodulation with Noise
+
+      In both a. and b., time-domain (TD) signals :math:`s_{\cdot}(t)` are
+      depicted alongside their frequency domain (FD) representations
+      :math:`S_{\cdot}(f).`
+
+      a.  Synthesis of an Amplitude Modulated Signal with Noise in TD (left)
+          and FD (right).
+
+          ..
+
+          The amplitude of a sinusoid carrier signal :math:`s_{car}` is varied
+          in time according to a modulation signal :math:`s_{mod}`. The result
+          is the amplitude modulated signal, :math:`s_{am}.` The FD equivalent
+          is a convolution of the modulation spectrum, :math:`S_{mod}`, with
+          that of the carrier wave, :math:`S_{car}`. The ensuing signal in FD is a
+          duplicated and generally phase-shifted version of :math:`S_{mod}`
+          with half the original amplitude, whose two component parts are
+          shifted to +/- the carrier frequency, :math:`f_{car}`. Broadband
+          noise, :math:`s_{\sigma}`, is added to the signal :math:`s_{am}` yielding
+          the input signal :math:`s_{in}`.
+
+      b.  Dual-Phase Demodulation of Noisy, Amplitude Modulated Signal in TD
+          (left) and FD (right).
+
+          ..
+
+          The noisy, amplitude modulated input signal, :math:`s_{in}`, from a.
+          is demodulated with an ideal dual-phase lock-in amplifier. First, the
+          input, :math:`s_{in}`, is multiplied with a complex sinusoid
+          reference signal whose frequency is equal to :math:`f_{car}`. With
+          the effect in the frequency domain in mind, this step is called
+          down-mixing. The spectrum of the product of mixing, :math:`S_{mix}`,
+          is shifted by :math:`f_{ref}` with respect to that of the
+          input\ :math:`\ S_{in}`. In this fashion, one of :math:`S_{in}`\ ’s
+          two spectral components corresponding to :math:`S_{mod}` comes to lie
+          in the baseband. :math:`S_{mix}` is then low-pass filtered so that
+          only the baseband passes. The ideal “brick-wall” filter,
+          :math:`H_{avg}`, lets frequency components below the cut off pass
+          freely and completely blocks all others. As the noise is much more
+          broadband than the signal, much of it gets removed along with the
+          high-frequency copy of :math:`S_{in}`. The modulation signal with
+          little remaining noise is given by the amplitude of the complex
+          output, :math:`s_{out}`.
+
+Down-Mixing
+'''''''''''
+
+Fourier relation :eq:`c_sinusoid` spells out that the Fourier transform of
+:math:`s_{ref}(t)`, given by :eq:`s_ref_ideal`, is a frequency-shifted Delta Dirac
+distribution scaled by a factor two.
+
+.. math:: 
+     :label: S_ref_FD
+          
+          S_{ref}(f) = 2\delta\left( f + f_{ref} \right)
+
+
+The first step in demodulation (see :numref:`AM_DP_LIA` b) - multiplication of the
+input with the reference signal - is a convolution of the two in the
+frequency domain :eq:`mu`. It can be computed using :eq:`dirac_shift`. This step
+introduces negative shift of the frequency spectrum by :math:`f_{ref}`
+hence the name down-mixing.
+
+.. math:: 
+     :label: S_mix_FD
+          
+          S_{mix}(f) = S_{in}(f)*S_{ref}(f) = S_{in}(f)*2\delta\left(f + f_{ref} \right) = 2S_{in}\left( f + f_{ref} \right)
+
+
+With the amplitude modulated input under consideration, :math:`S_{mix}` is given by the
+following expression.
+
+.. math:: 
+     :label: S_mix_FD_002
+          
+          S_{mix}(f) = {e^{i\varphi_{car}}S}_{mod}\left( f - f_{car}{+ f}_{ref} \right) + {e^{- i\varphi_{car}}S}_{mod}\left( f + f_{car} + f_{ref} \right)+ \ 2\ S_{\sigma}\left( f + f_{ref} \right)
+
+
+
+If the reference frequency approximately matches the carrier frequency,
+one part of the duplicated frequency spectrum comes to lie in the
+baseband. The other portion is shifted to a highly negative frequency
+band. If in addition\ :math:`\ f_{ref} = f_{car}`, the baseband
+component of the signal coincides with the spectrum of the modulation
+signal up to a phase shift. (The noise is shifted in frequency too.)
+
+Low-Pass Filtering
+''''''''''''''''''
+
+At this point, the purpose of the filtering step in lock-in
+amplification is straightforward. The baseband component of the signal,
+the first term in equation :eq:`S_mix_FD_002`, is the only one of interest. To
+retrieve the modulation signal, its high-frequency copy and as much
+noise as possible ought to be removed by a low-pass filter.
+
+In the frequency domain, applying a low-pass filter amounts to
+multiplying with its frequency response, :math:`H_{avg}`. Lock-in
+amplification is thus captured by a simple equation, which expresses a
+frequency shift of the input followed multiplicative,
+frequency-dependent scaling of spectral components.
+
+.. math:: 
+     :label: S_out_FD
+          
+          S_{out}(f) = S_{mix}(f){\times H}_{avg}(f)= 2S_{in}\left( f + f_{ref} \right){\times H}_{avg}(f)
+
+
+
+
+Inserting expressions for the frequency response of the ideal low-pass
+filter :eq:`h_avg_ideal` and :math:`S_{mix}` :eq:`S_mix_FD_002`, yields the output when used in
+demodulation of a noisy signal.
+
+.. math:: 
+     :label: S_out_FD_002
+          
+          S_{out}(f) = {e^{i\varphi_{car}}S}_{mod}\left( f - f_{car}{+ f}_{ref}\right) \cdot rect\left( \frac{f}{{2f}_{c}} \right) \\
+          + {{\ e}^{- i\varphi_{car}}S}_{mod}\left( f + f_{car} + f_{ref}\right) \cdot rect\left( \frac{f}{{2f}_{c}} \right) \\
+          + \ 2{\cdot S}_{\sigma}\left( f + f_{ref}\right) \cdot rect\left( \frac{f}{{2f}_{c}} \right)
+
+          
+
+Ignoring the noise term for now and assuming a finite modulation
+bandwidth, three cases depending on filter cut-off may be distinguished,
+analogous to those discussed in time-domain (see :numref:`LIA_monofreq` c):
+
+I.  If the filter bandwidth is too narrow compared to the frequency
+    spectrum of modulation signal, a non-negligible part of its power
+    can be chucked away by the filter. A distorted version of the
+    modulation signal is retrieved.
+
+II. With an appropriate cut-off frequency of the ideal filter, the
+    baseband term alone is extracted. This is the usual, desired
+    behavior in dual-phase demodulation.
+
+    .. math:: 
+     :label: S_out_FD_003
+          
+          S_{out}(f) = {e^{i\varphi_{car}}S}_{mod}\left( f - f_{car}{+ f}_{ref} \right) 
+
+
+    Using the modulation property :eq:`mo`, the time-domain output can be
+    deduced from :eq:`S_out_FD_003`.
+
+    .. math:: 
+     :label: S_out_FD_004
+               
+          s_{out}(t) = {e^{i{(2\pi(f_{car}{- f}_{ref})t + \varphi}_{car})}s}_{mod}(t)  
+
+
+
+
+    The oscillatory component in :eq:`S_out_FD_004` is generally of low frequency or
+    entirely constant, as :math:`{\ f}_{ref}` is usually chosen to match
+    :math:`f_{car}`. Converting the output to polar
+    coordinates allows to retrieve the original modulation signal in the
+    lock-in amplitude.
+
+    .. math:: 
+     :label: S_out_FD_005
+               
+          A_{out}(t) &= s_{mod}(t) \\
+          \varphi_{out}(t) &= {2\pi\left( f_{car}{- f}_{ref} \right)t + \varphi}_{car}   
+
+
+III. Using a filter that is too broad, high frequency components from
+     the :math:`2f` spectral component may enter the output.
+
+The frequency domain picture also illustrates nicely how noise is
+suppressed by the filter (see :numref:`AM_DP_LIA` b). Noise is usually more
+broadband than the modulation signal. Wherever there is no overlap with
+extracted modulation spectrum, it can be removed without penalty. The
+noise spectrum and its overlap with the signal give therefore a
+supplementary criterion for tuning the filter bandwidth.
+
+Smart Pixel Image Sensor
+------------------------
+
+The lock-in principle presented above is implemented directly in the
+heliCam\ :sup:`TM` C4’s specially designed camera sensor, the
+proprietary heliSens\ :sup:`TM` S4. Its pixel sensor units register the
+light intensity in a precisely clocked, periodic fashion and promptly
+process acquired signals. In the following, several sensor-related
+concepts are introduced, which may help with the operation of the
+lock-in camera.
+
+.. _Temporal_Sequence:
+
+Temporal Sequence
+~~~~~~~~~~~~~~~~~
+
+We have seen that lock-in detection uses prior knowledge about the time evolution of a
+signal's carrier to extract only the slow-varying, information-bearing
+part. Thus, the exact control of the temporal sequence of processing
+steps is predictably crucial for the realization of this principle in a
+physical system.
+
+Trigger Signals
+^^^^^^^^^^^^^^^
+
+The heliSens\ :sup:`TM` S4 relies on trigger signals to schedule its
+operation (:numref:`sensor_principle` a). These control signals are tightly linked to
+configuration options. Understanding of how they structure the lock-in
+process helps exploit the full performance of the heliCam\ :sup:`TM` C4.
+Trigger signals can be generated camera-internally and then operate
+unbeknownst to the user. However, many experiments require pinpoint
+temporal synchronization to other elements of the set up. For these
+cases, the heliCam\ :sup:`TM` C4 offers the possibility to provide
+external trigger signals.
+
+Period
+^^^^^^
+
+The heliCam\ :sup:`TM` C4 initiates a measurement upon receiving a
+recording trigger. Thereafter, the pace is dictated by the reference
+trigger signal, a pulse wave which by default determines - roughly
+speaking - the start of a new period of the reference signal. In the
+heliSens\ :sup:`TM` S4, this period also imposes constraints on the
+filtering and sampling during analogue to digital conversion.
+
+Frame
+^^^^^
+
+The optical input generally depends on the location of the pixel on the
+image sensor that records it. Each pixel can be interpreted to perform a
+multiplication of the local input, :math:`s_{in}(t,x,y)`, with a spatially uniform, effective
+reference signal, :math:`s_{ref}(t)`, followed by an integration over a
+selectable number of full periods, :math:`N_{P}`. The result of this
+averaging is a frame (with complex pixel values due to the dual-phase
+nature of the lock-in implementation). Multiple frames are acquired in
+instant succession.
+
+In short, a single pixel with discrete indices :math:`x` and :math:`y`, according
+to its spatial location in pixel coordinates, takes the following value
+in the :math:`m^{th}` frame.
+
+.. math:: 
+     :label: s_out_frame_001
+          
+         s_{out,\ m}\lbrack x,y\rbrack = \int_{t_{m} - \frac{T_{m}}{2}}^{t_{m} + \frac{T_{m}}{2}}{s_{in}(t,x,y)s_{ref}(t)dt} 
+
+
+Here, :math:`t_{m}` is the timestamp at the center of the interval
+feeding into the frame and :math:`T_{m}` is its duration. :math:`T_{m}`
+is given by the sum of the periods making up frame :math:`m`.
+
+Lock-in amplification in the heliSens\ :sup:`TM` S4 can be brought in
+line with the view presented in the previous section, by expressing the
+output as a sequence of a mixing, a filtering, and a sampling step. To
+this end, the integral over a finite interval in :eq:`s_out_frame_001` is restated as a
+convolution with a rectangular function evaluated a single point in
+time.
+
+.. math:: 
+     :label: s_out_frame_002
+          
+         s_{out,\ m}\lbrack x,y\rbrack = \left( h_{avg}*\left( s_{in}{(x,y) \times s}_{ref} \right) \right)\left( t_{m} \right)
+
+
+, where :math:`h_{avg}` is the impulse response of a central moving
+average filter with window length :math:`T_{m}`.
+
+.. math:: 
+     :label: h_avg_frame
+          
+         h_{avg}(t) = rect\left( \frac{t}{T_{m}} \right)
+
+
+With an irregular reference trigger, the starts of a period are uneven. 
+But normally, periods are of uniform duration so that
+the filter width is also a constant, :math:`T = T_{m}\ \forall\ m\ `. In
+this case, which is presumed from here onwards, frame acquisition is
+regularly spaced in time with sampling period :math:`T`.
+
+Quarter Period
+^^^^^^^^^^^^^^
+
+Again, the heliSens\ :sup:`TM` S4 performs *dual-phase* demodulation. As
+in the previous introduction to lock-in amplification, the notation of
+this twofold process is condensed using a single, yet complex reference
+signal, :math:`s_{ref}` (see :numref:`sensor_principle` b). Its imaginary part,
+accounting for the second demodulation, is also shifted by a quarter
+period with respect to the real part. Both these signal components are
+well-approximated by a pulse wave with two short, equally spaced pulses
+per period - every other pulse having a negative sign. :math:`s_{ref}`
+‘s fundamental frequency is the reference frequency :math:`f_{ref}` (cf.
+:numref:`lock_in_amplification_real`).
+
+Since by default, the external reference trigger signal is deemed to
+oscillate between two values *at the reference frequency*, it ordinarily
+signals the onset of a period. Yet to realize the effective reference
+signal, :math:`s_{ref}`, the heliSens\ :sup:`TM` S4 needs an indication
+of the start of each quarter period. This timing information is
+extracted from the external reference trigger by a programmable
+processing unit for frequency scaling to a power of two. With baseline
+settings it performs frequency multiplication by four behind the scenes.
+
+.. _in_pixel_processing:
+
+Processing in Pixel
+~~~~~~~~~~~~~~~~~~~
+
+Understanding how the camera sensor, heliSens\ :sup:`TM` S4, uses this
+derived quarter-period trigger to do lock-in amplification with a pulse
+wave as reference, demands an additional information layer.
+
+Like other image sensors, the heliSens\ :sup:`TM` S4 is an array of
+light-sensitive semiconductor devices, called photodiodes, which convert
+the incidence of photons to an electric current. Photodiodes integrate
+the intensity of the light they receive in a time interval. In the
+heliSens\ :sup:`TM` S4, they do so over the duration of single quarter
+periods (see :numref:`sensor_principle` c). The fraction of the full quarter period
+during which the photodiode is sensitive to light, :math:`p_{s}`, is
+configurable up to a hardware overhead of :math:`< 2\mu s`.
+
+The signal thus retrieved in each quarter period constitutes the basic
+building block from which the lock-in output is synthesized by simple
+addition and subtraction.
+
+.. math:: 
+     :label: s_qp
+          
+         s_{m,n,qp}\lbrack x,y\rbrack = \int_{p_{s} \times t_{{qp}_{m,n}}}^{}{s_{in}(t,x,y)dt}
+
+
+, where :math:`t_{qp}` is the duration of a quarter period, identified
+unambiguously by indices :math:`m`, :math:`n` and :math:`qp`.
+
+-  :math:`m \in \left\{ 1,...,N_{F} \right\}` specifies in which of
+   :math:`N_{F}` frames acquired the quarter period is situated.
+
+-  :math:`n \in \left\{ 1,...,N_{P} \right\}` indicates in which of the
+   :math:`N_{P}` periods of frame :math:`m` the quarter period is
+   situated.
+
+-  :math:`qp \in \left\{ I,II,II,IV \right\}` specifies which quarter
+   period in period :math:`n` it is\ *.*
+
+From this element, a complex lock-in signal per period is computed.
+
+.. math:: 
+     :label: s_p
+
+     s_{m,n}\lbrack x,y\rbrack = s_{m,n,I}\lbrack x,y\rbrack + {i\cdot s}_{m,n,II}\lbrack x,y\rbrack - s_{m,n,III}\lbrack x,y\rbrack - {i \cdot s}_{m,n,IV}\lbrack x,y\rbrack
+
+In each pixel, the contributions of :math:`N_{P}` individual periods are
+summed up into a frame.
+
+.. math:: 
+     :label: s_out_frame_003
+
+     
+     s_{out,\ \ m}\lbrack x,y\rbrack = \sum_{n = 1}^{N_{P}}{s_{m,n}\lbrack x,y\rbrack} 
+
+These sums and differences of the basic element
+:math:`s_{m,n,qp}\lbrack x,y\rbrack` can be executed with low power
+dissipation and small footprint within the architecture of the
+individual smart pixel.
+
+.. figure:: img/sensor_principle.png
+      :name: sensor_principle
+      :align: center
+      :width: 97.5%
+
+      Operational Sequence in the heliSens\ :sup:`TM` S4
+
+      a.  The recording trigger prompts the start of a recording. Subsequently, 
+          the beginning of each period of the effective reference signal is 
+          prompted by the reference trigger. A frame holds a complex value 
+          for each pixel. It is the result of integrating the input mixed 
+          with the complex, effective reference signal, :math:`s_{ref}`, over an 
+          adaptable number of full periods. :math:`T` is both the window width of 
+          the equivalent central moving average filter, :math:`h_{avg}`, and the 
+          sampling period.
+	 
+      b.  The heliSens\ :sup:`TM` S4 needs a trigger impulse every quarter period 
+          to realize the effective signal as it is a modified complex pulse 
+          wave with rectangular impulses at that same rate. By default, the 
+          input reference trigger is meant to oscillate with the reference 
+          frequency, which is normally chosen to match the input’s carrier 
+          frequency. The desired quarter period trigger is deduced from the 
+          reference trigger via frequency scaling.
+	 
+      c.  In every quarter period, the image sensor’s photodiodes integrate 
+          the intensity of the incident light. Except for an overhead, the 
+          light-sensitive proportion of the full period is configurable. The 
+          acquired signal in a single pixel forms the basic unit from 
+          which the lock-in output at that site is assembled via simple summation 
+          and subtraction. Although intermediate steps are executed in a different 
+          order, the output is strictly the same as when described in terms of 
+          multiplicative mixing with :math:`s_{ref}` and convolutive filtering with
+          :math:`h_{avg}`.Please note that the schematic illustrates the scenario 
+          with an internal reference trigger signal. When an external reference 
+          trigger is used instead, the non-sensitive segment shifts entirely 
+          to the end of the quarter period.
+
+
+Effective Signal Processing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following paragraph offers an implementation-oriented model of the
+signal processing in a single pixel of the heliCam\ :sup:`TM` C4, which
+is more accurate than the previous analysis of ideal lock-in
+amplification. For advanced experiments, the implications of this
+specific implementation may become significant for an informed choice of
+camera settings and accurate interpretation of measurement results. The
+preceding explanation of the image sensor’s operation principle implies
+two consequential deviations from the ideal; both the reference signal,
+:math:`s_{ref}`, and the filter’s impulse response, :math:`h_{avg}`,
+differ from their ideal counterparts.
+
+Mixing with a Pulse Wave
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+As argued above, a pulse wave is a good approximation of the effective
+reference signal of the heliCam\ :sup:`TM` C4. This pulsed approximation
+of :math:`s_{ref}` can be represented analytically in a plethora of
+ways. The option chosen here is conceptually close to the hardware
+implementation. :math:`s_{ref}` is viewed as the convolution of the
+rectangular sensor response in a single quarter period and a modified
+Dirac comb (see :numref:`lock_in_amplification_real` a).
+
+.. math:: 
+     :label: s_ref_real
+
+     s_{ref}(t) = 2 \cdot rect\left( \frac{t}{\frac{p_{s}}{4f_{ref}}} \right)*\left( e^{- i2\pi f_{ref}t} \cdot \sum_{n\mathbb{\in Z}}{\delta\left( t - \frac{n}{4f_{ref}} \right)} \right) 
+
+
+
+The sensor is uniformly responsive in a fraction :math:`p_{s}` of the
+full quarter period :math:`\left( 4 \cdot f_{ref} \right)^{- 1}`,
+which determines the width of the first, “boxcar”-like function. The
+spacing between spikes of the modified Dirac comb is a quarter period,
+indicating the timing of individual acquisitions. Spikes are alternately
+real and imaginary. Their sign flips after each consecutive pair to
+account for subtraction and summation quarter-periodic measurement
+results.
+
+An advantage of this complicated representation is that its frequency
+domain representation can be broken down to basic relations :eq:`co`,
+:eq:`mo`, :eq:`rect` and :eq:`dirac_comb`, found in the summary on the Fourier Transform.
+
+.. math:: 
+     :label: s_ref_real_FD
+
+     S_{ref}(f) &= \mathcal{F}\left\{ 2 \cdot rect\left( \frac{t}{\frac{p_{s}}{4f_{ref}}} \right) \right\}(f) 
+     \times \mathcal{F}\left\{ e^{- i2\pi f_{ref}t} \times 
+     \sum_{n\mathbb{\in Z}}^{}{\delta\left( t - \frac{n}{4f_{ref}} \right)} \right\}(f) \\ 
+     &= 2\sum_{k\mathbb{\in Z}}^{}{p_{s}sinc\left( p_{s}\left( k - \frac{1}{4} \right) \right) \times \delta\left( f + f_{ref} - 4kf_{ref} \right)}   
+
+
+
+
+In contrast to the ideal case, the reference signal comprises also
+non-zero components at frequencies other than
+:math:`( - {)1 \times f}_{ref}`, namely at
+:math:`( + ){3 \times f}_{ref},\ ( - {)5 \times f}_{ref},( - {)7 \times f}_{ref}`
+and so forth. They are called odd harmonics of the fundamental frequency
+:math:`f_{ref}`. The :math:`sinc` term determines the magnitude with
+which these frequencies appear in the reference signal. Although higher
+frequencies components tend to be attenuated more, not all higher odd
+harmonics are insignificant compared to the first harmonic. The
+potential to selectively reduce their prominence is limited by the fact
+that :math:`p_{s}`, being the fraction of the quarter period in which
+photodiodes are sensitive, cannot exceed 1.
+
+Mixing is described analogous to :eq:`s_mix_ideal` in time- and to :eq:`S_mix_FD` in frequency
+domain (see :numref:`lock_in_amplification_real` b).
+
+
+
+.. math::
+     :label: s_mix_real
+
+     s_{mix}(t) = s_{in}(t) \times s_{ref}(t) = s_{in}(t) \times 2\sum_{n\mathbb{\in Z}}^{}{e^{- i2\pi\frac{n}{4}}rect\left( \frac{4f_{ref}t - n}{p_{s}} \right)}
+.. math::  
+
+     \Bigg\downarrow\mathcal{F}
+
+.. math::
+
+     S_{mix}(f) = S_{in}(f)*S_{ref}(f) = 2\sum_{k\mathbb{\in Z}}^{}{p_{s}sinc\left( p_{s}\left(k - \frac{1}{4} \right) \right) \times S_{in}\left( f + f_{ref} - 4kf_{ref} \right)}
+
+
+.. figure:: img/lock_in_amplification_real.png
+     :name: lock_in_amplification_real
+     :align: center
+     :width: 100%
+
+     Effective Reference Signal and Dual-Phase Demodulation
+
+     In both a. and b., time-domain (TD) signals :math:`s_{\cdot}(t)` are
+     depicted left alongside their frequency domain (FD) representations
+     :math:`S_{\cdot}(f)` on the right.
+
+     a.   Synthesis of the Effective Reference Signal in TD (left) and FD
+          (right) from elementary components.
+          
+          In TD, a Dirac comb indicating
+          quarter periodic sampling is multiplied with the ideal complex
+          reference oscillation to indicate how individual samples are weighted
+          when summed together. The result is convolved with the rectangular
+          sensor sensitivity response in a single quarter period to yield the
+          effective reference signal, :math:`s_{ref}` of the image sensor
+          heliSens\ :sup:`TM` S4. :math:`s_{ref}` differs from the ideal case in that it
+          contains non-zero frequency components at odd harmonics of the
+          fundamental reference frequency, :math:`f_{ref}`. Moreover, the
+          salience of all these components, inclusively that at reference
+          frequency, is given by the :math:`sinc` of their frequency.
+
+     b.   Demodulation of an amplitude modulated input with a complex pulse
+          wave as reference and a rectangular filter.
+          
+          The demodulation process
+          is analogous to the ideal case but for a different reference signal
+          and filter. The filter width is also the sampling period. This final
+          sampling step is not shown. In contrast to the ideal case, mixing not only shifts the input spectrum
+          by the reference frequency. Each odd harmonic component in the reference
+          signal produces a frequency-shifted copy, according to its own
+          magnitude. Input frequency components around each odd multiple of the
+          reference frequency end up in the baseband. The lock-in amplifiers that
+          use a pulse wave such as the heliCam\ :sup:`TM` C4 are therefore
+          sensitive to odd harmonics of the reference frequency.
+
+
+
+Rectangular Filter and Sampling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The frequency response of the rectangular averaging filter :eq:`h_avg_frame` is a
+:math:`sinc` according to :eq:`rect`.
+
+.. math::
+     :label: H_avg_FD_real
+
+     H_{avg}(f) = T \cdot sinc(T \cdot f) 
+
+
+The (continuous) output signal is obtained by convolution of the mixed
+signal :math:`s_{mix}` with the filter’s impulse response
+:math:`h_{avg}` (see :numref:`lock_in_amplification_real` b) like in the ideal case :eq:`s_out_ideal`. In the
+frequency domain, again, this corresponds to a multiplication with the
+filter’s frequency response :math:`H_{avg}`.
+
+.. math::
+     :label: s_out_real
+
+     s_{out}(t) &= h_{avg}(t)*s_{mix}(t) \\ &= 
+     2 \cdot rect\left( \frac{t}{T} \right)*\left( s_{in}(t) \times 
+     \sum_{n\mathbb{\in Z}}^{}{e^{- i2\pi\frac{n}{4}}rect\left( \frac{4f_{ref}t- n}{p_{s}} \right)} \right)
+
+.. math::  
+
+     \Bigg\downarrow\mathcal{F}
+
+.. math::
+
+     S_{out}(f) &= H_{avg}(f) \times S_{mix}(f)\\  
+     &= 2 \cdot T \cdot sinc(T \cdot f) \times \sum_{k\mathbb{\in Z}}{p_{s}
+     sinc\left( p_{s}\left( k - \frac{1}{4} \right) \right) \cdot S_{in}\left( f + f_{ref}- 4kf_{ref} \right)}
+
+
+The low-pass filter still extracts the baseband after the input is
+subjected to down-mixing. Yet unlike an ideal filter, not all the
+baseband components are treated with precise uniformity. They rather
+pass with the :math:`sinc` of the frequency. Moreover, the filter cannot
+selectively remove generally undesirable parts of the signal -
+associated with higher odd harmonics - from the baseband.
+
+The output of the heliCam\ :sup:`TM` C4 is not actually continuous but
+expression :eq:`s_out_real` is sampled with time constant :math:`T`, the filter
+width. In the frequency domain, sampling is a periodization of the
+spectrum and aliasing occurs if the modulation signal’s highest
+frequency is above the Nyquist frequency.
+
+.. _background_suppression:
+
+Background Suppression
+~~~~~~~~~~~~~~~~~~~~~~
+
+Lock-in amplification, as presented above, is in principle insensitive
+to large DC offsets on input signals (see :numref:`bg_suppression` a). By measuring
+differences in input intensity at different moments during the period, a
+constant offset theoretically cancels out.
+
+In practice, the dynamic range of image sensors is limited (see :numref:`bg_suppression` b). 
+If photodiodes register too many photon arrivals in one go, they
+saturate. As uniformly saturated measurements propagate through the
+in-pixel processing, they can erroneously result in an absence of AC
+signal.
+
+To circumvent this issue, the heliCam\ :sup:`TM` C4 offers a background
+suppression mechanism (see :numref:`bg_suppression` c). If background suppression is
+enabled, the first period in each frame is reserved to register the
+input intensity (at the end of the period). This value is then
+subtracted as background from the input during the rest of the frame,
+when lock-in amplification is performed - thus effectively preventing
+saturation due to large constant background signals. Suppressing the
+background is only recommended if the DC offset is much larger than the
+AC amplitude.
+
+This background suppression is referred to as AC coupling because its
+implementation is analogous to the namesake recording modality of a
+conventional lock-in amplifier or an oscilloscope. Consequentially, the
+operation mode without background suppression is called DC coupling.
+
+
+.. raw:: latex
+
+     \begin{landscape}
+
+.. figure:: img/background_suppression.png
+     :name: bg_suppression
+     :align: center
+     :width: 92.5%
+
+     Background Suppression / AC-Coupling
+
+     a) Demodulation of square wave without saturation limit. b) If the
+     input’s DC background is large, photodiodes saturate in each quarter
+     periodic measurement. Integrating them into a frame erroneously
+     produces no AC-signal. c) With enabled AC coupling, the background is
+     measured in the frame’s first period and subtracted from subsequent
+     frames to avoid saturation.
+
+
+.. raw:: latex
+
+     \end{landscape}
+
+
+
+.. _reference_signal_synthesis:
+
+Reference Signal Synthesis
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once the functionality of the sensor is understood, the parametrization
+of the effective reference signal through lock-in camera features can be
+explained clearly (cf. :numref:`graphical_summary`). Such parameters and important
+selection options are printed in **bold** below.
+
+As described earlier, the basic building block of the sensor schedule is
+the quarter period. The pace of the reference signal, to which the input is compared, is
+determined by a trigger indicating the start of each new quarter period.
+How this trigger is obtained, depends on the **Reference Source Type:**
+
+-  **Internal:** The heliCam\ :sup:`TM` ’s internal clock signals the
+   onset of each quarter period. Another quarter period is automatically
+   initiated when the sensor operation in the preceding one is finished.
+   The fixed time it takes the sensor to run a quarter
+   periodic measurement sequence, :math:`t'_{qp}`, is derived from the
+   configurable **Reference Frequency,**
+   :math:`\mathbf{f'}_{\mathbf{ref}}`.
+
+   .. math::
+     :label: t_qp
+
+     t'_{qp} = \frac{1}{ 4 \cdot \mathbf{f'}_{\mathbf{ref}} }\ \ \ \ \ (\mathbf{internal}\ reference)
+   
+   In this case, the **Reference Frequency** feature value, :math:`\mathbf{f'}_{\mathbf{ref}}`, corresponds
+   directly to the frequency of the effective reference signal,
+   :math:`f_{ref}`. Equivalently, :math:`t'_{qp}` coincides with the effective quarter period duration, :math:`t_{qp}`.
+
+   The camera feature **Sensitivity** determines the fraction of
+   :math:`t'_{qp}` during which the sensor is light-sensitive and
+   corresponds to :math:`p_{s}` from the previous paragraph.
+
+   .. math::
+     :label: t_s
+
+     t_{s} = p_{s} \times t'_{qp} 
+
+
+   , were :math:`t_{s}` denotes the photoreceptive portion of the quarter
+   period. Viewed like this, the **Sensitivity** controls the duty cycle of
+   the effective reference pulse wave.
+
+-  **External:** A reference input (rect wave, 0-5 V) from an external source, potentially
+   processed camera-internally, triggers the onset of a new quarter
+   period in the responsive period after the completion of the fixed
+   sensor operation sequence in its predecessor. This trigger – and not
+   the set **Reference Frequency** – dictates :math:`s_{ref}`\ ’s
+   effective frequency in the external mode. Additional parameters
+   influence the effective reference signal.
+
+   -     The **Reference Frequency Scaler** multiplies or divides the
+         frequency of the trigger input by a select factor,
+         :math:`\mathbf{M}` - in addition to a multiplication by
+         four since the sensor needs indication of the quarter period
+         rather than the period onset. With all factors
+         :math:`\mathbf{M}` other than “DivideBy4”, establishing the
+         reference frequency thus involves averaging incoming discrete
+         pulses (evaluated once immediately prior to the onset of the recording). 
+         Alone with the setting :math:`\mathbf{M}` = “DivideBy4”
+         is the incoming signal directly routed to the sensor, where
+         each pulse triggers a new quarter period.
+
+   -     If a trigger signal arrives "too early", i.e., when
+         the sensor is still busy, the impulse is missed and an erroneous 
+         shift by a quarter period introduced. To minimize the chances
+         of that happening, the explicit non-sensitive portion of the sensor's
+         quarter period schedule is completely scrapped. After the exposed 
+         part, :math:`t_{s}`, (configurable by the **Sensitivity** feature
+         :math:`p_{s}`) the sensor is directly receptive to the next quarter 
+         period trigger. The exposed piece is thus not centered with respect
+         to the quarter period as with internal reference triggering, but 
+         comes right after the trigger.
+         The **Expected Frequency Deviation**, :math:`\mathbf{d}`, gives an
+         additional security margin that is necessary should the reference trigger’s
+         frequency be unsteady and :math:`p_{s}` be close to one.  It is accounted for in the computation of the fixed
+         duration of sensor activity per quarter period :math:`t'_{qp}`.
+         The minimal effective quarter period duration, :math:`t^{min}_{qp}`
+         is hence the same as :math:`t'_{qp}` and :math:`t_{s}`.
+
+     .. math::
+          :label: t_qp_external_reference
+
+          t^{min}_{qp}=t'_{qp}=t_{s}= \frac{p_{s}}{ 4 \cdot \mathbf{f'}_{\mathbf{ref}} \cdot \left( 1+\mathbf{d}/100\%\right)}\ \ \ \ \ (\mathbf{external}\ reference)
+
+     .. note::
+          Increased trigger timing error tolerance comes at the cost of a reduced
+          signal amplitude and **Expected Frequency Deviation** is ignored 
+          in the internal reference mode.
+
+.. raw:: latex
+
+    \newpage
+
+.. note::
+
+     The heliSens\ :sup:`TM` S4 has a clock frequency of 80 MHz :math:`\Rightarrow` clock 
+     cycle, :math:`t_c` = 12.5 ns. Thus, actually feasible **Reference Frequency** 
+     values, :math:`\mathbf{f'}_{\mathbf{ref}}`, are inverse multiples of :math:`t_c\ \times\ 4` - to account for all quarter periods.
+
+     .. math::
+          :label: actual_f_ref
+
+          \mathbf{f'}_{\mathbf{ref}} = \frac{1}{n\cdot 4 \cdot t_c},\ n\in\left\{146,\ ...,2^{16}\right\}
+          \Rightarrow \Delta\mathbf{f'}_{\mathbf{ref}} = 
+          \frac{\mathbf{f'}_{\mathbf{ref}}}{ 4 \cdot t_c \cdot {\mathbf{f'}_{\mathbf{ref}}}^{-1}}-\mathbf{f'}_{\mathbf{ref}}
+          \approx 4 \cdot tc \cdot {\mathbf{f'}_{\mathbf{ref}}}^{2}
+
+     In **Internal** reference mode, the effective reference frequency, :math:`f_{ref}`, 
+     is restricted to these values. With an **External** reference, other 
+     frequencies may be fed in, but individual trigger pulses are registered 
+     only with a time resolution of :math:`\pm t_c`. This can produce a 
+     period-to-period jitter of the effective :math:`f_{ref}`.

@@ -1,0 +1,12 @@
+﻿<AdaptiveVisionProject Name="h8SurfRemoveOutliers" Version="5.1.8" Revision="88964" Product="Professional" StartUpProgramName="Main">
+  <RuntimeExecutableSettings>
+    <OutputPath>C:\Users\HELEMBDMF\Desktop\simple.avexe</OutputPath>
+  </RuntimeExecutableSettings>
+  <Files>
+    <Program Path="h8SurfRemoveOutliers.avcode" />
+    <View Path="h8SurfRemoveOutliers.avview" />
+    <Lib Path="heliLib.avlib" />
+	<Lib Path="dat/heliLibHelper.avlib" />
+    <UserFilters Path64="UserFilters\heliotisfilter_x64.dll" />
+  </Files>
+</AdaptiveVisionProject>

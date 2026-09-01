@@ -1,0 +1,258 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TN_19.4.0.1: Scan Motion Monitoring (zTag-reading) &mdash; Technical Notes for heliotis gen4 Devices 2025.09 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=0ac42c78" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=200dd705"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TN_19.9.0.0: First/Last Surface Extraction" href="../tn_19.9.x.y/tn_19.9.x.y.html" />
+    <link rel="prev" title="TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss" href="../tn_19.3.x.y/tn_19.3.x.y.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Technical Notes for heliotis gen4 Devices
+              <img src="../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.1.x.y/tn_15.1.x.y.html">TN_15.1.0.1: heliBrd B4 SD Card Re-Writing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.2.x.y/tn_15.2.x.y.html">TN_15.2.0.0: Adjust 3D Data Scaling and Offset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.3.x.y/tn_15.3.x.y.html">TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.1.x.y/tn_19.1.x.y.html">TN_19.1.0.1: UserSet - A short Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.10.x.y/tn_19.10.x.y.html">TN_19.10.0.1: Configuring Offset (FPN) Correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.2.x.y/tn_19.2.x.y.html">TN_19.2.0.1: Configuring the Optic Type</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.3.x.y/tn_19.3.x.y.html">TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#challenge-monitoring-scan-motion-profile">Challenge: Monitoring Scan Motion Profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#implementation">Implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interpretation">Interpretation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.9.x.y/tn_19.9.x.y.html">TN_19.9.0.0:  First/Last Surface Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_51.1.x.y/tn_51.1.x.y.html">TN_51.1.0.0: Heliotis Gen4 Device Fieldbus Reference for D3</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Technical Notes for heliotis gen4 Devices</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <a href="../_pdf/tn_19.4.x.y.pdf" target="_blank">PDF version</a><section id="tn-19-4-0-1-scan-motion-monitoring-ztag-reading">
+<span id="scan-motion-monitoring"></span><h1>TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)<a class="headerlink" href="#tn-19-4-0-1-scan-motion-monitoring-ztag-reading" title="Link to this heading"></a></h1>
+<section id="challenge-monitoring-scan-motion-profile">
+<span id="scan-motion-monitoring-challenge"></span><h2>Challenge: Monitoring Scan Motion Profile<a class="headerlink" href="#challenge-monitoring-scan-motion-profile" title="Link to this heading"></a></h2>
+<p>For precise WLI measurements, it is essential that the measuring head moves at a
+well-controlled, constant speed with respect to the sample. Departures from this ideal case
+can occur due to sample movement (see <a class="reference internal" href="../tn_19.3.x.y/tn_19.3.x.y.html#reducing-vibration-induced-wli-amplitude-loss"><span class="std std-ref">TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss</span></a>)
+or irregular scan stage motion. Detecting the latter for monitoring and optimization
+purposes is the subject of this technical note.</p>
+<p>heliInspect devices keeps track of the motor stage position at the centre of each
+camera frame, see <a class="reference internal" href="#ztags"><span class="std std-numref">Fig. 8</span></a>. (In most operating modes, a surface and a reflectance
+image is extracted from the ensemble of these frames behind the scene.) The motor
+feedback, or more precisely the <em>motor encoder values</em>, can be retrieved as <em>zTags</em>
+from the same buffer as other measurements data.</p>
+<figure class="align-center" id="id1">
+<span id="ztags"></span><a class="reference internal image-reference" href="../_images/zTags.png"><img alt="../_images/zTags.png" src="../_images/zTags.png" style="width: 95%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 8 </span><span class="caption-text">Illustration of heliInspect zTag Output Alongside In-Pixel Signal Processing</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+<div class="legend">
+<p>In every scan with a heliInspect, a stack of frames is recorded.
+Each individual frame represents the instantaneous envelope (and phase shift) of a
+high-frequency input signal in a spatially resolved manner. The camera also extracts the
+central motor position, or zTag, in terms of (integer) motor encoder increments for
+each frame. In most cases, these data are processed directly on the camera to determine
+the interpolated peak position, which corresponds to the surface position in every
+pixel. Other possible outputs of such processed extraction modes are the value of the envelope
+or the phase shift at the signal peak.</p>
+</div>
+</figcaption>
+</figure>
+</section>
+<section id="implementation">
+<span id="scan-motion-monitoring-implementation"></span><h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading"></a></h2>
+<p>To retrieve zTags, the camera must be configured to write them to the buffer containing
+measurement data as part of the so-called <em>chunk</em> components. Here are the corresponding
+instructions in the form of pseudo code.</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-number">Listing 14 </span><span class="caption-text">Enable and Configure Chunk Data</span><a class="headerlink" href="#id2" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># enable chunk data</span>
+<span class="n">ChunkModeActive</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ChunkSelector</span> <span class="o">=</span> <span class="s2">&quot;ZTagCount&quot;</span>
+<span class="n">ChunkEnable</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># enable zTag related chunk data</span>
+<span class="n">ChunkSelector</span> <span class="o">=</span> <span class="s2">&quot;ZTagValue&quot;</span>
+<span class="n">ChunkEnable</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This piece of code must be executed in the camera’s configuration mode prior to
+the start of the data acquisition.</p>
+</div>
+<p>After the measurement, each frame’s zTag can be retrieved by means of a loop.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-number">Listing 15 </span><span class="caption-text">Retrieving Device Data</span><a class="headerlink" href="#id3" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># accessing zTags included in chunk data (part of acquired buffer)</span>
+<span class="n">nofZTags</span> <span class="o">=</span> <span class="n">ChunkZTagCount</span>
+
+<span class="n">zTags</span> <span class="o">=</span> <span class="n">array</span> <span class="n">of</span> <span class="n">size</span> <span class="n">nofZTags</span>
+<span class="c1"># loop over all available zTag values (index from 0 to nofZTags-1)</span>
+  <span class="n">ChunkZTagSelector</span> <span class="o">=</span> <span class="n">index</span>
+  <span class="n">zTags</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">ChunkZTagValue</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This piece of code must be executed in the camera’s acquisition after the buffer
+carrying data has been fetched.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To properly terminate the loop, the number of zTags - or equivalently frames - is
+read directly from the buffer.</p>
+</div>
+<p>To convert the stage position of the <span class="math notranslate nohighlight">\(i^{th}\)</span> frame expressed as a zTag, <span class="math notranslate nohighlight">\(zTag[i]\)</span>,
+to physical units, they must be multiplied by the encoder resolution, <span class="math notranslate nohighlight">\(\Delta_{zTag}\)</span>.</p>
+<div class="math notranslate nohighlight" id="equation-ztag-unit-conversion">
+<span class="eqno">(1)<a class="headerlink" href="#equation-ztag-unit-conversion" title="Link to this equation"></a></span>\[z[i] = zTag[i] \cdot \Delta_{zTag}\]</div>
+<p>The encoder resolution can be read from the camera using the feature
+<code class="docutils literal notranslate"><span class="pre">EncoderResolution</span></code>.</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-number">Listing 16 </span><span class="caption-text">Retrieving Encoder Resolution</span><a class="headerlink" href="#id4" title="Link to this code"></a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># read encoder resolution in nm/tick</span>
+<span class="n">encoderRes</span> <span class="o">=</span> <span class="n">EncoderResolution</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="interpretation">
+<span id="scan-motion-monitoring-interpretation"></span><h2>Interpretation<a class="headerlink" href="#interpretation" title="Link to this heading"></a></h2>
+<p>An example of one adequate and one inadequate outcome of the stage position monitoring
+are shown in <a class="reference internal" href="#exampleztags"><span class="std std-numref">Fig. 9</span></a>.</p>
+<figure class="align-center" id="id5">
+<span id="exampleztags"></span><a class="reference internal image-reference" href="../_images/exampleZTags.png"><img alt="../_images/exampleZTags.png" src="../_images/exampleZTags.png" style="width: 95%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 9 </span><span class="caption-text">Satisfactory and Unsatisfactory Motion Profiles Measured via zTags and
+Converted to Physical Units</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
+<div class="legend">
+<p>In the former case, the scan parameters were selected to produce a linear, controlled stage
+movement. In the latter case a high <code class="docutils literal notranslate"><span class="pre">ScanSpeed</span></code> and a small <code class="docutils literal notranslate"><span class="pre">AccelerationRamp</span></code> were set.
+As a result, the scan speed is not yet stable during image acquisition, resulting in a
+non-linear movement.</p>
+</div>
+</figcaption>
+</figure>
+</section>
+<section id="document-history">
+<h2>Document History<a class="headerlink" href="#document-history" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Version</p></th>
+<th class="head"><p>Date</p></th>
+<th class="head"><p>Changes</p></th>
+<th class="head"><p>Responsible</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>19.4.0.0</p></td>
+<td><p>07-04-2025</p></td>
+<td><p>Initial version</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>19.4.0.1</p></td>
+<td><p>11-06-2025</p></td>
+<td><p>Review</p></td>
+<td><p>bm</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../tn_19.3.x.y/tn_19.3.x.y.html" class="btn btn-neutral float-left" title="TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tn_19.9.x.y/tn_19.9.x.y.html" class="btn btn-neutral float-right" title="TN_19.9.0.0: First/Last Surface Extraction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

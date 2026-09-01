@@ -1,0 +1,224 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChunkPartType &mdash; gen4 Devices Feature Description v1.11.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=38fd80f2" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=46dc9575"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ChunkZTagCount" href="ChunkZTagCount.html" />
+    <link rel="prev" title="ChunkPartFrameNo" href="ChunkPartFrameNo.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            gen4 Devices Feature Description
+              <img src="../../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Content</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../AcquisitionControl.html">AcquisitionControl</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../ChunkDataControl.html">ChunkDataControl</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ChunkModeActive.html">ChunkModeActive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkSelector.html">ChunkSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkEnable.html">ChunkEnable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkPartCount.html">ChunkPartCount</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkPartSelector.html">ChunkPartSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkPartFixpointScaling.html">ChunkPartFixpointScaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkPartFrameNo.html">ChunkPartFrameNo</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ChunkPartType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkZTagCount.html">ChunkZTagCount</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkZTagSelector.html">ChunkZTagSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkZTagValue.html">ChunkZTagValue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkScan3dDistanceUnit.html">ChunkScan3dDistanceUnit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkScan3dOutputMode.html">ChunkScan3dOutputMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkScan3dCoordinateSelector.html">ChunkScan3dCoordinateSelector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkScan3dCoordinateScale.html">ChunkScan3dCoordinateScale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkScan3dCoordinateOffset.html">ChunkScan3dCoordinateOffset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkProcessingString.html">ChunkProcessingString</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkConfigString.html">ChunkConfigString</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkPixelFormat.html">ChunkPixelFormat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkFrameID.html">ChunkFrameID</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ChunkTimestamp.html">ChunkTimestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../CounterAndTimerControl.html">CounterAndTimerControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DACDevice.html">DACDevice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DeviceControl.html">DeviceControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DigitalIOControl.html">DigitalIOControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EncoderControl.html">EncoderControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EventControl.html">EventControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExtractionControl.html">ExtractionControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FPGAControl.html">FPGAControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FieldbusControl.html">FieldbusControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FileAccessControl.html">FileAccessControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../HardwareControl.html">HardwareControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../HeliDriverControl.html">HeliDriverControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ImageFormatControl.html">ImageFormatControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../LightControl.html">LightControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../LockInControl.html">LockInControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../MiscControl.html">MiscControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../MotionControl.html">MotionControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../MotionFeatures.html">MotionFeatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../OpticControl.html">OpticControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../S4Device.html">S4Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Scan3dControl.html">Scan3dControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SensorControl.html">SensorControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SequencerControl.html">SequencerControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../TransferControl.html">TransferControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../TransportLayerControl.html">TransportLayerControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UserSetControl.html">UserSetControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../WLIControl.html">WLIControl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../appendix/Appendix.html">Appendix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">gen4 Devices Feature Description</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../ChunkDataControl.html">ChunkDataControl</a></li>
+      <li class="breadcrumb-item active">ChunkPartType</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="chunkparttype">
+<span id="id1"></span><h1>ChunkPartType<a class="headerlink" href="#chunkparttype" title="Link to this heading"></a></h1>
+<table class="docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p>Name</p></td>
+<td><p>ChunkPartType</p></td>
+</tr>
+<tr class="row-even"><td><p>Type</p></td>
+<td><p>Enumeration</p></td>
+</tr>
+<tr class="row-odd"><td><p>Visibility</p></td>
+<td><p>Expert</p></td>
+</tr>
+<tr class="row-even"><td><p>AccessMode</p></td>
+<td><p>RO</p></td>
+</tr>
+<tr class="row-odd"><td rowspan="14"><p>EnumEntry</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Unknown</p></td>
+</tr>
+<tr class="row-odd"><td><p>Surface</p></td>
+</tr>
+<tr class="row-even"><td><p>Amplitude</p></td>
+</tr>
+<tr class="row-odd"><td><p>Phase</p></td>
+</tr>
+<tr class="row-even"><td><p>Confidence</p></td>
+</tr>
+<tr class="row-odd"><td><p>pZglobal</p></td>
+</tr>
+<tr class="row-even"><td><p>pZlocal</p></td>
+</tr>
+<tr class="row-odd"><td><p>pZenvelope</p></td>
+</tr>
+<tr class="row-even"><td><p>pP</p></td>
+</tr>
+<tr class="row-odd"><td><p>unwrap_group</p></td>
+</tr>
+<tr class="row-even"><td><p>Zenvelope</p></td>
+</tr>
+<tr class="row-odd"><td><p>I</p></td>
+</tr>
+<tr class="row-even"><td><p>Q</p></td>
+</tr>
+</tbody>
+</table>
+<p>Enumeration gives the channel type to which the part selected by ChunkPartSelector belongs.</p>
+<ul class="simple">
+<li><p>Unknown: Unknown part type or type not available now.</p></li>
+<li><p>Surface: (enabled by component <cite>Range</cite> or <cite>Intensity</cite>) This part contains range information. The numeric value represents range in units specified as the product of <cite>ChunkPartFixpointScaling</cite> times <cite>ChunkScan3dDistanceUnit</cite>.</p></li>
+<li><p>Amplitude: (enabled by component <cite>Reflectance</cite>) This part contains amplitude information. The numeric value represents estimated ADC signal amplitude at the peak of the signal, expressed in units of <cite>ChunkPartFixpointScaling</cite> ADC counts.</p></li>
+<li><p>Phase: (enabled by component <cite>Phase</cite>) This part contains phase information. It represents the demodulation phase at the peak of the signal, expressed in units of <cite>ChunkPartFixpointScaling</cite> radians.</p></li>
+<li><p>Confidence: (enabled by component <cite>Confidence</cite>) This part contains confidence information. The numeric value represents the Bayesian posterior probability that the extracted surface information does represent a real surface (as opposed to random noise), as a fraction in the range 0 to 1.</p></li>
+<li><p>pZglobal: (enabled by component <cite>RangePrecision</cite> and configured by <cite>PrecisionScale</cite>) This part contains global range precision or uncertainty information. If <cite>PrecisionScale</cite> is set to <cite>InverseStandardDeviation</cite>, the output is precision (which is the inverse of uncertainty). The numeric values represents either one sigma of uncertainty in units specified as the product of <cite>ChunkPartFixpointScaling</cite> times <cite>ChunkScan3dDistanceUnit</cite>, or the inverse of that.</p></li>
+<li><p>pZlocal: (enabled by component <cite>RangePrecision</cite> and configured by <cite>PrecisionScale</cite>) This part contains local range precision or uncertainty information, valid for the comparison between pixels that are within the same phase-unwrapping region/group (see also channel <cite>unwrap-group</cite>). If <cite>PrecisionScale</cite> is set to <cite>InverseStandardDeviation</cite>, the output is precision (which is the inverse of uncertainty). The numeric values represents either one sigma of uncertainty in units specified as the product of <cite>ChunkPartFixpointScaling</cite> times <cite>ChunkScan3dDistanceUnit</cite>, or the inverse of that.</p></li>
+<li><p>pZenvelope: (enabled by component <cite>AdditionalProcessingChannels</cite>) This part contains the equivalent of <cite>pZ</cite> of the intermediate (envelope-based) centre of mass algorithm, when followed by phase-unwrapping.</p></li>
+<li><p>pP: (enabled by component <cite>AdditionalProcessingChannels</cite> and configured by <cite>PrecisionScale</cite>) This part contains the precision or uncertainty information of the phase component. If <cite>PrecisionScale</cite> is set to <cite>InverseStandardDeviation</cite>, the output is precision (which is the inverse of uncertainty). The numeric values represents either one sigma of uncertainty in units of radians, or the inverse of that.</p></li>
+<li><p>unwrap_group: (enabled by component <cite>RangePrecision</cite>) This part associates each pixel with a phase-unwrapping group, identified by the numerical index value. The special value <cite>0</cite> is assigned to pixels belonging to very small phase-unwrapping group, typically low confidence pixels. Pixels within the same group are connected through successful phase-unwrapping, and therefore the relative accuracy is better than between independent groups. Then, the relative accuracy should be determined from <cite>sZ-local</cite>/<cite>pZ-local</cite> rather than <cite>sZ</cite>/<cite>pZ</cite>.</p></li>
+<li><p>Zenvelope: (enabled by component <cite>AdditionalProcessingChannels</cite>) This part contains the equivalent of <cite>Z</cite> of the intermediate (envelope-based) centre of mass algorithm, when followed by phase-unwrapping.</p></li>
+<li><p>I: (enabled by component Intensity) in-phase information of raw data. Only available in ‘Scan3dExtractionMethod’ = rawIQ</p></li>
+<li><p>Q: (enabled by component <cite>Intensity</cite>) Quadrature information of raw data. Only available in ‘Scan3dExtractionMethod’ = rawIQ</p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ChunkPartFrameNo.html" class="btn btn-neutral float-left" title="ChunkPartFrameNo" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ChunkZTagCount.html" class="btn btn-neutral float-right" title="ChunkZTagCount" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

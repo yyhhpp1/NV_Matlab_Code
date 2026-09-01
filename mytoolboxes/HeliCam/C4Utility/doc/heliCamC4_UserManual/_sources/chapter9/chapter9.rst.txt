@@ -1,0 +1,72 @@
+.. _Annex_:
+
+Annex
+=====
+
+.. contents:: Contents
+    :local:
+
+
+Technical Drawings
+------------------
+
+
+
+heliCam™ C4
+~~~~~~~~~~~
+
+.. raw:: latex
+
+     \begin{landscape}
+
+C4.1.x-S4xx-R0
+^^^^^^^^^^^^^^
+
+.. figure:: img/C4p1px-S4xx-R0.png
+   :name: C4.1.x-S4xx-R0
+   :align: center
+   :width: 80%
+
+|
+
+C4.1.x-S4xx-R1
+^^^^^^^^^^^^^^
+
+.. figure:: img/C4p1px-S4xx-R1.png
+   :name: C4.1.x-S4xx-R1
+   :align: center
+   :width: 80%
+
+|
+
+.. raw:: latex
+
+     \end{landscape}
+
+
+heliDriver\ :sup:`TM` D3 with LIA Module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. figure:: img/D3Ap0_D3MLIAp0.png
+   :name: D3A.0_D3_MLIA.0
+   :align: center
+   :width: 100%
+
+|
+
+
+Heliotis LED Module
+~~~~~~~~~~~~~~~~~~~
+
+.. figure:: img/LDM1p0.png
+   :name: LDM1.0
+   :align: center
+   :width: 100%
+
+..
+   .. only:: latex
+
+      .. figure:: img/D3ds-appendixI_000.png
+         :name: app_01
+         :align: center
+         :width: 100%

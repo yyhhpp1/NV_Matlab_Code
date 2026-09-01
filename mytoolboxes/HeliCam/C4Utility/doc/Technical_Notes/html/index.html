@@ -1,0 +1,232 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Technical Notes for gen4 Devices &mdash; Technical Notes for heliotis gen4 Devices 2025.09 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=0ac42c78" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=200dd705"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TN_15.1.0.1: heliBrd B4 SD Card Re-Writing" href="tn_15.1.x.y/tn_15.1.x.y.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            Technical Notes for heliotis gen4 Devices
+              <img src="_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tn_15.1.x.y/tn_15.1.x.y.html">TN_15.1.0.1: heliBrd B4 SD Card Re-Writing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tn_15.2.x.y/tn_15.2.x.y.html">TN_15.2.0.0: Adjust 3D Data Scaling and Offset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tn_15.3.x.y/tn_15.3.x.y.html">TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tn_19.1.x.y/tn_19.1.x.y.html">TN_19.1.0.1: UserSet - A short Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tn_19.10.x.y/tn_19.10.x.y.html">TN_19.10.0.1: Configuring Offset (FPN) Correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tn_19.2.x.y/tn_19.2.x.y.html">TN_19.2.0.1: Configuring the Optic Type</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tn_19.3.x.y/tn_19.3.x.y.html">TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tn_19.4.x.y/tn_19.4.x.y.html">TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tn_19.9.x.y/tn_19.9.x.y.html">TN_19.9.0.0:  First/Last Surface Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html">TN_51.1.0.0: Heliotis Gen4 Device Fieldbus Reference for D3</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Technical Notes for heliotis gen4 Devices</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Technical Notes for gen4 Devices</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <a href="_pdf/TechnicalNotesGen4.pdf" target="_blank">PDF version</a><section id="technical-notes-for-gen4-devices">
+<h1>Technical Notes for gen4 Devices<a class="headerlink" href="#technical-notes-for-gen4-devices" title="Link to this heading"></a></h1>
+<p>This is a collection of technical notes for the heliotis gen4 product generation.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tn_15.1.x.y/tn_15.1.x.y.html">TN_15.1.0.1: heliBrd B4 SD Card Re-Writing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tn_15.1.x.y/tn_15.1.x.y.html#challenge-corrupt-sd-card-content">Challenge: Corrupt SD Card Content</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_15.1.x.y/tn_15.1.x.y.html#solution-sd-card-re-writing">Solution: SD-Card Re-Writing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tn_15.1.x.y/tn_15.1.x.y.html#remove-sd-card-from-heliinspect-h8-or-helicam-c4">Remove SD-Card from heliInspect H8 or heliCam C4</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_15.1.x.y/tn_15.1.x.y.html#load-an-sd-card-image">Load an SD-Card Image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_15.1.x.y/tn_15.1.x.y.html#insert-an-sd-card-to-heliinspect-helicam-device">Insert an SD-Card to heliInspect/heliCam Device</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tn_15.1.x.y/tn_15.1.x.y.html#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tn_15.2.x.y/tn_15.2.x.y.html">TN_15.2.0.0: Adjust 3D Data Scaling and Offset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tn_15.2.x.y/tn_15.2.x.y.html#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tn_15.2.x.y/tn_15.2.x.y.html#challange">Challange</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tn_15.2.x.y/tn_15.2.x.y.html#configure-custom-surface-scaling">Configure Custom Surface Scaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_15.2.x.y/tn_15.2.x.y.html#configure-custom-surface-offset">Configure Custom Surface Offset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_15.2.x.y/tn_15.2.x.y.html#calculate-real-world-coordinates-data">Calculate Real-World Coordinates Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_15.2.x.y/tn_15.2.x.y.html#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tn_15.3.x.y/tn_15.3.x.y.html">TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tn_15.3.x.y/tn_15.3.x.y.html#context-and-challenge-finding-root-causes-of-non-systematic-issues">Context and Challenge: Finding Root Causes of Non-Systematic Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_15.3.x.y/tn_15.3.x.y.html#solution-client-based-system-monitoring">Solution: Client-Based System Monitoring</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tn_15.3.x.y/tn_15.3.x.y.html#permanently-available-status-information">Permanently Available Status Information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_15.3.x.y/tn_15.3.x.y.html#status-information-relevant-after-configuration">Status Information Relevant after Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_15.3.x.y/tn_15.3.x.y.html#status-information-of-the-acquisition-engine">Status Information of the Acquisition Engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_15.3.x.y/tn_15.3.x.y.html#status-information-related-to-measurement-data">Status Information Related to Measurement Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tn_15.3.x.y/tn_15.3.x.y.html#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tn_19.1.x.y/tn_19.1.x.y.html">TN_19.1.0.1: UserSet - A short Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.1.x.y/tn_19.1.x.y.html#context-and-challenge-storing-gen4-device-configurations">Context and Challenge: Storing gen4 Device Configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.1.x.y/tn_19.1.x.y.html#solution-userset">Solution: UserSet</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tn_19.1.x.y/tn_19.1.x.y.html#storing-or-creating-a-userset">Storing (or Creating) a UserSet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_19.1.x.y/tn_19.1.x.y.html#loading-a-userset">Loading a UserSet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_19.1.x.y/tn_19.1.x.y.html#default-userset">Default UserSet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_19.1.x.y/tn_19.1.x.y.html#file-transfer">File Transfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_19.1.x.y/tn_19.1.x.y.html#additional-features">Additional Features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.1.x.y/tn_19.1.x.y.html#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tn_19.10.x.y/tn_19.10.x.y.html">TN_19.10.0.1: Configuring Offset (FPN) Correction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.10.x.y/tn_19.10.x.y.html#challenge-fpn-removal-as-a-necessary-pre-processing-step">Challenge: FPN Removal as a Necessary Pre-Processing Step</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.10.x.y/tn_19.10.x.y.html#solution-configure-a-frame-range-for-averaging-sufficiently-far-from-the-surface">Solution: Configure a Frame Range for Averaging Sufficiently Far from the Surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.10.x.y/tn_19.10.x.y.html#implementation">Implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.10.x.y/tn_19.10.x.y.html#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tn_19.2.x.y/tn_19.2.x.y.html">TN_19.2.0.1: Configuring the Optic Type</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.2.x.y/tn_19.2.x.y.html#context-variety-of-optics-types-for-heliinspect-h8-h9">Context: Variety of Optics Types for heliInspect H8/H9</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.2.x.y/tn_19.2.x.y.html#challenge-correctly-configure-heliinspect-h8-h9-for-an-optics-type">Challenge: Correctly Configure heliInspect H8/H9 for an Optics Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.2.x.y/tn_19.2.x.y.html#solution-load-predefined-configurations-using-the-optictype-feature">Solution: Load Predefined Configurations using the <code class="docutils literal notranslate"><span class="pre">OpticType</span></code> Feature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.2.x.y/tn_19.2.x.y.html#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tn_19.3.x.y/tn_19.3.x.y.html">TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.3.x.y/tn_19.3.x.y.html#context-ideal-scanning-of-sample-to-optic-distance">Context: Ideal Scanning of Sample-to-Optic Distance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.3.x.y/tn_19.3.x.y.html#challenge-amplitude-drop-due-to-velocity-deviations">Challenge: Amplitude Drop due to Velocity Deviations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.3.x.y/tn_19.3.x.y.html#fundamentals-correct-wavelength-setting-and-avoidance-of-velocity-variations">Fundamentals: Correct Wavelength Setting and Avoidance of Velocity Variations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.3.x.y/tn_19.3.x.y.html#parametric-solution-increase-scanspeed-and-decrease-verticalspacing-for-improved-robustness">Parametric Solution: Increase ScanSpeed and Decrease VerticalSpacing for Improved Robustness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.3.x.y/tn_19.3.x.y.html#extended-parametric-solution-low-verticalspreading-enables-very-short-observation-interval">Extended Parametric Solution: Low VerticalSpreading Enables Very Short Observation Interval</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.3.x.y/tn_19.3.x.y.html#practical-implementation">Practical Implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.3.x.y/tn_19.3.x.y.html#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tn_19.4.x.y/tn_19.4.x.y.html">TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.4.x.y/tn_19.4.x.y.html#challenge-monitoring-scan-motion-profile">Challenge: Monitoring Scan Motion Profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.4.x.y/tn_19.4.x.y.html#implementation">Implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.4.x.y/tn_19.4.x.y.html#interpretation">Interpretation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.4.x.y/tn_19.4.x.y.html#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tn_19.9.x.y/tn_19.9.x.y.html">TN_19.9.0.0:  First/Last Surface Extraction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.9.x.y/tn_19.9.x.y.html#challenge-interference-envelope-of-transparent-samples">Challenge: Interference Envelope of Transparent Samples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.9.x.y/tn_19.9.x.y.html#solution-amplitude-peak-detection-and-thresholding">Solution: Amplitude Peak Detection and Thresholding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.9.x.y/tn_19.9.x.y.html#tips-for-narrow-transparent-layers">Tips for Narrow Transparent Layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.9.x.y/tn_19.9.x.y.html#implementation">Implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_19.9.x.y/tn_19.9.x.y.html#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html">TN_51.1.0.0: Heliotis Gen4 Device Fieldbus Reference for D3</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#example-use-cases">Example Use Cases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#hello-world">“Hello World”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#camera-status">Camera Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#acquisition-control">Acquisition Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#camera-control-light-on-off">Camera Control, Light ON/OFF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#camera-control-sequencer-sets">Camera Control, Sequencer Sets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#camera-control-counters">Camera Control, Counters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#vision-application-parameterisation">Vision Application, Parameterisation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#vision-application-result-transmission">Vision Application, Result Transmission</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#further-reading">Further Reading</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#heliotis">Heliotis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#beckhoff">Beckhoff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#siemens">Siemens</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tn_51.1.x.y/tn_51.1.x.y.html#document-history">Document History</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tn_15.1.x.y/tn_15.1.x.y.html" class="btn btn-neutral float-right" title="TN_15.1.0.1: heliBrd B4 SD Card Re-Writing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

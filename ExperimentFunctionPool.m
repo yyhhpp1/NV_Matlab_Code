@@ -153,6 +153,11 @@ end
 % system still initializes when a box is absent (e.g. camera-only bench test).
 if InstrumentEnabled('srs')
     % load SRS SG386 DLL
+
+    
+    
+    
+    
     SignalGeneratorFunctionPool('Init',PortMap('SG ip'));
     gSG.bMod='IQ';
     gSG.bModSrc='External';
@@ -186,19 +191,19 @@ else
 end
 
 % Load python env only once 
-pythonPath = 'C:\Users\dilution_fridge_2\miniconda3\envs\slackbot_haopu\python.exe';
-
-pe = pyenv;
-if strcmp(pe.Status, "NotLoaded") || isempty(pe.Executable)
-    % Configure Python only once
-    pe = pyenv( ...
-        'ExecutionMode','OutOfProcess', ...
-        'Version', pythonPath ...
-    );
-    fprintf('Configured Python at %s\n', pe.Executable);
-else
-    fprintf('Python already configured (%s)\n', pe.Executable);
-end
+% pythonPath = 'C:\Users\dilution_fridge_2\miniconda3\envs\slackbot_haopu\python.exe';
+% 
+% pe = pyenv;
+% if strcmp(pe.Status, "NotLoaded") || isempty(pe.Executable)
+%     % Configure Python only once
+%     pe = pyenv( ...
+%         'ExecutionMode','OutOfProcess', ...
+%         'Version', pythonPath ...
+%     );
+%     fprintf('Configured Python at %s\n', pe.Executable);
+% else
+%     fprintf('Python already configured (%s)\n', pe.Executable);
+% end
 
 
 % 
@@ -242,6 +247,14 @@ StrL = SequencePool('PopulateSeq');
 set(handles.sequence,'String',StrL);
 clear StrL;
 LoadUserInputs(hObject,eventdata,handles);
+% Drop any per-sequence declarations left over from the PREVIOUSLY selected
+% sequence, so that what we read back after SequencePool below is this sequence's
+% own. Without this, selecting a sequence that declares nothing would inherit the
+% last hc_* sequence's values and look like it had asked for them -- which for
+% WFneedsDarkRef would mean every sequence chosen after hc_ZScan silently
+% force-ticking takeDarkRef.
+if isfield(gmSEQ,'WFcontrastExpr');  gmSEQ = rmfield(gmSEQ,'WFcontrastExpr');  end
+if isfield(gmSEQ,'WFneedsDarkRef'); gmSEQ = rmfield(gmSEQ,'WFneedsDarkRef'); end
 SequencePool(string(gmSEQ.name));
  
 SequencePool(string(gmSEQ.name));
@@ -288,8 +301,69 @@ switch gmSEQ.name{1}
             set(handles.SAmp2,'string',num2str(amp));
             set(handles.SAmp1_M,'string',num2str(amp));
             set(handles.SAmp2_M,'string',num2str(amp));
-            set(handles.AWGAmp,'string',num2str(1));      
+            set(handles.AWGAmp,'string',num2str(1));
         end
+
+end
+
+% --- Tick takeDarkRef when the selected sequence declares it needs one ---------
+% Declarative, exactly like WFcontrastExpr below: the sequence file ran above
+% (SequencePool), so gmSEQ.WFneedsDarkRef now holds whatever THIS sequence says
+% about needing a dark reference. No sequence is named here, so a new one opts in
+% by setting the field in its own file rather than by being added to a list in
+% this function -- the same reason the exposure source no longer carries a name
+% list in RunSequence.
+%
+% hc_ZScan is the current user: its focus mask separates the stripline shadow
+% from the lit region by thresholding |I|, and on the raw scale the ~517 per-pixel
+% pedestal dwarfs the light, so |I| comes out nearly uniform and the mask -- and
+% with it the focus score -- means nothing.
+%
+% Ticking the real checkbox rather than forcing gmSEQ keeps one owner for the
+% setting: LoadUserInputs reads it through the normal path, and it stays visible
+% and overridable in the GUI. It is only ever ticked, never cleared, so selecting
+% a sequence cannot silently switch a dark reference off.
+if isfield(handles,'takeDarkRef') && isfield(gmSEQ,'WFneedsDarkRef') ...
+        && ~isempty(gmSEQ.WFneedsDarkRef) && gmSEQ.WFneedsDarkRef
+    set(handles.takeDarkRef,'Value',1);
+end
+
+% --- Seed the widefield display-expression box from the selected sequence ------
+% The sequence file ran above (SequencePool), so gmSEQ.WFcontrastExpr now holds
+% whatever THIS sequence declares as its natural display quantity -- 'I' for
+% hc_Image/hc_ZScan, 'I-Q' for hc_Rabi/hc_T1/hc_ODMR.
+%
+% Pushing it into the box makes the box the single VISIBLE source of truth: you
+% can always see what the sequence wanted, and edit from there. The alternative --
+% leaving the box empty and letting the sequence default apply invisibly -- means
+% that once you type anything, the sequence's own choice is shadowed with no way
+% to see what it had been.
+%
+% Selecting a sequence therefore RESETS the box -- but ONLY while the
+% overwriteExpr checkbox is clear. Ticking that box means you have deliberately
+% taken control of the display quantity, and having a sequence change silently
+% wipe an expression you are actively using would be the opposite of helpful.
+% Untick it and the next sequence selection re-seeds as normal.
+%
+% 'WFContrast' is capital-C, matching the Tag in GUIDE. isfield is
+% case-SENSITIVE: spelled any other way this silently does nothing, which is
+% exactly the bug that made the box appear inert.
+if isfield(handles,'WFContrast')
+    overriding = false;
+    if isfield(handles,'overwriteExpr')
+        try
+            overriding = logical(get(handles.overwriteExpr,'Value'));
+        catch
+            overriding = false;
+        end
+    end
+    if ~overriding
+        seedExpr = 'I';
+        if isfield(gmSEQ,'WFcontrastExpr') && ~isempty(gmSEQ.WFcontrastExpr)
+            seedExpr = char(string(gmSEQ.WFcontrastExpr));
+        end
+        set(handles.WFContrast,'String',seedExpr);
+    end
 end
 
 function LoadUserInputs(hObject,eventdata,handles)
@@ -340,7 +414,33 @@ gmSEQ.post_MW_wait = str2double(get(handles.post_MW_wait,'String'));
 
 % --- HeliCam widefield params: WidefieldConfig defaults, kept as overridable
 % gmSEQ fields so future GUI edit fields take precedence automatically (set the
-% gmSEQ.<field> here from a handles widget when one exists). No .fig edits. ---
+% gmSEQ.<field> here from a handles widget when one exists). ---
+% nPeriods/nFrames now have real GUI edit fields (tags 'nPeriods', 'nFrames' on
+% Experiment_PB_DAQ); read them directly so they take priority below.
+gmSEQ.nPeriods = str2double(get(handles.nPeriods, 'String'));
+gmSEQ.nFrames  = str2double(get(handles.nFrames,  'String'));
+
+% Quarter period Q (ns): the spacing PB puts between CamRef edges, one quarter
+% of the lock-in period. One GUI box now feeds every hc_* sequence through
+% hc_QuarterBin -- 'interval' is no longer read by any of them, and 'readout'
+% has gone back to meaning only the init/readout laser duration. hc_T1 is the
+% exception: it still builds its own composite bin from its pulse timings.
+% isfield-guarded so an older .fig without the box still loads, in which case
+% the WidefieldConfig fallback below applies.
+QP_TAG = 'QP';          % <-- tag of the new edit box on Experiment_PB_DAQ.fig
+gmSEQ.quarterBinNs = [];
+if isfield(handles, QP_TAG)
+    gmSEQ.quarterBinNs = str2double(get(handles.(QP_TAG), 'String'));
+end
+
+% Fresh per-run dark reference: acquire ONE laser-off burst before the sweep and
+% subtract it from every point of every average pass (RunSequence's
+% AcquireDarkRef). isfield-guarded so an older .fig without the checkbox loads.
+gmSEQ.bTakeDarkRef = 0;
+if isfield(handles,'takeDarkRef')
+    gmSEQ.bTakeDarkRef = get(handles.takeDarkRef,'Value');
+end
+
 wcfg = WidefieldConfig();
 if ~isfield(gmSEQ,'exposureSeconds')      || isempty(gmSEQ.exposureSeconds);      gmSEQ.exposureSeconds      = wcfg.exposureSeconds;      end
 if ~isfield(gmSEQ,'nPeriods')             || isempty(gmSEQ.nPeriods);             gmSEQ.nPeriods             = wcfg.nPeriods;             end
@@ -348,7 +448,12 @@ if ~isfield(gmSEQ,'nFrames')              || isempty(gmSEQ.nFrames);            
 if ~isfield(gmSEQ,'sensitivity')          || isempty(gmSEQ.sensitivity);          gmSEQ.sensitivity          = wcfg.sensitivity;          end
 if ~isfield(gmSEQ,'coupling')             || isempty(gmSEQ.coupling);             gmSEQ.coupling             = wcfg.coupling;             end
 if ~isfield(gmSEQ,'referenceTimeShiftUs') || isempty(gmSEQ.referenceTimeShiftUs); gmSEQ.referenceTimeShiftUs = wcfg.referenceTimeShiftUs; end
-if ~isfield(gmSEQ,'quarterBinNs')         || isempty(gmSEQ.quarterBinNs);         gmSEQ.quarterBinNs         = wcfg.quarterBinNs;         end
+% Blank box -> str2double gives NaN, which is not caught by isempty, so the
+% finite/positive test is what actually keeps a zero-length period out.
+if ~isfield(gmSEQ,'quarterBinNs') || isempty(gmSEQ.quarterBinNs) || ...
+        ~isfinite(gmSEQ.quarterBinNs) || gmSEQ.quarterBinNs <= 0
+    gmSEQ.quarterBinNs = wcfg.quarterBinNs;
+end
 
 gSG.Pow = str2double(get(handles.fixPow, 'String'));
 gSG.Freq = str2double(get(handles.fixFreq, 'String'))*1e9;

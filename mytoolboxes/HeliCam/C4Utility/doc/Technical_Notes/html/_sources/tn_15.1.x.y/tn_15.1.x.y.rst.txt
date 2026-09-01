@@ -1,0 +1,101 @@
+.. raw:: html
+
+    <a href="../_pdf/tn_15.1.x.y.pdf" target="_blank">PDF version</a>
+
+TN_15.1.0.1: heliBrd B4 SD Card Re-Writing
+******************************************
+
+Challenge: Corrupt SD Card Content
+==================================
+
+heliBrd B4 based devices (like heliInspect H8, heliCam C4) store a file system on an SD Card. Updates of this file system are handled using the UpdateTool application (comes with C4Utility installer) and image package or update package files
+(available for download on heliotis webpage). The file system is robust, i.e. it tolerates conditions such as power interruption during use. Only in exceptional failure cases the file system may be corrupted to the point of boot failures.
+In such rare cases, however, the device becomes inaccessible throught its ethernet interface even after attempts to reboot it (power cycle).
+
+.. note::  If you suspect your file system to be corrupt contact support@heliotis.ch before proceeding with solution described below.
+
+.. contents:: Table of Contents 
+   :depth: 3
+   :local:
+
+Solution: SD-Card Re-Writing
+============================
+
+To recover from a corrupt file system load a full SD-Card image to the device. The required steps are as follows.
+
+Remove SD-Card from heliInspect H8 or heliCam C4
+------------------------------------------------
+
+Required tools (figure :numref:`tools`):
+  * 1.5mm hexagonal socket wrench (Allen key)
+  * tweezers
+
+.. _tools:
+.. figure:: img/Tools.jpg
+    :align: center
+    :scale: 33%
+    
+    Required Tools
+
+Steps:
+  1. Switch off the power supply.
+  2. Remove SD-Card cover. Unscrew the two screws on the right hand side of heliInspect H8 (figure :numref:`cover`). Remove the cover.
+  3. Remove the SD-Card. The SD-Card holder has a push/pull mechanism. To remove the SD-Card, push the card with a thin rod (e.g. the back of your tweezers). A soft click should be audible. Afterwards, the card pops out a bit and can be removed carefully. (e.g. with the tweezers)
+
+.. _cover:
+.. figure:: img/Cover.jpg
+    :align: center
+    :scale: 33%
+    
+    SD-Card Cover Screws
+    
+.. note::  SD card is not accessible for heliInspect H9 devices. Don't attempt to open H9 devices witout heliotis assistance.
+    
+Load an SD-Card Image
+---------------------
+
+Required software:
+  * balenaEtcher `<https://www.balena.io/etcher/>`_
+  * heliBoard B4 Image (e.g. b4brdImg_1.8.0.zip)
+
+Steps:
+  1. Extract the \*.zip file. (It contains a single \*.img file)
+  2. Insert the card into PC's SD-Card slot and start balenaEtcher 
+  3. Push the *Flash from file* button and select the extracted \*.img file
+  4. Push the *Select target* button and select the SD-Card drive.
+  5. The final selections are shown in figure :numref:`etcher`. Now push the *Flash!* button to write the image to the SD-Card (PC administrator privileges are required)
+  6. After a successful write procedure, remove the SD-Card from the PC and insert it into the heliInspect H8.
+  
+.. _etcher:
+.. figure:: img/balenaEtcher.png
+    :align: center
+    :scale: 66%
+    
+    balenaEtcher selection
+
+Insert an SD-Card to heliInspect/heliCam Device
+-----------------------------------------------
+Steps:
+  1. Insert the SD-Card into heliInspect H8. Use tweezers to hold the card and insert it carefully into the SD-Card slot. The SD-Card slot has a push/pull mechanism. After inserting the SD-Card push it carefully until a soft click is audible. The SD-Card orientation is shown is figure :numref:`sdcard`.
+  2. Mount the cover with the two screws.
+
+.. _sdcard:
+.. figure:: img/SDCard.jpg
+    :align: center
+    :scale: 33%
+    
+    SD-Card Orientation
+
+
+Document History
+================
+
++------------+--------------+------------------+-------------+
+| Version    | Date         | Changes          | Responsible |
++============+==============+==================+=============+
+| 15.1.0.0   | 19-05-2022   | initial version  | sm          |
++------------+--------------+------------------+-------------+
+| 15.1.0.1   | 14-11-2022   | review, typos    | cl          |
++------------+--------------+------------------+-------------+
+
+

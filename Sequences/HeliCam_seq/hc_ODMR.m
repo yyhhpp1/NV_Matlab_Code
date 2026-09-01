@@ -12,53 +12,71 @@ function hc_ODMR
 % The whole period repeats gmSEQ.Repeat times (PB loop) per camera frame.
 
 global gmSEQ gSG
-gSG.bfixedPow  = 1;
-gSG.bfixedFreq = 0;      % frequency is swept (set on the SG per point)
-gSG.bMod = 'LOL';        % no modulation
+gSG.bfixedPow = 1;
+gSG.bfixedFreq = 0;
+gSG.bMod = 'IQ';        % no modulation
 gSG.bModSrc = 'External';
 
 [gmSEQ.ScaleT, gmSEQ.ScaleStr] = GetScale(gmSEQ.To);
 
+% Default axes2/axes3 quantity: I - Q, the difference the lock-in quarters were
+% arranged to produce. Preserves what this sequence has always plotted, now as a
+% declared default rather than a hardcoded branch in DisplayWidefield. Selecting
+% this sequence seeds the 'WFcontrast' GUI box with this string; edit the box
+% (even mid-run) to plot something else.
+gmSEQ.WFcontrastExpr = 'I';
+
 cfg = WidefieldConfig();
-% Quarter-bin spacing: configurable here via gmSEQ.quarterBinNs (to be linked to
-% a GUI edit field); falls back to the WidefieldConfig default if unset.
-if isfield(gmSEQ,'quarterBinNs') && ~isempty(gmSEQ.quarterBinNs)
-    Q = gmSEQ.quarterBinNs;
-else
-    Q = cfg.quarterBinNs;
-end
-wRef  = hc_CamRefWidth(cfg, Q);  % CamRef TTL width (ns); auto = Q/2
-laser = gmSEQ.readout;           % init/readout laser duration (ns)
-mwOff = gmSEQ.post_init_wait;    % delay of MW start into Q2 (ns)
-piDur = gmSEQ.pi;                % fixed pi pulse duration (ns)
+Q = hc_QuarterBin(cfg);      % quarter period (ns) = GUI QP field
+e = gmSEQ.CtrGateDur;        % CamRef TTL width (ns); NOT clamped to Q/2
+u = gmSEQ.post_MW_wait;
+d = gmSEQ.post_init_wait;    % delay of MW start into Q2 (ns)
+p = gmSEQ.pi;
 
-assert(piDur + mwOff < Q, ...
-    'hc_ODMR: pi pulse (%g ns) + offset exceeds quarter bin (%g ns).', piDur, Q);
-assert(laser <= Q, ...
-    'hc_ODMR: laser duration (%g ns) exceeds quarter bin (%g ns).', laser, Q);
+%Laser on time will be derived from d,u,Q and MW length
+i1 = 2*Q - d - p - u;
+i2 = Q - d;
+i3 = Q - e - 2*d;
 
-% --- CamRef quarter-period train --------------------------------------------
+assert(Q-e >= d+p+u, ...
+    'hc_Rabi: Early laser off during exposure. Try shorter exposure or longer quarterperiod');
+
+% --- CamRef quarter-period train: one edge at the start of each quarter -----
 gmSEQ.CHN(1).PBN   = PBDictionary('CamRef');
 gmSEQ.CHN(1).NRise = 4;
 gmSEQ.CHN(1).T     = [0, Q, 2*Q, 3*Q];
-gmSEQ.CHN(1).DT    = wRef * ones(1, 4);
+gmSEQ.CHN(1).DT    = e * ones(1, 4);
 
 % --- Laser: Q1 (init/reference) and Q4 (readout/signal) ---------------------
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN   = PBDictionary('GreenAOM');
-gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 2;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T       = [0, 3*Q];
-gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = [laser, laser];
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 3;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T       = [0, 2*Q, 3*Q + e + d];
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = [i1, i2, i3];
 
-% --- Fixed pi pulse inside Q2 -----------------------------------------------
+% --- MW pulse inside Q2 (swept duration) ------------------------------------
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN   = PBDictionary('MWSwitch');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 1;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T       = Q + mwOff;
-gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = piDur;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T       = i1 + d;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = p;
 
-% --- Period length marker ---------------------------------------------------
+iq_time = 20;
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN   = PBDictionary('SRS1_I');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 1;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T       = i1 + d - iq_time;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = p + 2*iq_time;
+
+hp_MW_switch_time = 20;
+gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN   = PBDictionary('MWSwitchHP');
+gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 1;
+gmSEQ.CHN(numel(gmSEQ.CHN)).T       = i1 + d - hp_MW_switch_time;
+gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = p + hp_MW_switch_time;
+
+
+% --- Period length marker (4 quarter bins) ----------------------------------
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN   = PBDictionary('dummy1');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 2;
 gmSEQ.CHN(numel(gmSEQ.CHN)).T       = [0, 4*Q];
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = [1000, 1000];
 
 ApplyDelays();
+

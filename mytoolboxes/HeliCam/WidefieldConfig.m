@@ -15,7 +15,7 @@ function cfg = WidefieldConfig()
 
     % --- Camera backend -------------------------------------------------------
     cfg.useFakeCamera = false;     % true: FakeCamera (no hardware); false: HeliCamInterface
-    cfg.ifNo          = 0;        % GigE interface index
+    cfg.ifNo          = 1;        % GigE interface index
     cfg.devNo         = 0;        % device index
 
     % Note: to disable instruments (FPGA, SRS, ...) for a camera-only check, use
@@ -23,11 +23,11 @@ function cfg = WidefieldConfig()
 
     % --- Lock-in acquisition (held constant across a sweep) -------------------
     cfg.exposureSeconds       = 4e-6;   % per-quarter-bin integration time t_s
-    cfg.nPeriods              = 20;     % LockInTargetTimeConstantNPeriods (1..100)
-    cfg.nFrames               = 60;     % AcquisitionBurstFrameCount (4..900)
-    cfg.sensitivity           = 1.0;    % LockInSensitivity p_s (keep 1 so t_s = 1/(4*fRef))
+    cfg.nPeriods              = 20;     % LockInTargetTimeConstantNPeriods (effective 2..100)
+    cfg.nFrames               = 4;     % AcquisitionBurstFrameCount (4..900)
+    cfg.sensitivity           = 1;    % LockInSensitivity p_s (keep 1 so t_s = 1/(4*fRef))
     cfg.coupling              = 'DC';   % 'DC' or 'AC'
-    cfg.referenceTimeShiftUs  = 0.0;    % LockInReferenceTimeShift; phase-align Q1 to PB init edge
+    cfg.referenceTimeShiftUs  = 0;   % LockInReferenceTimeShift; phase-align Q1 to PB init edge
     cfg.recordingStartExternal = false; % kept false: RecordingStart unused on this setup
 
     % Blank periods per frame (LockInTargetBlankDurationNPeriods, 0..100). Every
@@ -42,7 +42,7 @@ function cfg = WidefieldConfig()
     % missed, at the cost of exposure. 0 is right in principle for a PB-derived
     % train, but if the camera refuses to lock, 5-10 lets it tolerate the
     % exposure-grid snap. Raising this REDUCES the realized exposure.
-    cfg.expectedFreqDeviationPct = 0;
+    cfg.expectedFreqDeviationPct = 5;
 
     % HeliCam input line the CamRef train is wired to. Must match the physical
     % cable. 'FI2' or 'FI3'. Do not use 'FI3' with recordingStartExternal.
@@ -76,9 +76,133 @@ function cfg = WidefieldConfig()
     % knobs. (Verified 2026-07-28, readout = 100 us, nPeriods = 20, nFrames = 10.)
     cfg.sensorOverheadNs = 2000;
 
+    % Subtract the STORED per-pixel dark reference (hc_DarkRef's wf_darkref.mat)
+    % from every acquired I/Q before contrast is formed. The C4 carries a large
+    % static pedestal (~518 in decoded units) plus fixed-pattern structure; both
+    % are removed by this. Silently skipped when no dark reference has been stored.
+    %
+    % This flag governs ONLY the stored-file path, which is a single slot shared by
+    % every settings combination and so can easily be stale -- the pedestal scales
+    % with exposure/nPeriods/nFrames. The 'takeDarkRef' checkbox on
+    % Experiment_PB_DAQ is the better route: it acquires one fresh laser-off burst
+    % at the start of each run, matched to that run's camera settings by
+    % construction, and subtracts it regardless of this flag.
+    cfg.subtractDarkRef = false;
+
+    % --- Widefield Z stack (hc_ZScan) -----------------------------------------
+    % Objective Z travel, in micrometres, that hc_ZScan is allowed to command on
+    % the Obj_Piezo analog output. WriteVoltage range-checks only the galvos, so
+    % nothing else stops a mistyped sweep from driving the objective into the
+    % sample: RunSequence_HeliCam refuses to start when any requested Z falls
+    % outside this range. Refusing rather than clamping is deliberate -- a
+    % clamped sweep would silently stack several frames at the rail and look
+    % like a real Z series.
+    cfg.zMinUm = 0;
+    cfg.zMaxUm = 100;
+
+    % Settle time after each Z move, in seconds. [] = auto, one full acquisition
+    % burst (nPBPeriods x the reference period), so the wait scales with the
+    % sequence timing, nPeriods and nFrames rather than being a fixed guess.
+    % NOTE: that can be only a few ms at short readouts (e.g. ~6 ms at readout
+    % 200 us, nPeriods 2, nFrames 4), which may be well under the piezo's
+    % mechanical settling time. Set an explicit value here if the first Z of a
+    % stack looks smeared relative to the rest.
+    cfg.zSettleSeconds = [];
+
+    % --- Widefield autofocus (hc_ZScan focus metric) --------------------------
+    % Scoring the sharpness of each Z so hc_ZScan can report, and park at, the
+    % best-focus position. See hc_FocusMask / hc_FocusMetric for the reasoning;
+    % hc_FocusConfig resolves these and lets any of them be overridden per-run by
+    % setting the same name on gmSEQ.
+    %
+    % A stripline sits ~50 um above the diamond and casts a dark shadow. Its EDGE
+    % is the sharpest feature in the frame and belongs to a plane 50 um off the
+    % NV layer, so a gradient score that can see it peaks with the STRIPLINE in
+    % focus. Excluding the dark pixels is not enough on its own -- the edge is at
+    % the boundary of the dark region, which is why focusErodePx exists.
+
+    % Which score drives the live curve and the parking decision:
+    % 'tenengrad' (normalised squared Sobel gradient -- sharpest peak, the
+    % default), 'normvar' (var/mean^2, derivative-free and the most noise
+    % tolerant), 'brenner', or 'laplacian'. All four are computed and saved
+    % whatever this says, so hc_FocusCompare can second-guess the choice offline
+    % from a saved file rather than from another hour of beam time.
+    cfg.focusMetric = 'tenengrad';
+
+    % A pixel is "in shadow" if its brightness falls below this fraction of the
+    % frame's own bright level at ANY Z in the stack. Raise it to cut more
+    % aggressively into the penumbra; lower it if the mask is eating real signal.
+    % Setting it to 0 disables shadow rejection entirely -- useful exactly once,
+    % as the negative control that shows how far the stripline edge pulls the
+    % answer (see the hc_ZScan header).
+    cfg.focusDarkFrac = 0.35;
+
+    % Percentile of |I| that defines each frame's "bright level". Per-frame, so
+    % the threshold above stays scale-free as the frame dims and spreads with
+    % defocus. Below 100 so a few hot pixels cannot set the scale.
+    cfg.focusBrightPct = 95;
+
+    % Exclude pixels brighter than this multiple of the frame's bright level.
+    % A handful of hot pixels would otherwise plant a Z-independent spike in a
+    % gradient score and flatten the real peak next to it.
+    cfg.focusHotFactor = 3;
+
+    % Pixels of valid-region erosion -- how far back from the shadow boundary the
+    % scored region stops. THIS is what keeps the stripline edge out of the score.
+    % Floored at 2 by hc_FocusConfig because the 3x3 smooth composed with the 3x3
+    % Sobel has a 5x5 footprint, so anything smaller lets the edge leak back in
+    % through the filter. Raise it if the shadow's penumbra is broad.
+    cfg.focusErodePx = 3;
+
+    % 3x3 binomial pre-smooth before differentiating. Squaring a derivative
+    % amplifies pixel noise, and on a dim sample that noise floor can rival the
+    % focus contrast. Costs almost no real resolution here.
+    cfg.focusSmooth = true;
+
+    % Refuse to trust a mask that kept fewer than this many pixels (or 1% of the
+    % frame, whichever is larger): hc_FocusMask falls back to the plain interior
+    % and says so, rather than returning a confident number from 40 pixels.
+    cfg.focusMinValidPx = 500;
+
+    % Park the objective at the best-focus Z when the run ends -- but only when
+    % the peak is a genuine INTERIOR maximum. An argmax sitting on the first or
+    % last Z means focus is outside the scanned range, and hc_ZScan restores the
+    % starting Z and says which way to extend instead. false = always restore.
+    cfg.focusGoToBest = true;
+
+    % Minimum max(F)/median(F) for the curve to count as having a peak at all.
+    % A flat curve still has an argmax, and it is noise; below this the run
+    % reports "no focus found" and restores Z.
+    cfg.focusMinConf = 1.2;
+
     % --- Readout / display ----------------------------------------------------
-    cfg.timeoutMs = 20000;        % getBuffer timeout per acquisition
-    cfg.roi       = [];           % [] -> use frame center; else [xc yc halfwidth] in pixels
+
+    %%%%%% CHANGE ROI TO OVERWRITE ROI BOX %%%%%%%
+    % readIQ/getBuffer timeout. This is now the FLOOR, not the whole story:
+    % hc_AcqTimeoutMs sizes the actual timeout from the predicted burst duration
+    % (nPBPeriods x the real PB program length), so a long measurement is not
+    % aborted mid-flight. A fixed 20 s used to cut off any burst that ran longer
+    % -- reporting a healthy measurement as "Timeout, no data available!".
+    cfg.timeoutMs = 20000;        % minimum getBuffer timeout (ms)
+
+    % Safety factor on the predicted burst duration. 2 = allow the burst to take
+    % twice as long as predicted before giving up, which absorbs camera readout,
+    % GigE transfer and any period the prediction underestimates.
+    cfg.timeoutFactor = 2;
+
+    % Fixed slack added on top, in ms: buffer transfer and GigE latency that do
+    % not scale with the burst.
+    cfg.timeoutMarginMs = 10000;
+
+    % Hard ceiling on the computed timeout, in ms. Without one, a mis-set
+    % quarter bin or frame count could ask MATLAB to block for days on a camera
+    % that will never answer. 30 min by default; raise it if a genuine burst is
+    % longer than that (hc_AcqTimeoutMs says so when it clamps). Note readIQ
+    % blocks for the whole wait and Stop is only polled between sweep points, so
+    % this also bounds how long Stop can take to act.
+    cfg.timeoutMaxMs = 1800000;
+    cfg.roi       = [300,300,1];           % [] -> use frame center; else [xc yc halfwidth] in pixels
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % --- Sensor geometry (used by FakeCamera; real camera reports its own) ----
     cfg.height = 512;

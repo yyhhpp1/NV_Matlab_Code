@@ -1,0 +1,256 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss &mdash; Technical Notes for heliotis gen4 Devices 2025.09 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=0ac42c78" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=200dd705"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)" href="../tn_19.4.x.y/tn_19.4.x.y.html" />
+    <link rel="prev" title="TN_19.2.0.1: Configuring the Optic Type" href="../tn_19.2.x.y/tn_19.2.x.y.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Technical Notes for heliotis gen4 Devices
+              <img src="../_static/heliotis_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.1.x.y/tn_15.1.x.y.html">TN_15.1.0.1: heliBrd B4 SD Card Re-Writing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.2.x.y/tn_15.2.x.y.html">TN_15.2.0.0: Adjust 3D Data Scaling and Offset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_15.3.x.y/tn_15.3.x.y.html">TN_15.3.0.1: Collecting and Interpreting Monitoring Information of gen4 Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.1.x.y/tn_19.1.x.y.html">TN_19.1.0.1: UserSet - A short Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.10.x.y/tn_19.10.x.y.html">TN_19.10.0.1: Configuring Offset (FPN) Correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.2.x.y/tn_19.2.x.y.html">TN_19.2.0.1: Configuring the Optic Type</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#context-ideal-scanning-of-sample-to-optic-distance">Context: Ideal Scanning of Sample-to-Optic Distance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#challenge-amplitude-drop-due-to-velocity-deviations">Challenge: Amplitude Drop due to Velocity Deviations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fundamentals-correct-wavelength-setting-and-avoidance-of-velocity-variations">Fundamentals: Correct Wavelength Setting and Avoidance of Velocity Variations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parametric-solution-increase-scanspeed-and-decrease-verticalspacing-for-improved-robustness">Parametric Solution: Increase ScanSpeed and Decrease VerticalSpacing for Improved Robustness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#extended-parametric-solution-low-verticalspreading-enables-very-short-observation-interval">Extended Parametric Solution: Low VerticalSpreading Enables Very Short Observation Interval</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#practical-implementation">Practical Implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#document-history">Document History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.4.x.y/tn_19.4.x.y.html">TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_19.9.x.y/tn_19.9.x.y.html">TN_19.9.0.0:  First/Last Surface Extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tn_51.1.x.y/tn_51.1.x.y.html">TN_51.1.0.0: Heliotis Gen4 Device Fieldbus Reference for D3</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Technical Notes for heliotis gen4 Devices</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <a href="../_pdf/tn_19.23.x.y.pdf" target="_blank">PDF version</a><section id="tn-19-3-0-1-reducing-vibration-induced-wli-amplitude-loss">
+<span id="reducing-vibration-induced-wli-amplitude-loss"></span><h1>TN_19.3.0.1: Reducing Vibration-Induced WLI Amplitude Loss<a class="headerlink" href="#tn-19-3-0-1-reducing-vibration-induced-wli-amplitude-loss" title="Link to this heading"></a></h1>
+<section id="context-ideal-scanning-of-sample-to-optic-distance">
+<h2>Context: Ideal Scanning of Sample-to-Optic Distance<a class="headerlink" href="#context-ideal-scanning-of-sample-to-optic-distance" title="Link to this heading"></a></h2>
+<p>The WLI measurement principle relies on vertical scanning of the distance between the sample and the interferometer optic.
+Optical interference signals are formed at a <em>signal frequency</em> defined by the vertical scan velocity and the illumination wavelength.</p>
+<p>Signal processing in heliInspect gen4 devices detects interference amplitude from these signals at an expected constant <em>detection frequency</em> based on the values of
+the <code class="docutils literal notranslate"><span class="pre">ScanSpeed</span></code>,  <code class="docutils literal notranslate"><span class="pre">NominalWavelength</span></code>, and <code class="docutils literal notranslate"><span class="pre">WavelengthCorrection</span></code> features.</p>
+<p>Ideally, the actual <em>signal frequency</em> is constant and matches the <em>detection frequency</em>.</p>
+</section>
+<section id="challenge-amplitude-drop-due-to-velocity-deviations">
+<h2>Challenge: Amplitude Drop due to Velocity Deviations<a class="headerlink" href="#challenge-amplitude-drop-due-to-velocity-deviations" title="Link to this heading"></a></h2>
+<p>Variations of the actual <em>signal frequency</em> arise from scanning the distance between the sample and the interferometer optic at non-constant velocity.
+Deviations from constant velocity are caused by either uneven scan motion or mechanical vibrations of the structure between the sample surface and the heliInspect device.</p>
+<p>If the actual <em>signal frequency</em> deviates from the <em>detection frequency</em>, the detected amplitude drops.
+The signal-to-noise ratio of the detected interference signal is, therefore, reduced.
+Consequently, the 3D surface data is affected by increased random noise (repeatability) and vertical distortion (inaccuracy).</p>
+<p>The following factors determine the quantitative impact of such <em>velocity deviations</em> on the detected amplitude in gen4 heliInspect devices:</p>
+<ul class="simple">
+<li><p>relative amount of <em>velocity deviation</em> ((v<sub>sample-optic</sub>- <code class="docutils literal notranslate"><span class="pre">ScanSpeed</span></code>) / <code class="docutils literal notranslate"><span class="pre">ScanSpeed</span></code>)</p></li>
+<li><p>vertical signal <em>observation interval</em> of a frame (by default, this is close to the value of <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpacing</span></code>)</p></li>
+</ul>
+<p>The larger the product of the above two terms, the worse the amplitude drop.</p>
+<p>If mechanical vibrations are at the origin of velocity deviations, amplitude loss is observed as a sporadic artifact:
+For flat horizontal sample surfaces amplitude may drop in the full FOV of random measurement iterations.
+For samples with larger topographic range, random height intervals (z intervals) might be affected (“dark isolines”).</p>
+</section>
+<section id="fundamentals-correct-wavelength-setting-and-avoidance-of-velocity-variations">
+<h2>Fundamentals: Correct Wavelength Setting and Avoidance of Velocity Variations<a class="headerlink" href="#fundamentals-correct-wavelength-setting-and-avoidance-of-velocity-variations" title="Link to this heading"></a></h2>
+<p>To avoid systematic mismatch between the actual interference waveform <em>signal frequency</em> and the <em>detection frequency</em>, make sure the value of the <code class="docutils literal notranslate"><span class="pre">EffectiveWavelength</span></code> feature matches the actual wavelength.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Refer to technical note TN 19.2 (<em>Configuring the Optic Type</em>) for setting <code class="docutils literal notranslate"><span class="pre">EffectiveWavelength</span></code> using presets.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Refer to the programmer’s guide chapter on wavelength tuning for fine-tuning <code class="docutils literal notranslate"><span class="pre">EffectiveWavelength</span></code> based on actual measurement data.</p>
+</div>
+<p>The most effective and systematic way of avoiding amplitude drop is avoiding <em>velocity deviations</em> at the potential root cause(s):</p>
+<ul class="simple">
+<li><p>Implement a stiff and short mechanical link between the sample and the attachment point of the heliInspect device.</p></li>
+<li><p>Avoid excitation of mechanical vibrations in the mechanical setup (avoid inducing shocks, or high accelerations. Don’t couple vibrating subsystems to the metrology setup)</p></li>
+<li><p>If using a third-party vertical scan stage, optimize stage control for constant scan velocity. As a rule of thumb, relative scan <em>velocity deviation</em> should be under 3% (considering a 0Hz to 5kHz band).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>External (third party) stages with high-accuracy encoders and programmable encoder output increment can be configured and used as position-based sources of external reference trigger. In that case, the impact of the scanner’s speed deviation is overcome entirely. Impact of sample vibration remains.</p>
+</div>
+</section>
+<section id="parametric-solution-increase-scanspeed-and-decrease-verticalspacing-for-improved-robustness">
+<h2>Parametric Solution: Increase ScanSpeed and Decrease VerticalSpacing for Improved Robustness<a class="headerlink" href="#parametric-solution-increase-scanspeed-and-decrease-verticalspacing-for-improved-robustness" title="Link to this heading"></a></h2>
+<p>The impact of <em>velocity deviations</em> is reduced by the following choices of parametrization:</p>
+<ul class="simple">
+<li><p>Increasing the value of the <code class="docutils literal notranslate"><span class="pre">ScanSpeed</span></code> feature reduces the impact of vibrational <em>velocity deviation</em>.</p></li>
+<li><p>Decreasing the vertical <em>observation interval</em> (i.e decreasing <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpacing</span></code>) reduces the impact of any <em>velocity deviation</em>.</p></li>
+</ul>
+<p>This approach is limited by internal operation details of gen4 devices:
+A stack of <em>internal frames</em> is recoderd and stored while the device vertically scans through the scan range. One <em>internal frame</em> is recorded and stored each distance increment of <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpacing</span></code>.
+The frame count of the stack is thus equal to <code class="docutils literal notranslate"><span class="pre">ScanRange</span></code> divided by <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpacing</span></code>.</p>
+<p>The above-described parametric optimization is, hence, subject to the following limits:</p>
+<ul class="simple">
+<li><p>The maximum storable internal frame count is limited. Maximum scan range is, therefore, limited to the product of <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpacing</span></code> * maximum frame count. Decreasing vertical spacing might shrink the maximum scan range below the application requirements.</p></li>
+<li><p>The internal rate of recording and storing frames is given by <code class="docutils literal notranslate"><span class="pre">ScanSpeed</span></code> / <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpacing</span></code>. This rate is subject to a maximum, too. This criterion limits the approach of simultaneously increasing <code class="docutils literal notranslate"><span class="pre">ScanSpeed</span></code> and decreasing <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpacing</span></code>.</p></li>
+</ul>
+<p>After the scan, gen4 devices process the stack of stored frames for extracting 3D topography. The duration of processing is proportional to the frame count.
+As decreasing <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpacing</span></code> increases the internal frame count, this optimization comes at a cost of measurement latency and, possibly, cycle time.</p>
+</section>
+<section id="extended-parametric-solution-low-verticalspreading-enables-very-short-observation-interval">
+<h2>Extended Parametric Solution: Low VerticalSpreading Enables Very Short Observation Interval<a class="headerlink" href="#extended-parametric-solution-low-verticalspreading-enables-very-short-observation-interval" title="Link to this heading"></a></h2>
+<p>The degree of <em>exposure time spreading</em> is configurable in gen4 devices.
+The concept refers to chosing whether interference signals are observed and detected continously (fully spread) over the duration of a frame or during a confined shorter interval (less spread).
+The latter choice enables very short vertical <em>observation interval</em> without entailing the above-mentioned issues of high internal frame rate and high frame count.</p>
+<p>The figure below visualizes the implementation of configurable <em>exposure time spreading</em> and the close interaction with exposure time control (usage of the <code class="docutils literal notranslate"><span class="pre">ExposureRatio</span></code> feature).</p>
+<p>By default (when <code class="docutils literal notranslate"><span class="pre">TargetVerticalSpreading</span></code> = 100%), the exposure time of a frame is spread over the entire frame.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">ExposureRatio</span></code> = 1.0 the frame’s exposure time is essentially equal to the frame duration, and the vertical <em>observation interval</em> is, hence,  equal to the frame spacing (<code class="docutils literal notranslate"><span class="pre">ActualVerticalSpacing</span></code>).</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">ExposureRatio</span></code> is set to a value lower than 1.0, the frame exposure time is shorter than the frame duration. In that case, the exposure will be pulse with modulated (intermittingly turned on and off several times per frame) with a duty cycle defined by <code class="docutils literal notranslate"><span class="pre">ExposureRatio</span></code>. However, the <em>observation interval</em> will still be as long as the frame spacing.</p>
+<p>By setting <code class="docutils literal notranslate"><span class="pre">TargetVerticalSpreading</span></code> to a value below 100%, the user reduces the <em>observation interval</em>. As shown below, the <em>observation interval</em> shortening is, internally, achieved by reducing the number of cycles. The device maintains constant overall exposure duration, and hence WLI amplitude, by compensating with a duty cycle increase.</p>
+<p>Decreasing <code class="docutils literal notranslate"><span class="pre">TargetVerticalSpreading</span></code>, therefore, effectively reduces the impact of vibrations and uneven scan motion.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As the visualization hints, the actual degree of exposure spreading applied is subject to some limitations and quantization. The user specifies a target percentage in the <code class="docutils literal notranslate"><span class="pre">TargetVerticalSpacing</span></code> feature. Reducing <code class="docutils literal notranslate"><span class="pre">TargetVerticalSpreading</span></code> below <code class="docutils literal notranslate"><span class="pre">ExposureRatio</span></code> has no additional effect. In that case, <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpreading</span></code> will be set to the value of 100% * <code class="docutils literal notranslate"><span class="pre">ExposureRatio</span></code> internally. Further, The vertical <em>observation interval</em> cannot be reduced below the wavelength value. In that case <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpreading</span></code> will be set to 100% * <code class="docutils literal notranslate"><span class="pre">EffectiveWavelength</span></code>/<code class="docutils literal notranslate"><span class="pre">ActualVerticalSpacing</span></code> internally.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Unfortunately, reducing <code class="docutils literal notranslate"><span class="pre">TargetVerticalSpreading</span></code> might not be a practical solution for high-magnification (20x, 50x) optics. These require low <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpacing</span></code> and, depending on illumination type and sample reflectance, high <code class="docutils literal notranslate"><span class="pre">ExposureRatio</span></code>.</p>
+</div>
+<figure class="align-center" id="id1">
+<span id="timing"></span><a class="reference internal image-reference" href="../_images/VerticalSpreading_figure1.png"><img alt="../_images/VerticalSpreading_figure1.png" src="../_images/VerticalSpreading_figure1.png" style="width: 493.2px; height: 361.2px;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 7 </span><span class="caption-text">Exposure diagrams as a function of <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpreading</span></code> and <code class="docutils literal notranslate"><span class="pre">ExposureRatio</span></code> (conceptual visualization)</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="practical-implementation">
+<h2>Practical Implementation<a class="headerlink" href="#practical-implementation" title="Link to this heading"></a></h2>
+<p>As a starting point, use camera parameters that fulfill the prerequisite of matched wavelength setting and provide satisfactory data (while possibly suffering from sporadic velocity mismatch artifacts).
+Implement the optimization following the sequence below:</p>
+<ul class="simple">
+<li><p>Set LightBrightness to a value of 100%.</p></li>
+<li><p>Increase <code class="docutils literal notranslate"><span class="pre">TargetVerticalSpacing</span></code> to a large but reasonable value: E.g. use the preset <code class="docutils literal notranslate"><span class="pre">TargetVerticalSpacing</span></code> value as loaded when setting the OpticType feature to the value representing the optic harware installed. Or even 1.5x this value.</p></li>
+<li><p>(Iteratively) increase <code class="docutils literal notranslate"><span class="pre">ScanSpeed</span></code> to the maximum functional value.</p></li>
+<li><p>Iteratively decrease <code class="docutils literal notranslate"><span class="pre">ExposureRatio</span></code> to the lowest value providing reasonable amplitude. Stop decreasing <code class="docutils literal notranslate"><span class="pre">ExposureRatio</span></code> at a value of 2% and decrease <code class="docutils literal notranslate"><span class="pre">LightBrightness</span></code> instead.</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">TargetVerticalSpreading</span></code> to a value of 1% for shortest possible <em>observation interval</em>.</p></li>
+<li><p>Validate that amplitude is stable and sufficient over measurement repetitions in the entire FOV.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In presence of significant vibrations, minimizing <code class="docutils literal notranslate"><span class="pre">ActualVerticalSpreading</span></code> provides best results. In exceptional cases (only moderate vibrations and low sample reflectance) optimum values of <code class="docutils literal notranslate"><span class="pre">TargetVerticalSpreading</span></code> are anywhere between 0% and 100%.</p>
+</div>
+</section>
+<section id="document-history">
+<h2>Document History<a class="headerlink" href="#document-history" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Version</p></th>
+<th class="head"><p>Date</p></th>
+<th class="head"><p>Changes</p></th>
+<th class="head"><p>Responsible</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>19.3.0.1</p></td>
+<td><p>25-03-2025</p></td>
+<td><p>initial version</p></td>
+<td><p>cl</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../tn_19.2.x.y/tn_19.2.x.y.html" class="btn btn-neutral float-left" title="TN_19.2.0.1: Configuring the Optic Type" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tn_19.4.x.y/tn_19.4.x.y.html" class="btn btn-neutral float-right" title="TN_19.4.0.1: Scan Motion Monitoring (zTag-reading)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Heliotis AG.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

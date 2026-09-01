@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<?xml-stylesheet href="C:\Program Files\NeuroCheck 6.2\XSL\CFGX_PI_Detailed.xsl" type="text/xsl"?>
+<neurocheck_pi_configuration name="NeuroCheck plug-in configuration" xml:lang="en" xmlns="http://www.neurocheck.com/xml">
+   <!-- ################################  Header information. Do not change!  ################################# -->
+   <header name="Header information">
+      <created_by_name name="Name of creating plug-in">C:\Users\mario.fischer\dev\00_git\examples\neurocheck\h8SurfaceSimple\Software Extensions\PlugIns\PI_3DTools.NET.dll</created_by_name>
+      <created_by_version name="Created by plug-in version">6.2.3.0</created_by_version>
+      <created_date_time name="Date/time of creation of this file">2022-12-14 - 16:01:00</created_date_time>
+      <created_by_dir name="NeuroCheck installation directory">C:\Program Files\NeuroCheck 6.2\</created_by_dir>
+   </header>
+   <body name="Configuration data">
+      <plugin name="Plug-in" assembly="PI_3DTools.NET.dll" version="6.2.3.0" date_time="2022-12-15 - 10:44:01">
+         <version name="Version" data_type="String">6.2.3.0</version>
+         <cdt_3d_configuration name="CDT_3D configuration" data_type="String">&lt;configuration&gt;&lt;version&gt;6.2.3.0&lt;/version&gt;&lt;visualization&gt;&lt;settings&gt;&lt;global&gt;&lt;light&gt;1&lt;/light&gt;&lt;antialiasing&gt;1&lt;/antialiasing&gt;&lt;/global&gt;&lt;local /&gt;&lt;/settings&gt;&lt;/visualization&gt;&lt;/configuration&gt;</cdt_3d_configuration>
+      </plugin>
+   </body>
+</neurocheck_pi_configuration>
