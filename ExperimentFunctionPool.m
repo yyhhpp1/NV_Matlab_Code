@@ -441,6 +441,20 @@ if isfield(handles,'takeDarkRef')
     gmSEQ.bTakeDarkRef = get(handles.takeDarkRef,'Value');
 end
 
+% Per-sweep-point dark reference: capture a fresh laser-off burst at EVERY sweep
+% point rather than once for the whole run. The pedestal has been observed to
+% move with the swept parameter itself on hc_* sequences (hc_Scan_init_time),
+% which one pre-sweep dark cannot track -- it is then correct at one point and
+% biases every other one along the axis.
+%
+% Strictly stronger than bTakeDarkRef, so it does not require that box as well:
+% ticking this one means fresh darks, just more of them. isfield-guarded so an
+% older .fig without the checkbox still loads.
+gmSEQ.bTakeDarkRefPerM = 0;
+if isfield(handles,'takeDarkRefPerM')
+    gmSEQ.bTakeDarkRefPerM = get(handles.takeDarkRefPerM,'Value');
+end
+
 wcfg = WidefieldConfig();
 if ~isfield(gmSEQ,'exposureSeconds')      || isempty(gmSEQ.exposureSeconds);      gmSEQ.exposureSeconds      = wcfg.exposureSeconds;      end
 if ~isfield(gmSEQ,'nPeriods')             || isempty(gmSEQ.nPeriods);             gmSEQ.nPeriods             = wcfg.nPeriods;             end

@@ -16,7 +16,7 @@ gSG.bModSrc = 'External';
 gmSEQ.WFcontrastExpr = 'Q';
 
 cfg = WidefieldConfig();
-Q = hc_QuarterBin(cfg);      % quarter period (ns) = GUI QP field
+%Q = hc_QuarterBin(cfg);      % quarter period (ns) = GUI QP field
 % CamRef TTL width: CtrGateDur as intended, but passed through hc_CamRefWidth so
 % it cannot exceed Q/2. The width is yours to choose anywhere below that; above
 % it the arithmetic breaks regardless of intent. The four pulses sit at 0, Q, 2Q,
@@ -27,15 +27,16 @@ Q = hc_QuarterBin(cfg);      % quarter period (ns) = GUI QP field
 % the camera exposure source (RunSequence_HeliCam), so a full-quarter exposure and
 % a legal reference width cannot both come from it; use cfg.camRefWidthNs if you
 % need them decoupled. hc_CamRefWidth prints a warning whenever it clamps.
-e = hc_CamRefWidth(cfg, Q, gmSEQ.CtrGateDur);
+e = gmSEQ.CtrGateDur;
 u = gmSEQ.post_MW_wait;
 d = gmSEQ.post_init_wait;    % delay of MW start into Q2 (ns)
 p = gmSEQ.halfpi;
 m = gmSEQ.m;
+Q = e + gmSEQ.readout + d + p + u + m;
 
 %Laser on time will be derived from d,u,Q and MW length
-i1 = 2*Q + Q - (d+p+u+m);
-i2 = m + Q;
+i1 = 2*Q - (d+p+u+m);
+i2 = m + Q + Q;
 
 % i1 is a DERIVED pulse width, so it silently goes negative once the swept m
 % grows past the room left in three quarters -- and a negative width is not a
@@ -54,7 +55,7 @@ gmSEQ.CHN(1).DT    = e * ones(1, 4);
 % --- Laser: Q1 (init/reference) and Q4 (readout/signal) ---------------------
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN   = PBDictionary('GreenAOM');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 2;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T       = [0, 3*Q-m];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T       = [0, 2*Q-m];
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = [i1, i2];
 
 % --- MW pulse in the dark gap between the two laser pulses ------------------
@@ -81,7 +82,7 @@ gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = p + hp_MW_switch_time;
 % --- Period length marker (4 quarter bins) ----------------------------------
 gmSEQ.CHN(numel(gmSEQ.CHN)+1).PBN   = PBDictionary('dummy1');
 gmSEQ.CHN(numel(gmSEQ.CHN)).NRise   = 2;
-gmSEQ.CHN(numel(gmSEQ.CHN)).T       = [0, 4*Q];
+gmSEQ.CHN(numel(gmSEQ.CHN)).T       = [0, 4*Q-1000];
 gmSEQ.CHN(numel(gmSEQ.CHN)).DT      = [1000, 1000];
 
-ApplyDelays();
+ApplyNoDelays();

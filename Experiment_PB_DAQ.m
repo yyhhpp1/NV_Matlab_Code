@@ -22,7 +22,7 @@ function varargout = Experiment_PB_DAQ(varargin)
 
 % Edit the above text to modify the response to help Experiment_PB_DAQ
 
-% Last Modified by GUIDE v2.5 31-Aug-2026 15:59:08
+% Last Modified by GUIDE v2.5 08-Sep-2026 16:12:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2885,3 +2885,12 @@ function overwriteColorBar_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of overwriteColorBar
+
+
+% --- Executes on button press in takeDarkRefPerM.
+function takeDarkRefPerM_Callback(hObject, eventdata, handles)
+% hObject    handle to takeDarkRefPerM (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of takeDarkRefPerM

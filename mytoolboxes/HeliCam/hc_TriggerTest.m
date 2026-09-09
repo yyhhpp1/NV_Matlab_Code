@@ -220,7 +220,7 @@ function reportPinMap(camRefPin)
 % PBDictionary shares it. A shared pin means an unrelated sequence channel drives
 % the camera reference line (and ApplyDelays mis-tags that channel as CamRef).
     names = {'ctr0','dummy1','GreenAOM','RedAOM','MWSwitch','+X','-X','+Y','-Y', ...
-             'PD','MWSwitch2','MWSwitch3'};
+             'PD','MWSwitch2','MWSwitch3','CamTrig'};
     clash = {};
     for i = 1:numel(names)
         try

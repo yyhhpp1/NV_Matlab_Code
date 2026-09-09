@@ -1774,6 +1774,7 @@ else
         device = 'Obj_Piezo';
         scan = zscan; % change y
         count =zeros(1,NN);
+        jDone = 0;  % how many points were actually measured (StopTracking can cut the sweep short)
         for j=1:NN
             WriteVoltage(device, scan(j) + offset(3));
             if j==1
@@ -1806,6 +1807,7 @@ else
             DAQmxStopTask(hCounter);
             A=ProcessDataVector(A,1);
             count(j)=ProcessDataCPS(A, NRead, DT);
+            jDone = j;
 
             DAQmxClearTask(hPulse);
             DAQmxClearTask(hCounter);
@@ -1819,11 +1821,31 @@ else
             if get(handles.StopTracking, 'Value'), break; end
         end
 
-        gScan.FixVz = z0;
-        set(handles.FixVz,'String',num2str(z0));
+        % Park at the brightest Z, the way the PFM450 branch above does. This used
+        % to write z0 back under a '%go to new position' comment, so the sweep
+        % measured the focus curve and then threw the answer away.
+        %
+        % Only count(1:jDone) is searched: StopTracking breaks out of the loop
+        % mid-sweep and leaves the tail of count as the zeros it was preallocated
+        % with, which are not measurements and must not be allowed to define the
+        % scan range the peak is picked from.
+        if jDone < 1
+            newZ = z0;
+            disp('TrackZ: no points measured, Z left where it started.');
+        else
+            [peakCount, ind] = max(count(1:jDone));
+            newZ = scan(ind);
+            fprintf('TrackZ: best Z = %g um (%g cps), was %g um.\n', newZ, peakCount, z0);
+            if jDone < NN
+                fprintf('TrackZ: sweep stopped early, peak taken from %d of %d points.\n', jDone, NN);
+            end
+        end
+
+        gScan.FixVz = newZ;
+        set(handles.FixVz,'String',num2str(newZ));
 
         %go to new position
-        WriteVoltage('Obj_Piezo',z0);
+        WriteVoltage('Obj_Piezo', newZ + offset(3));
 
     catch ME
         KillAllTasks;

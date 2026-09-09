@@ -189,6 +189,14 @@ switch varargin{1}
         hc_Scan_init_time();
     case 'hc_Scan_init_time_matched_ref'
         hc_Scan_init_time_matched_ref();
+    case 'ids_Image'
+        ids_Image();
+    case 'ids_Rabi'
+        ids_Rabi();
+    case 'ids_ODMR'
+        ids_ODMR();
+    case 'ids_T1'
+        ids_T1();
     case 'PBDictionary'
         varargout{1}=PBDictionary(varargin{2});
     case 'CtrDur'
@@ -288,6 +296,12 @@ StrL{numel(StrL)+1}='hc_T1_S01_R_D_R';
 StrL{numel(StrL)+1}='hc_ODMR';
 StrL{numel(StrL)+1}='hc_Scan_init_time';
 StrL{numel(StrL)+1}='hc_Scan_init_time_matched_ref';
+
+StrL{numel(StrL)+1}='--------------------Widefield (IDS uEye+)--------------------';
+StrL{numel(StrL)+1}='ids_Image';
+StrL{numel(StrL)+1}='ids_Rabi';
+StrL{numel(StrL)+1}='ids_ODMR';
+StrL{numel(StrL)+1}='ids_T1';
 
 StrL{numel(StrL)+1}='--------------------T1--------------------';
 StrL{numel(StrL)+1}='T1_Sij_all';

@@ -52,7 +52,7 @@ def cameraConfig(camera):
 
     # LIA
     camera.remote_device.node_map.DeviceOperationMode.value = "LockInCam"
-    camera.remote_device.node_map.Scan3dExtractionMethod.value = "rawIQ"
+    camera.remote_device.node_map.Scan3dExtractionMethod.value = "rawIQ"  # ATTENTION
     camera.remote_device.node_map.LockInTargetTimeConstantNPeriods.value = NPeriods
     camera.remote_device.node_map.LockInTargetReferenceFrequency.value = refFrequency
     camera.remote_device.node_map.AcquisitionBurstFrameCount.value = NFrames

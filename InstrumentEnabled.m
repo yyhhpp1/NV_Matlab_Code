@@ -18,5 +18,6 @@ switch lower(name)
     case 'pulseblaster';  tf = true;
     case 'nidaq';         tf = true;   % NI-DAQ counters / KillAllTasks
     case 'camera';        tf = true;   % HeliCam widefield detector
+    case 'idscam';        tf = false;   % IDS uEye+ widefield intensity camera
     otherwise;            tf = true;   % unknown -> enabled (no surprise breakage)
 end

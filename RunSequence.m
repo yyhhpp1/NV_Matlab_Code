@@ -13,7 +13,7 @@ end
 %connect to fpga if not already connected
 % Skip the FPGA preamble when FPGA is disabled (InstrumentEnabled) or for
 % HeliCam widefield (hc_*) runs, which never use the FPGA.
-if InstrumentEnabled('fpga') && ~strcmp(gmSEQ.meas,'HeliCam')
+if InstrumentEnabled('fpga') && ~any(strcmp(gmSEQ.meas, {'HeliCam','IDSCam'}))
     Set_FPGA_GUI_buttons(handles, 'on')
     if isempty(fpga.client_socket)
         fpga = FPGA_AWG_Client(handles);
@@ -46,6 +46,16 @@ drawnow;
 % Diverts from the NI-DAQ counter branches below (no ctr0 / ReadCountersN).
 if strcmp(gmSEQ.meas,'HeliCam')
     RunSequence_HeliCam(hObject, eventdata, handles);
+    return
+end
+
+% IDS uEye+ widefield: same image-based path, different camera model. Shares
+% every downstream stage with the HeliCam branch (gWide, DisplayWidefield,
+% AcquireDarkRef, SaveWidefield) and differs only in how a frame becomes an I/Q
+% pair -- the IDS has no demodulator, so the signal/reference split is between
+% frames rather than inside one. See mytoolboxes/IDSCam/IDSConfig.m.
+if strcmp(gmSEQ.meas,'IDSCam')
+    RunSequence_IDSCam(hObject, eventdata, handles);
     return
 end
 
@@ -636,7 +646,12 @@ function RunSequence_HeliCam(hObject, eventdata, handles)
 % Image-based counterpart to the NI-DAQ branches: the camera is configured once,
 % only the PulseBlaster timing changes per sweep point, and each burst yields
 % per-pixel I/Q that form a contrast image. No ctr0 / ReadCountersN here.
-global gmSEQ gSG gSG2 gCam gWide gScan
+% gWideDark is deliberately NOT part of gWide: it holds the per-sweep-point dark
+% stacks (H x W x N per quadrature), and TemporarySave writes the whole of gWide
+% to disk at EVERY sweep point. Everything inside gWide is small enough to afford
+% that; these stacks are not. Keeping them in their own global makes that size
+% boundary explicit instead of hiding it in a list of fields to skip.
+global gmSEQ gSG gSG2 gCam gWide gScan gWideDark
 BackupFile = 'C:\MATLAB_Code\Data\TempDataBackup\Temp.mat';
 
 % Lazy backend init (robust to Initialize order / detector switch).
@@ -889,10 +904,15 @@ if bExpSweep
     end
 
     % The dark pedestal accumulates during the exposure, and the exposure is the
-    % swept quantity -- so a single dark is correct at exactly one point. The
-    % sequence file declares WFneedsDarkRef, which ticks the box automatically;
-    % this fires only if it was deliberately unticked afterwards.
-    if ~(isfield(gmSEQ,'bTakeDarkRef') && gmSEQ.bTakeDarkRef)
+    % swept quantity -- so a single dark is correct at exactly one point. Either
+    % box puts this sequence on the per-point path (takeDarkRef because
+    % hc_scan_exposure is special-cased onto it, takeDarkRefPerM because that is
+    % what it does everywhere), so the warning fires only when BOTH are off. The
+    % sequence file declares WFneedsDarkRef, which ticks takeDarkRef
+    % automatically; this therefore means it was deliberately unticked afterwards.
+    bExpDarkOK = (isfield(gmSEQ,'bTakeDarkRef')     && gmSEQ.bTakeDarkRef) || ...
+                 (isfield(gmSEQ,'bTakeDarkRefPerM') && gmSEQ.bTakeDarkRefPerM);
+    if ~bExpDarkOK
         fprintf(2, ['[Widefield] hc_scan_exposure: WARNING -- takeDarkRef is OFF. The ', ...
                     'dark pedestal scales with exposure, which is the swept quantity, ', ...
                     'so whatever dark is applied is right at ONE point of this sweep ', ...
@@ -900,13 +920,20 @@ if bExpSweep
                     'systematically along the axis. Tick takeDarkRef.\n']);
     end
 
+    % The dark half of this line is a claim about what the run will do, so it has
+    % to follow the boxes rather than assert the per-point case unconditionally.
+    if bExpDarkOK
+        darkNote = 'and a fresh dark taken at EVERY point';
+    else
+        darkNote = 'and NO per-point dark taken (see the warning above)';
+    end
     fprintf(['[Widefield] Exposure sweep: %d points, gate %g..%g ns -> exposure ', ...
              '%g..%g ns (gate - %g ns overhead, floor %g ns). Camera reconfigured ', ...
-             'and a fresh dark taken at EVERY point.\n'], ...
+             '%s.\n'], ...
             numel(eAll), min(eAll), max(eAll), ...
             max(min(eAll) - overheadNs, expoFloorNs), ...
             max(max(eAll) - overheadNs, expoFloorNs), ...
-            overheadNs, expoFloorNs);
+            overheadNs, expoFloorNs, darkNote);
 end
 
 % --- Z-swept sequences (hc_ZScan): the sweep axis drives the objective -------
@@ -1052,43 +1079,82 @@ gWide.roiM2   = zeros(1, N);   % running sum of squared deviations
 gWide.roiExpr = '';            % which expression this state belongs to
 gWide.roiLast = [0 0];         % [pass, point] last accumulated -- anti-double-count
 
-% Per-point dark pedestal audit trail, written only by the hc_scan_exposure path
-% below. Frame-MEAN scalars, not the H x W x N dark stacks themselves: the full
-% stacks would be ~2 MB per point, and TemporarySave writes the whole of gWide to
-% disk at EVERY point -- the same cost that made the Average x N ROI matrix
-% unaffordable and forced the Welford accumulators above. These two vectors are
-% enough to see how the pedestal tracked the swept exposure after the fact.
+% Per-point dark pedestal audit trail. Frame-MEAN scalars, one per sweep point:
+% cheap enough to live in gWide, which TemporarySave writes to disk at EVERY
+% point -- the same cost that made the Average x N ROI matrix unaffordable and
+% forced the Welford accumulators above. These two vectors are enough to SEE how
+% the pedestal tracked the swept parameter without opening the full stacks; the
+% stacks themselves go to gWideDark, allocated below.
 gWide.darkPointI = NaN(1, N);
 gWide.darkPointQ = NaN(1, N);
 
 % --- Dark reference: subtracted from every I/Q below ------------------------
-% Two sources. The GUI checkbox takes ONE fresh laser-off burst here, before the
-% sweep and outside the Average loop, so it is matched to this run's exposure /
-% nPeriods / nFrames by construction (the camera was configured just above and is
-% not touched again). Camera pixel noise is static at fixed settings, so that one
-% dark I / dark Q pair serves every sweep point and every average pass. Unchecked
-% falls back to the stored wf_darkref.mat (hc_DarkRef), which carries the usual
+% Three regimes, in the order tested below.
+%
+% PER SWEEP POINT (takeDarkRefPerM, or hc_scan_exposure with takeDarkRef): one
+% fresh laser-off burst per POINT -- captured inside the loop immediately before
+% that point's acquisition on the first average pass, then reused by every later
+% pass, so the count is N darks per run and not N per pass. This is the right
+% regime whenever the pedestal
+% moves with the swept parameter, which is not a corner case -- it was observed
+% directly on hc_Scan_init_time, where the swept wait changes the PB program and
+% with it the duty cycle the sensor sees. A single pre-sweep dark is then correct
+% at exactly one point and biases every other one systematically along the axis,
+% and the bias is invisible in the data because it looks like signal.
+%
+% ONCE PER RUN (takeDarkRef): one fresh burst here, before the sweep and outside
+% the Average loop, matched to this run's exposure / nPeriods / nFrames by
+% construction (the camera was configured just above and is not touched again).
+% Correct whenever the pedestal really is constant across the sweep -- cheaper by
+% exactly one burst per point.
+%
+% STORED (neither box): falls back to wf_darkref.mat (hc_DarkRef), with the usual
 % staleness risk.
-bDarkPerPoint = bExpSweep && isfield(gmSEQ,'bTakeDarkRef') && gmSEQ.bTakeDarkRef;
+%
+% hc_scan_exposure stays on the per-point path through takeDarkRef alone, as it
+% always has: there the swept quantity IS the exposure, so a per-run dark is not
+% merely imprecise but structurally wrong, and that must not depend on a second
+% box being remembered.
+bPerMBox      = isfield(gmSEQ,'bTakeDarkRefPerM') && gmSEQ.bTakeDarkRefPerM;
+bDarkPerPoint = bPerMBox || (bExpSweep && isfield(gmSEQ,'bTakeDarkRef') && gmSEQ.bTakeDarkRef);
 if bDarkPerPoint
-    % hc_scan_exposure: DEFERRED to the loop. One dark here would be matched to
-    % one exposure, and the exposure is what this sequence sweeps -- taking it
-    % now, at the GUI CtrGateDur rather than at any sweep point's gate, would be
-    % both wasted and wrong. The loop captures a fresh pair immediately after
-    % reconfiguring the camera for each point, so every point is subtracted with
-    % its own pedestal.
+    % DEFERRED to the loop -- nothing is captured here. A dark taken now would be
+    % matched to whatever state the pre-loop configuration left behind rather
+    % than to any point the sweep actually visits, which for hc_scan_exposure
+    % means the GUI CtrGateDur rather than a swept gate.
     darkI = [];
     darkQ = [];
     gWide.darkSource     = 'fresh-per-point';
     gWide.darkSubtracted = true;
-    fprintf(['[Widefield] Dark reference: per-sweep-point (hc_scan_exposure). One ', ...
-             'laser-off pair will be captured at each of the %d exposures, before ', ...
-             'that point''s acquisition.\n'], N);
+
+    % Full per-point stacks, in their own global (see the gWideDark note at the
+    % top of this function for why they are not fields of gWide). Storing them --
+    % rather than only the frame-mean scalars -- is what keeps the subtraction
+    % REVERSIBLE from the .h5: with one dark per point, /dark_I alone cannot say
+    % what was removed where.
+    gWideDark = struct();
+    gWideDark.I = NaN(H, W, N);
+    gWideDark.Q = NaN(H, W, N);
+
+    if bPerMBox; darkWhy = 'takeDarkRefPerM'; else; darkWhy = 'hc_scan_exposure'; end
+    darkMB = 2 * H * W * N * 8 / 2^20;
+    fprintf(['[Widefield] Dark reference: PER SWEEP POINT (%s). One laser-off pair ', ...
+             'is captured at each of the %d points on the FIRST average pass, just ', ...
+             'before that point''s acquisition, and reused unchanged by every later ', ...
+             'pass. So the first pass takes twice the bursts and later passes take ', ...
+             'no extra ones. Holds %.0f MB of dark stacks in memory for the .h5 ', ...
+             '(gzip gets them to roughly half that on disk).\n'], ...
+            darkWhy, N, darkMB);
 elseif isfield(gmSEQ,'bTakeDarkRef') && gmSEQ.bTakeDarkRef
+    % Cleared, not left alone: gWideDark is a global, so a previous per-point run's
+    % stacks would otherwise still be sitting there when WriteWidefieldH5 looks,
+    % and this run's file would carry another run's darks under its own name.
+    gWideDark = [];
     [darkI, darkQ] = AcquireDarkRef(gCam, ccfg, H, W);
     gWide.darkSource   = 'fresh';
     gWide.darkSubtracted = ~isempty(darkI);
 else
+    gWideDark = [];
     [darkI, darkQ] = LoadDarkRefForRun(ccfg, H, W);
     gWide.darkSource   = 'stored';
     gWide.darkSubtracted = ~isempty(darkI);
@@ -1139,24 +1205,9 @@ try
             % is not optional: a new exposure means a new target reference
             % frequency, and the camera is free to land on a different actual
             % time constant, leaving PB short of edges and readIQ hanging.
-            %
-            % Then the matching dark, BEFORE the real program is built:
-            % AcquireDarkRef runs its own PB program (this sequence's, minus the
-            % laser) and leaves gmSEQ.CHN converted to seconds, which is safe
-            % only because SequencePool below rmfields CHN and rebuilds it in ns.
             if bExpSweep
                 ccfg = ConfigureExposure(gCam, ccfg, gmSEQ.SweepParam(j), ...
                                          overheadNs, nBlankCfg, nCouplingExtra);
-                if bDarkPerPoint
-                    [darkI, darkQ] = AcquireDarkRef(gCam, ccfg, H, W, ...
-                                                    gmSEQ.SweepParam(j), (i == 1 && j == 1));
-                    gWide.darkPointI(j) = mean(darkI(:), 'omitnan');
-                    gWide.darkPointQ(j) = mean(darkQ(:), 'omitnan');
-                    % Latest pair only -- see the darkPointI/Q comment above for
-                    % why the full stacks are not retained.
-                    gWide.darkI = darkI;
-                    gWide.darkQ = darkQ;
-                end
             end
 
             if bFreqSweep && srsOn
@@ -1169,6 +1220,52 @@ try
                 ImageFunctionPool('WriteVoltage',{}, {}, {},'Obj_Piezo', gmSEQ.SweepParam(j))
                 %WriteVoltage('Obj_Piezo', gmSEQ.SweepParam(j));
                 pause(zSettle);
+            end
+
+            % --- This point's own dark pedestal ------------------------------
+            % ONE dark per sweep point for the whole run: measured on the FIRST
+            % average pass and reused unchanged by every later pass. The pedestal
+            % this captures belongs to the POINT -- to the program the sweep value
+            % builds, and the duty cycle that program gives the sensor -- and that
+            % does not change from pass to pass, so re-measuring it each pass would
+            % buy no accuracy while costing an extra burst per point per pass.
+            %
+            % Holding it fixed across passes is also what keeps the passes
+            % comparable. Their scatter is the error bar drawn on axes3, so a dark
+            % that wandered between passes would enter that spread and be read as
+            % measurement noise when it is really dark noise.
+            %
+            % Placed LAST of the per-point hardware steps and BEFORE the real
+            % program is built, so the dark is taken with the instrument in exactly
+            % the state this point will be measured in -- same exposure, same MW
+            % frequency, same objective position -- and with this point's own PB
+            % program (minus the laser). That is the whole content of "per sweep
+            % point": a dark from a different program is a dark for a different
+            % duty cycle, which is the bias this mode exists to remove.
+            %
+            % AcquireDarkRef leaves gmSEQ.CHN converted to seconds and with the
+            % laser channel dropped. That is safe only because SequencePool just
+            % below rmfields CHN and rebuilds it in ns, so this call must stay
+            % above that line.
+            if bDarkPerPoint
+                if i == 1
+                    [darkI, darkQ] = AcquireDarkRef(gCam, ccfg, H, W, ...
+                                                    gmSEQ.SweepParam(j), (j == 1));
+                    gWideDark.I(:,:,j) = darkI;
+                    gWideDark.Q(:,:,j) = darkQ;
+                    gWide.darkPointI(j) = mean(darkI(:), 'omitnan');
+                    gWide.darkPointQ(j) = mean(darkQ(:), 'omitnan');
+                else
+                    darkI = gWideDark.I(:,:,j);
+                    darkQ = gWideDark.Q(:,:,j);
+                end
+                % gWide keeps the LATEST pair only (it is written to disk at every
+                % point); the full per-point stacks live in gWideDark, which is not.
+                % Because the pair is fixed across passes,
+                %   raw I(:,:,j) = gWide.I(:,:,j) + nF * gWideDark.I(:,:,j)
+                % holds after any number of passes.
+                gWide.darkI = darkI;
+                gWide.darkQ = darkQ;
             end
 
             % Program PulseBlaster for this point (emits the CamRef quarter train).
@@ -1213,11 +1310,12 @@ try
             %
             % Each dark frame pairs with its own quadrature. Both sides were
             % already polarity-inverted by readIQ, so these are plain
-            % subtractions and neither takes an extra minus. ONE dark pair serves
-            % every sweep point and every average pass; it was captured once
-            % before this loop -- EXCEPT under hc_scan_exposure, where the swept
-            % gate changes the integration time and therefore the pedestal, so
-            % darkI/darkQ were just replaced with this point's own pair above.
+            % subtractions and neither takes an extra minus. Which pair this is
+            % depends on the regime chosen before the loop: with a per-run dark,
+            % one pair captured once above serves every sweep point and every
+            % average pass; under per-point darks (takeDarkRefPerM, or
+            % hc_scan_exposure) darkI/darkQ were just replaced with this point's
+            % own pair a few lines up.
             % darkI/darkQ are the pedestal of ONE frame (AcquireDarkRef takes
             % mean(I,3)), which is what a pedestal physically is. Ij is a sum of
             % nF frames, so nF pedestals have to come off -- equivalent to
@@ -1316,6 +1414,293 @@ if pbOn; PBFunctionPool('PBON', 2^SequencePool('PBDictionary','GreenAOM')); end
 SaveWidefield(handles);
 set(handles.runningText, 'string', 'Stopped')
 disp('Widefield experiment completed!')
+
+function RunSequence_IDSCam(hObject, eventdata, handles)
+% Widefield acquisition with the IDS uEye+ U3-3140CP-M (scheme B1 + A2 + C1).
+%
+% Sibling of RunSequence_HeliCam. Everything downstream of the camera is SHARED
+% with it -- gWide, AcquireDarkRef, DisplayWidefield, SaveWidefieldAve,
+% SaveWidefield -- because both cameras satisfy the same four-method protocol.
+% What differs is entirely upstream:
+%
+%   HeliCam   one PB run = one lock-in period; the camera demodulates 4 quarter
+%             bins in-pixel and hands back two quadrature DIFFERENCES.
+%   IDS       one PB run = one SIG/REF block pair; the camera has no demodulator
+%             at all, so it hands back two plain frames and the signal/reference
+%             split is made here, in software, by which frame is which.
+%
+% So there are no quarter bins, no reference frequency, no edge budget and no
+% lock-in period on this path. There is a block plan (ids_BlockPlan), and the
+% one thing that has to be true is that the camera is free again before the next
+% CamTrig edge arrives.
+%
+% PB LOOP COUNT
+%
+% gmSEQ.Repeat = framePairs, NOT 2*framePairs: one PB program run already
+% contains both blocks and emits both triggers. The camera is asked for exactly
+% 2*framePairs frames, so the trigger count and the frame count match by
+% construction -- which is what turns a missed trigger into a loud timeout
+% instead of a burst whose SIG/REF pairing is silently inverted from the miss
+% onward.
+global gmSEQ gSG gSG2 gCamIDS gWide gWideDark
+BackupFile = 'C:\MATLAB_Code\Data\TempDataBackup\Temp.mat';
+
+% This path never fills the per-point dark stacks, so clear any left by a
+% previous HeliCam run -- WriteWidefieldH5 is shared, and a stale global would
+% otherwise write another camera's darks into this run's .h5.
+gWideDark = [];
+
+ccfg = IDSConfig();
+
+% Lazy backend init (robust to Initialize order / detector switch). gCamIDS is
+% separate from gCam on purpose: switching detectors must not require tearing
+% down the other camera, and the two SDKs have nothing in common.
+if isempty(gCamIDS) || ~isvalid(gCamIDS)
+    if ccfg.useFakeCamera
+        gCamIDS = FakeIDSCamera(ccfg);
+    else
+        gCamIDS = IDSCamInterface(ccfg);
+    end
+end
+
+gmSEQ.bGo  = 1;
+gmSEQ.bExp = 1;
+gmSEQ.ctrN = 1;            % no NI-DAQ counter gate in widefield mode
+CreateSavePath_Ave();
+
+% --- Block plan ------------------------------------------------------------
+% Recomputed here from the same accessors the sequence file used, so the pulse
+% diagram drawn at LoadSEQ and the exposure written to the camera cannot
+% describe different programs. ids_BlockPlan errors on an impossible plan, so a
+% run that cannot work is refused before anything is configured or acquired.
+shotNs = ids_ShotNs(ccfg);
+plan   = ids_BlockPlan(ccfg, shotNs, true);
+
+nPairs = max(1, round(ccfg.framePairs));
+ccfg.framePairs = nPairs;
+ccfg.exposureNs = plan.expoNs;
+ccfg.programNs  = plan.programNs;
+
+% One PB program run = one SIG/REF pair = 2 frames.
+gmSEQ.nPBPeriods = nPairs;
+gmSEQ.Repeat     = nPairs;
+gmSEQ.Samples    = nPairs;
+% Recorded for the .h5 attributes and for anything reading gmSEQ afterwards.
+gmSEQ.nFrames        = 2 * nPairs;
+gmSEQ.exposureSeconds = plan.expoNs * 1e-9;
+gmSEQ.shotNs         = shotNs;
+gmSEQ.blockNs        = plan.blockNs;
+
+fprintf(['[IDS] PB: %d program runs x %g ns = %.4g s burst; camera asked for ', ...
+         '%d frames (%d triggers).\n'], ...
+        nPairs, plan.programNs, nPairs * plan.programNs * 1e-9, ...
+        2*nPairs, 2*nPairs);
+
+% --- Configure the camera --------------------------------------------------
+gCamIDS.configure(ccfg);
+
+H = gCamIDS.Height; W = gCamIDS.Width; N = gmSEQ.NSweepParam;
+
+% Frequency-swept sequences (ids_ODMR) use GHz on the GUI -> Hz, as ODMR does.
+bFreqSweep = ~gSG.bfixedFreq;
+if bFreqSweep
+    gmSEQ.SweepParam = gmSEQ.SweepParam * 1e9;
+end
+
+% --- Result store ----------------------------------------------------------
+% Same field names as the HeliCam path so every downstream consumer works
+% unchanged, but the CONTENTS mean something different and the difference is
+% recorded in the file rather than left to be inferred:
+%   I = reference frames (MW off), Q = signal frames (MW on), both raw summed
+%   ADU, both positive, neither negated anywhere.
+gWide = struct();
+gWide.I          = NaN(H, W, N);
+gWide.Q          = NaN(H, W, N);
+gWide.SweepParam = gmSEQ.SweepParam;
+gWide.name       = char(string(gmSEQ.name));
+gWide.detector   = 'IDSCam';
+gWide.iqConvention = ['I = sum over frame pairs of the REFERENCE frame (MW off); ' ...
+    'Q = sum over frame pairs of the SIGNAL frame (MW on). Both are raw ' ...
+    'accumulated ADU on a plain intensity camera -- there is no lock-in and no ' ...
+    'polarity inversion on this path. Contrast is Q./I, near 1. Dark-subtracted ' ...
+    'as n_pairs x the per-frame pedestal.'];
+
+gWide.roiN    = zeros(1, N);
+gWide.roiMean = zeros(1, N);
+gWide.roiM2   = zeros(1, N);
+gWide.roiExpr = '';
+gWide.roiLast = [0 0];
+gWide.darkPointI = NaN(1, N);
+gWide.darkPointQ = NaN(1, N);
+
+% --- Dark reference --------------------------------------------------------
+% One pair per run. The exposure is constant across an ids_* sweep by
+% construction (the shot length is held fixed and the swept quantity moves
+% inside it), so the pedestal is constant too and one dark is correct at every
+% point -- which is exactly why the sequences are built that way.
+%
+% AcquireDarkRef is the HeliCam path's function, reused verbatim: it drops the
+% GreenAOM channel, runs this sequence's own PB program and averages the frames.
+% It works here because every ids_* sequence sets its program length with the
+% dummy1 marker rather than with the laser, so removing the laser cannot shorten
+% the program or move a CamTrig edge.
+%
+% Deliberately NOT falling back to LoadDarkRefForRun: that reads hc_DarkRef's
+% wf_darkref.mat, which is the HeliCam's pedestal. Its size check would reject
+% one (512x542 against this camera's ROI) so nothing wrong could actually be
+% subtracted, but the messages would name the wrong camera and the wrong file
+% while doing it. An untitled dark is a normal state -- say so plainly instead.
+%
+% takeDarkRefPerM is a HeliCam-path feature and is NOT honoured here. Saying so
+% out loud matters: the box stays ticked across a detector switch, and a run that
+% silently ignored it would carry one dark for the whole sweep while the operator
+% believed it had one per point -- exactly the bias that box exists to remove.
+if isfield(gmSEQ,'bTakeDarkRefPerM') && gmSEQ.bTakeDarkRefPerM
+    fprintf(2, ['[IDS] NOTE: takeDarkRefPerM is ticked but is not implemented on ', ...
+                'the IDS path -- this run takes ONE dark for the whole sweep. The ', ...
+                'ids_* sequences hold the shot length fixed and move the swept ', ...
+                'quantity inside it, so the pedestal should not track the sweep ', ...
+                'here; if you have evidence that it does, this branch needs the ', ...
+                'same per-point treatment as RunSequence_HeliCam.\n']);
+end
+if isfield(gmSEQ,'bTakeDarkRef') && gmSEQ.bTakeDarkRef
+    [darkI, darkQ] = AcquireDarkRef(gCamIDS, ccfg, H, W);
+    gWide.darkSource     = 'fresh';
+    gWide.darkSubtracted = ~isempty(darkI);
+else
+    darkI = [];
+    darkQ = [];
+    gWide.darkSubtracted = false;
+    fprintf(2, ['[IDS] Dark subtraction: OFF (takeDarkRef unticked). This sensor ', ...
+                'has no BlackLevel node, so the frames still carry the full ', ...
+                'per-pixel pedestal and Q./I will be pulled toward 1 by it. Tick ', ...
+                'takeDarkRef for anything quantitative.\n']);
+end
+if ~gWide.darkSubtracted; gWide.darkSource = 'none'; end
+gWide.darkI = darkI;
+gWide.darkQ = darkQ;
+
+srsOn = InstrumentEnabled('srs');
+pbOn  = InstrumentEnabled('pulseblaster');
+
+if ~pbOn
+    fprintf(2, ['[IDS] WARNING: the PulseBlaster is disabled in ', ...
+                'InstrumentEnabled.m, so nothing will trigger the camera and ', ...
+                'every point will time out. Enable it, or set ', ...
+                'IDSConfig.useFakeCamera = true for a code-path check.\n']);
+end
+
+if srsOn
+    SignalGeneratorFunctionPool('SetMod');
+    SignalGeneratorFunctionPool('WritePow');
+    if ~bFreqSweep
+        SignalGeneratorFunctionPool('WriteFreq');
+    end
+    if startsWith(string(gmSEQ.name), 'f_'); gSG.bOn = 0; else; gSG.bOn = 1; end
+    SignalGeneratorFunctionPool('RFOnOff');
+end
+
+roi = ccfg.roi;
+
+try
+    for i = 1:gmSEQ.Average
+        gmSEQ.iAverage = i;
+        handles.biAverage.String = num2str(i);
+        j = 1;
+        passI = NaN(H, W, N);
+        passQ = NaN(H, W, N);
+        while j <= N
+            gmSEQ.m = gmSEQ.SweepParam(j);
+
+            if bFreqSweep && srsOn
+                gSG.Freq = gmSEQ.SweepParam(j);
+                SignalGeneratorFunctionPool('WriteFreq');
+            end
+
+            % Program PulseBlaster for this point (emits both CamTrig edges).
+            SequencePool(string(gmSEQ.name));
+            DrawSequence(gmSEQ, hObject, eventdata, handles.axes1);
+            for k = 1:numel(gmSEQ.CHN)
+                gmSEQ.CHN(k).T      = gmSEQ.CHN(k).T      / 1e9;
+                gmSEQ.CHN(k).DT     = gmSEQ.CHN(k).DT     / 1e9;
+                gmSEQ.CHN(k).Delays = gmSEQ.CHN(k).Delays / 1e9;
+            end
+            if pbOn
+                PBFunctionPool('PreprocessPBSequence', gmSEQ);
+            end
+
+            % Timeout sized to THIS point's burst. CHN is in seconds by now.
+            % hc_AcqTimeoutMs despite its prefix is detector-agnostic: it reads
+            % the four timeout fields off ccfg and the span of CHN.
+            tmoMs = hc_AcqTimeoutMs(ccfg, gmSEQ.CHN, gmSEQ.nPBPeriods);
+
+            % Arm BEFORE running PB. startAcq returns with the camera streaming
+            % and waiting on CamTrig; a trigger that arrives before the camera is
+            % armed is simply lost, and the burst then runs one frame short.
+            gCamIDS.startAcq();
+            if pbOn; Run_PB_Sequence(); end
+            [I, Q] = gCamIDS.readIQ(tmoMs);
+            gCamIDS.stopAcq();
+
+            % SUM over the burst's pairs, keeping the raw photon-count scale and
+            % making the pass-to-pass scatter the whole measure of uncertainty.
+            % size(I,3) rather than nPairs, so the dark multiplier follows what
+            % actually arrived.
+            nP = size(I, 3);
+            Ij = sum(I, 3);
+            Qj = sum(Q, 3);
+            if ~isempty(darkI)
+                Ij = Ij - nP * darkI;
+                Qj = Qj - nP * darkQ;
+            end
+            passI(:,:,j) = Ij;
+            passQ(:,:,j) = Qj;
+
+            if i == 1
+                gWide.I(:,:,j) = Ij;
+                gWide.Q(:,:,j) = Qj;
+            else
+                gWide.I(:,:,j) = (gWide.I(:,:,j)*(i-1) + Ij) / i;
+                gWide.Q(:,:,j) = (gWide.Q(:,:,j)*(i-1) + Qj) / i;
+            end
+
+            try
+                DisplayWidefield(handles, j, roi, [], Ij, Qj);
+            catch MEdisp
+                fprintf(2, ['[IDS] WARNING: display failed at point %d (%s); ', ...
+                            'acquisition continues.\n'], j, MEdisp.message);
+            end
+
+            TemporarySave(BackupFile);
+            drawnow;
+            if ~gmSEQ.bGo; break; end
+            j = j + 1;
+        end
+        SaveWidefieldAve(handles, passI, passQ);
+        if ~gmSEQ.bGo || ~gmSEQ.bGoAfterAvg; break; end
+    end
+catch ME
+    try; gCamIDS.stopAcq(); catch; end
+    if InstrumentEnabled('nidaq'); try; KillAllTasks; catch; end; end
+    if srsOn; gSG.bOn = 0; SignalGeneratorFunctionPool('RFOnOff'); end
+    set(handles.runningText, 'string', 'Error!')
+    if pbOn; PBFunctionPool('PBON', 2^SequencePool('PBDictionary','GreenAOM')); end
+    rethrow(ME);
+end
+
+% --- Cleanup ---
+if srsOn
+    gSG.bOn = 0; SignalGeneratorFunctionPool('RFOnOff');
+    if InstrumentEnabled('srs2') && isfield(handles,'useSG2') && handles.useSG2.Value
+        gSG2.bOn = 0; SignalGeneratorFunctionPool2('RFOnOff');
+    end
+end
+gmSEQ.bGo  = 0;
+gmSEQ.bExp = 0;
+if pbOn; PBFunctionPool('PBON', 2^SequencePool('PBDictionary','GreenAOM')); end
+SaveWidefield(handles);
+set(handles.runningText, 'string', 'Stopped')
+disp('IDS widefield experiment completed!')
 
 function FinishZFocus(handles, bZSweep, bZMoveEnabled, zStart, roi, N, ccfg)
 % FinishZFocus(...)  End-of-run objective placement for hc_ZScan.
@@ -1835,13 +2220,21 @@ function [darkI, darkQ] = AcquireDarkRef(gCam, ccfg, H, W, mPoint, bFullReport)
 % camera's per-pixel noise is static at fixed settings, so one pair serves every
 % sweep point and every average pass.
 %
-% mPoint (optional) breaks that "once per run" assumption on purpose, for
-% hc_scan_exposure. There the swept parameter IS the exposure, so the pedestal --
-% which is dark charge accumulated during the integration window -- changes from
-% point to point and a single pair would be right at exactly one of them. The
-% loop reconfigures the camera and then calls this with that point's sweep value,
-% so each dark is matched to the exposure it will be subtracted from. Passing
-% mPoint also builds the program at that value rather than at SweepParam(1).
+% mPoint (optional) breaks that "once per run" assumption on purpose, for the
+% per-sweep-point regimes. It builds the program at that value rather than at
+% SweepParam(1), so the dark is measured under the same PB program the point
+% itself will run -- which is what makes it the right pedestal for that point.
+% Two callers use it:
+%
+%   hc_scan_exposure   the swept parameter IS the exposure, so the pedestal --
+%                      dark charge accumulated during the integration window --
+%                      scales directly with it and one pair would be right at
+%                      exactly one point.
+%   takeDarkRefPerM    any hc_* sequence, ticked by hand. The swept parameter
+%                      does not touch the exposure register, but it does change
+%                      the PB program length and therefore the sensor's duty
+%                      cycle between bursts, which was observed to move the
+%                      pedestal on hc_Scan_init_time.
 %
 % bFullReport (optional, default true) picks the three-line report over the
 % one-line one; the per-point caller sets it only on its first call.
@@ -1853,8 +2246,11 @@ function [darkI, darkQ] = AcquireDarkRef(gCam, ccfg, H, W, mPoint, bFullReport)
 % cannot shorten the program or move a CamRef edge. The lock-in therefore sees
 % exactly the reference train the real run will deliver.
 %
-% MW channels are deliberately left in: the SRS is still off at this point in the
-% run, and microwaves do not illuminate the sensor.
+% MW channels are deliberately left in. For the once-per-run call the SRS is not
+% even on yet; for the per-point calls it is live, and stays live through the
+% dark. Either way microwaves do not illuminate the sensor, so what is measured
+% is still a dark -- and leaving them in keeps the PB program, and hence the
+% timing the sensor sees, identical to the one this dark will be subtracted from.
 global gmSEQ
 
 % Build the program at the FIRST sweep point, unless the caller named one. For
@@ -1933,8 +2329,11 @@ end
 % continuation.
 if bFullReport
     if bPerPoint
-        fprintf(['[Widefield] Dark reference: FRESH, per sweep point, first at gate ', ...
-                 '%g ns (%d laser channel(s) dropped, %d frames). Later points report ', ...
+        % 'm = ' rather than 'gate = ': the swept parameter is only an exposure
+        % gate under hc_scan_exposure, and takeDarkRefPerM runs this path for
+        % sequences whose m is a wait, a frequency or a position.
+        fprintf(['[Widefield] Dark reference: FRESH, per sweep point, first at m = ', ...
+                 '%g (%d laser channel(s) dropped, %d frames). Later points report ', ...
                  'one line each.\n'], mPoint, nDropped, size(I,3));
     else
         fprintf(['[Widefield] Dark reference: FRESH, acquired once for this run ', ...
@@ -1947,7 +2346,7 @@ if bFullReport
             mean(darkQ(:),'omitnan'), std(darkQ(:),'omitnan'), ...
             max(darkQ(:)) - min(darkQ(:)));
 else
-    fprintf(['[Widefield]   dark @ gate %g ns: I mean %.6g std %.4g | ', ...
+    fprintf(['[Widefield]   dark @ m = %g: I mean %.6g std %.4g | ', ...
              'Q mean %.6g std %.4g\n'], ...
             mPoint, mean(darkI(:),'omitnan'), std(darkI(:),'omitnan'), ...
             mean(darkQ(:),'omitnan'), std(darkQ(:),'omitnan'));
@@ -2166,11 +2565,13 @@ function WriteWidefieldH5(fname, Idat, Qdat, sweepParam, bWriteDark)
 % WriteWidefieldH5(fname, Idat, Qdat, sweepParam, bWriteDark)  Datasets + metadata
 % shared by both the per-average snapshot and the final-average file.
 %
-% bWriteDark also stores the run's dark frames as /dark_I and /dark_Q. Only the
-% final file sets it: there is exactly ONE dark pair per run, applied unchanged to
-% every sweep point and every average pass, so duplicating it into each snapshot
-% would cost megabytes for no new information.
-global gmSEQ gSG gWide
+% bWriteDark also stores the run's dark frames as /dark_I and /dark_Q, and, when
+% the run took one dark per sweep point, the full /dark_I_per_point stacks. Only
+% the final file sets it: a per-run dark is one pair applied unchanged everywhere,
+% and the per-point stacks are the largest datasets in the file, so duplicating
+% either into every average-pass snapshot would cost megabytes for no new
+% information.
+global gmSEQ gSG gWide gWideDark
 
 if nargin < 5 || isempty(bWriteDark); bWriteDark = false; end
 
@@ -2203,10 +2604,22 @@ h5writeatt(fname, '/', 'sweep_unit', gmSEQ.ScaleStr);
 % uncertainty. Files written before 2026-08-25 hold frame MEANS and carry no such
 % attribute, so a missing frame_reduction means 'mean'.
 h5writeatt(fname, '/', 'frame_reduction', 'sum');
-h5writeatt(fname, '/', 'iq_convention', ...
-    ['I = sum over n_frames of (Q1 - Q3); Q = sum over n_frames of (Q2 - Q4); ' ...
-     'both polarity-inverted by readIQ, and dark-subtracted as ' ...
-     'n_frames x the per-frame pedestal'])
+% What I and Q are depends on which camera produced them, and the two
+% conventions are not merely different scalings -- the HeliCam's are signed
+% quadrature differences, the IDS's are positive raw intensities. A file that
+% asserted the wrong one would be read wrongly with no way to notice, so the
+% detector branch declares its own and this only supplies the HeliCam default.
+if ~isempty(gWide) && isfield(gWide,'iqConvention') && ~isempty(gWide.iqConvention)
+    h5writeatt(fname, '/', 'iq_convention', char(string(gWide.iqConvention)));
+else
+    h5writeatt(fname, '/', 'iq_convention', ...
+        ['I = sum over n_frames of (Q1 - Q3); Q = sum over n_frames of (Q2 - Q4); ' ...
+         'both polarity-inverted by readIQ, and dark-subtracted as ' ...
+         'n_frames x the per-frame pedestal'])
+end
+if ~isempty(gWide) && isfield(gWide,'detector') && ~isempty(gWide.detector)
+    h5writeatt(fname, '/', 'detector', char(string(gWide.detector)));
+end
 % Whether the stored dark reference was already removed from these arrays --
 % without it there is no way to tell a corrected run from an uncorrected one.
 if ~isempty(gWide) && isfield(gWide, 'darkSubtracted')
@@ -2230,27 +2643,61 @@ if bWriteDark && ~isempty(gWide) && isfield(gWide,'darkI') && ~isempty(gWide.dar
         h5create(fname, '/dark_Q', dsz, 'Datatype','double', 'ChunkSize',dsz, 'Deflate',4);
         h5write (fname, '/dark_Q', gWide.darkQ);
     end
-    % The undo recipe holds only when ONE pair was applied to every point. Under
-    % hc_scan_exposure the dark is re-measured at each exposure and /dark_I is
-    % just the last one, so promising that recipe there would be a lie -- and a
-    % costly one, since it would look reversible. Say what is actually stored.
+    % The one-pair undo recipe holds only when ONE pair was applied to every
+    % point. Under a per-point dark /dark_I is just the last point's, so
+    % promising that recipe here would be a lie -- and a costly one, since it
+    % would look reversible. The per-point stacks written just below carry what
+    % was actually removed at each point, so the subtraction stays reversible;
+    % the recipe simply has to name them instead.
     bPerPointDark = isfield(gWide,'darkSource') && ...
                     strcmpi(char(string(gWide.darkSource)), 'fresh-per-point');
     if bPerPointDark
         h5writeatt(fname, '/', 'derived_dark', ...
             ['per-point dark: /dark_I and /dark_Q are the LAST sweep point''s pair, ' ...
-             'not the one applied throughout. The subtraction is NOT reversible from ' ...
-             'this file; /dark_point_I and /dark_point_Q give the frame-mean pedestal ' ...
-             'actually removed at each point.']);
+             'not one applied throughout -- do NOT undo the subtraction with them. ' ...
+             'Use the per-point stacks instead: raw I(:,:,j) = /I(:,:,j) + ' ...
+             'n_frames * /dark_I_per_point(:,:,j), and likewise for Q. ' ...
+             '/dark_point_I and /dark_point_Q are the same pedestals reduced to ' ...
+             'one frame-mean scalar per point, for a quick look at how the ' ...
+             'pedestal tracked the swept parameter.']);
     else
         h5writeatt(fname, '/', 'derived_dark', ...
             'undo the dark subtraction with: raw I = /I + /dark_I; raw Q = /Q + /dark_Q');
     end
 end
 
-% Per-point pedestal trace (hc_scan_exposure). Frame-mean scalars, one per sweep
-% point -- enough to see the pedestal track the swept exposure, which is the
-% thing a reader of this file most needs to check before trusting a ratio.
+% --- Per-point dark stacks (takeDarkRefPerM / hc_scan_exposure) --------------
+% H x W x N, indexed the same way as /I and /Q, so /dark_I_per_point(:,:,j) is
+% the pedestal that was removed at /sweep_param(j). This is the dataset that
+% makes a per-point run interpretable: with one dark per sweep point, a single
+% /dark_I cannot say what was subtracted where, and the frame-mean scalars below
+% show the trend but cannot undo the subtraction per pixel.
+%
+% Final file only (bWriteDark), like /dark_I: it is the largest thing in the
+% file by some way -- as big as /I and /Q together -- and every average pass
+% subtracted this SAME set of pedestals, so copying it into each snapshot would
+% multiply that cost by the pass count while repeating identical data. Chunked
+% one frame at a time, matching /I and /Q, so a reader can pull a single point's
+% dark without inflating the whole stack.
+if bWriteDark && ~isempty(gWideDark) && isfield(gWideDark,'I') && ...
+        ~isempty(gWideDark.I) && any(isfinite(gWideDark.I(:)))
+    ksz = size(gWideDark.I);
+    if numel(ksz) < 3; ksz(3) = 1; end
+    kchunk = [ksz(1) ksz(2) 1];
+    h5create(fname, '/dark_I_per_point', ksz, 'Datatype','double', ...
+             'ChunkSize',kchunk, 'Deflate',4);
+    h5write (fname, '/dark_I_per_point', gWideDark.I);
+    if isfield(gWideDark,'Q') && isequal(size(gWideDark.Q), size(gWideDark.I))
+        h5create(fname, '/dark_Q_per_point', ksz, 'Datatype','double', ...
+                 'ChunkSize',kchunk, 'Deflate',4);
+        h5write (fname, '/dark_Q_per_point', gWideDark.Q);
+    end
+end
+
+% Per-point pedestal trace. Frame-mean scalars, one per sweep point -- enough to
+% see the pedestal track the swept parameter, which is the thing a reader of this
+% file most needs to check before trusting a ratio, and cheap enough to plot
+% without touching the per-pixel stacks above.
 if bWriteDark && ~isempty(gWide) && isfield(gWide,'darkPointI') && ...
         any(isfinite(gWide.darkPointI))
     psz = size(gWide.darkPointI);

@@ -27,7 +27,8 @@ switch what
         path='com10';
     case 'meas'
         %path='SPCM';
-        path='HeliCam';   % HeliCam C4 widefield lock-in detector
+        path='HeliCam';  % HeliCam C4 widefield lock-in detector
+        %path='IDSCam';    % IDS uEye+ U3-3140CP-M widefield intensity camera
         %path='APD';
     case 'meas2'
         %path='PD0';
